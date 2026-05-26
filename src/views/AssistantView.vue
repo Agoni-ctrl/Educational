@@ -1,0 +1,875 @@
+<script setup>
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useAssistant, formatSessionTime } from '../composables/useAssistant.js'
+
+const assistant = useAssistant()
+
+const sessions = ref(assistant.getSessions())
+const activeId = ref(assistant.getActiveSession()?.id || null)
+const inputText = ref('')
+const isLoading = ref(false)
+const sidebarOpen = ref(false)
+const messagesEl = ref(null)
+
+const activeSession = computed(() => sessions.value.find((s) => s.id === activeId.value) || null)
+const hasMessages = computed(() => (activeSession.value?.messages.length ?? 0) > 0)
+
+const grouped = computed(() => assistant.groupSessionsByDate(sessions.value))
+
+const suggestions = [
+  {
+    icon: '📐',
+    text: '帮我设计一节高中物理《牛顿第二定律》的课件结构',
+  },
+  {
+    icon: '📄',
+    text: '根据 PDF 教案，生成配套 PPT 大纲与 Word 教案',
+  },
+  {
+    icon: '🎯',
+    text: '为这节新课设计 2-3 个课堂互动环节',
+  },
+  {
+    icon: '💡',
+    text: '分析我的教学目标是否清晰，并给出优化建议',
+  },
+]
+
+function refresh() {
+  sessions.value = assistant.getSessions()
+  if (!activeId.value && sessions.value.length) {
+    activeId.value = sessions.value[0].id
+    assistant.setActive(activeId.value)
+  }
+}
+
+function handleNewChat() {
+  const s = assistant.createSession()
+  refresh()
+  activeId.value = s.id
+  inputText.value = ''
+  sidebarOpen.value = false
+}
+
+function selectSession(id) {
+  activeId.value = id
+  assistant.setActive(id)
+  sidebarOpen.value = false
+  scrollToBottom()
+}
+
+async function handleSend(text = inputText.value) {
+  const content = (text || inputText.value).trim()
+  if (!content || isLoading.value) return
+
+  inputText.value = ''
+  isLoading.value = true
+
+  if (!activeId.value) {
+    const s = assistant.createSession()
+    activeId.value = s.id
+  }
+
+  await assistant.sendMessage(content)
+  refresh()
+  isLoading.value = false
+  await nextTick()
+  scrollToBottom()
+}
+
+function useSuggestion(text) {
+  inputText.value = text
+  handleSend(text)
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (messagesEl.value) {
+      messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+    }
+  })
+}
+
+function onKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    handleSend()
+  }
+}
+
+onMounted(() => {
+  if (!sessions.value.length) {
+    assistant.createSession()
+    refresh()
+  } else if (!activeId.value) {
+    activeId.value = sessions.value[0].id
+    assistant.setActive(activeId.value)
+  }
+  scrollToBottom()
+})
+
+watch(activeId, scrollToBottom)
+</script>
+
+<template>
+  <div class="assistant-page">
+    <aside class="sidebar" :class="{ 'sidebar--open': sidebarOpen }">
+      <div class="sidebar__top">
+        <RouterLink to="/" class="icon-btn" title="返回" @click="sidebarOpen = false">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </RouterLink>
+        <button class="new-chat-btn" @click="handleNewChat">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          新对话
+        </button>
+      </div>
+
+      <div class="sidebar__history">
+        <template v-if="grouped.today.length">
+          <p class="history-label">今天</p>
+          <button
+            v-for="s in grouped.today"
+            :key="s.id"
+            class="history-item"
+            :class="{ 'history-item--active': s.id === activeId }"
+            @click="selectSession(s.id)"
+          >
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z" stroke="currentColor" stroke-width="1.3" />
+            </svg>
+            <span>{{ s.title }}</span>
+          </button>
+        </template>
+
+        <template v-if="grouped.yesterday.length">
+          <p class="history-label">昨天</p>
+          <button
+            v-for="s in grouped.yesterday"
+            :key="s.id"
+            class="history-item"
+            :class="{ 'history-item--active': s.id === activeId }"
+            @click="selectSession(s.id)"
+          >
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z" stroke="currentColor" stroke-width="1.3" />
+            </svg>
+            <span>{{ s.title }}</span>
+          </button>
+        </template>
+
+        <template v-if="grouped.earlier.length">
+          <p class="history-label">更早</p>
+          <button
+            v-for="s in grouped.earlier"
+            :key="s.id"
+            class="history-item"
+            :class="{ 'history-item--active': s.id === activeId }"
+            @click="selectSession(s.id)"
+          >
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z" stroke="currentColor" stroke-width="1.3" />
+            </svg>
+            <span>{{ s.title }}</span>
+            <time>{{ formatSessionTime(s.updatedAt) }}</time>
+          </button>
+        </template>
+      </div>
+
+      <div class="sidebar__foot">
+        <RouterLink to="/" class="home-btn" @click="sidebarOpen = false">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          返回首页
+        </RouterLink>
+        <p class="sidebar__hint">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M8 1L2 4v4c0 3.3 2.6 6.4 6 7 3.4-.6 6-3.7 6-7V4L8 1z" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+          智课 Agent · 教学智能助手 v1.0
+        </p>
+      </div>
+    </aside>
+
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
+
+    <main class="chat-main">
+      <header class="chat-main__mobile-bar">
+        <button class="icon-btn" aria-label="打开侧边栏" @click="sidebarOpen = true">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+        <span class="chat-main__mobile-title">智课 AI 助手</span>
+      </header>
+
+      <div class="chat-panel">
+        <!-- 欢迎态 -->
+        <div v-if="!hasMessages && !isLoading" class="welcome">
+          <div class="welcome__icon float-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="32" fill="url(#aiGrad)" />
+              <path d="M20 38L28 22h4l8 16h-4l-1.6-3.2H25.6L24 38h-4zm6.4-6.4h7.2L32 24.8l-5.6 6.8z" fill="white" />
+              <path d="M42 22h4v16h-4V22z" fill="white" opacity="0.75" />
+              <defs>
+                <linearGradient id="aiGrad" x1="0" y1="0" x2="64" y2="64">
+                  <stop stop-color="#0090ff" />
+                  <stop offset="1" stop-color="#0057d9" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h1 class="welcome__title">智课 AI 助手</h1>
+          <p class="welcome__desc">
+            帮助您梳理教学思路、生成课件大纲、解析教案资料，陪伴您完成从意图理解到课件共创的全流程
+          </p>
+
+          <p class="welcome__label">常见问题</p>
+          <div class="suggestions">
+            <button
+              v-for="(item, i) in suggestions"
+              :key="i"
+              class="suggestion-card"
+              :style="{ '--i': i }"
+              @click="useSuggestion(item.text)"
+            >
+              <span class="suggestion-card__icon">{{ item.icon }}</span>
+              <span>{{ item.text }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 对话态 -->
+        <div v-else ref="messagesEl" class="messages">
+          <div
+            v-for="msg in activeSession?.messages"
+            :key="msg.id"
+            class="message"
+            :class="`message--${msg.role}`"
+          >
+            <div class="message__avatar">
+              {{ msg.role === 'assistant' ? 'AI' : '师' }}
+            </div>
+            <div class="message__bubble">
+              <p>{{ msg.content }}</p>
+            </div>
+          </div>
+
+          <div v-if="isLoading" class="message message--assistant">
+            <div class="message__avatar">AI</div>
+            <div class="message__bubble message__bubble--typing">
+              <span /><span /><span />
+            </div>
+          </div>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="input-area">
+          <div class="input-wrap">
+            <input
+              v-model="inputText"
+              type="text"
+              placeholder="描述您的教学目标，或直接输入问题..."
+              :disabled="isLoading"
+              @keydown="onKeydown"
+            />
+            <button
+              class="send-btn"
+              :disabled="!inputText.trim() || isLoading"
+              aria-label="发送"
+              @click="handleSend()"
+            >
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M4 10l12-6-2 6 2 6-12-6z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+          <p class="input-hint">
+            <svg viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="7" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.2" />
+              <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.2" />
+            </svg>
+            对话内容仅保存在本地浏览器，接入通义 API 后可云端同步
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<style scoped>
+.assistant-page {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(160deg, #e8f2fc 0%, #dceaf8 50%, #e5f0fa 100%);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  background: rgba(255, 255, 255, 0.45);
+  border-right: 1px solid rgba(0, 87, 217, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar__top {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  text-decoration: none;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-btn:hover {
+  background: #fff;
+  transform: translateX(-2px);
+}
+
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--accent-deep);
+  background: rgba(0, 144, 255, 0.12);
+  border: 1px solid rgba(0, 144, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.25s var(--ease-spring), box-shadow 0.2s;
+}
+
+.new-chat-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.new-chat-btn:hover {
+  background: rgba(0, 144, 255, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 119, 230, 0.12);
+}
+
+.sidebar__history {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.history-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin: 16px 0 8px 8px;
+}
+
+.history-label:first-child {
+  margin-top: 0;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, color 0.2s;
+}
+
+.history-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.history-item span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item time {
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+}
+
+.history-item--active {
+  background: rgba(0, 144, 255, 0.12);
+  color: var(--accent-deep);
+  font-weight: 500;
+}
+
+.history-item--active svg {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.sidebar__foot {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent-deep);
+  background: rgba(0, 144, 255, 0.1);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.home-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.home-btn:hover {
+  background: rgba(0, 144, 255, 0.16);
+}
+
+.sidebar__hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+}
+
+.sidebar__hint svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+/* Main chat */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  min-width: 0;
+}
+
+.chat-main__mobile-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chat-main__mobile-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(10, 15, 26, 0.04),
+    0 16px 48px rgba(0, 87, 217, 0.08);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Welcome */
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.welcome__icon {
+  margin-bottom: 24px;
+}
+
+.welcome__icon svg {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 8px 24px rgba(0, 119, 230, 0.25));
+}
+
+.float-icon {
+  animation: float-icon 5s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.welcome__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.welcome__desc {
+  max-width: 480px;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  margin-bottom: 36px;
+}
+
+.welcome__label {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 640px;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+}
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.suggestion-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s var(--ease-spring);
+  animation: fade-up 0.6s var(--ease-out) backwards;
+  animation-delay: calc(var(--i) * 0.08s + 0.1s);
+}
+
+.suggestion-card__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.suggestion-card:hover {
+  border-color: rgba(0, 119, 230, 0.3);
+  box-shadow: 0 8px 28px rgba(0, 87, 217, 0.1);
+  transform: translateY(-3px);
+  color: var(--ink);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+  animation: msg-in 0.35s var(--ease-out);
+}
+
+.message--user {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message--assistant {
+  align-self: flex-start;
+}
+
+.message__avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.message--assistant .message__avatar {
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #fff;
+}
+
+.message--user .message__avatar {
+  background: rgba(10, 15, 26, 0.08);
+  color: var(--ink-soft);
+}
+
+.message__bubble {
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.message--assistant .message__bubble {
+  background: rgba(0, 119, 230, 0.07);
+  color: var(--ink-soft);
+  border-bottom-left-radius: 4px;
+}
+
+.message--user .message__bubble {
+  background: var(--ink);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message__bubble--typing {
+  display: flex;
+  gap: 5px;
+  padding: 18px 20px;
+}
+
+.message__bubble--typing span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 119, 230, 0.4);
+  animation: typing 1.4s ease-in-out infinite;
+}
+
+.message__bubble--typing span:nth-child(2) { animation-delay: 0.2s; }
+.message__bubble--typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Input */
+.input-area {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrap:focus-within {
+  border-color: rgba(0, 119, 230, 0.35);
+  box-shadow: 0 0 0 4px rgba(0, 119, 230, 0.08);
+}
+
+.input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.9375rem;
+  background: transparent;
+  padding: 10px 0;
+}
+
+.input-wrap input:disabled {
+  opacity: 0.6;
+}
+
+.send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.25s var(--ease-spring), opacity 0.2s, background 0.2s;
+}
+
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: scale(1.06);
+  background: var(--accent-deep);
+}
+
+.send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.input-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.input-hint svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.5;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .assistant-page {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease-out);
+    box-shadow: 4px 0 24px rgba(10, 15, 26, 0.1);
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: rgba(10, 15, 26, 0.3);
+    backdrop-filter: blur(4px);
+  }
+
+  .chat-main {
+    padding: 12px;
+    height: 100vh;
+  }
+
+  .chat-main__mobile-bar {
+    display: flex;
+  }
+
+  .chat-panel {
+    border-radius: 16px;
+  }
+
+  .suggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .messages {
+    padding: 20px 16px;
+  }
+
+  .message {
+    max-width: 92%;
+  }
+}
+</style>
