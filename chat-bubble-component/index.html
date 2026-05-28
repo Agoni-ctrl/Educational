@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>对话气泡组件</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <!-- 对话消息组件 -->
+      <div class="message-wrapper">
+        <h3 class="message-title">关于“牛顿第二定律”的教学设计</h3>
+        <div class="message-bubble">
+          <p class="message-content">
+            好的，我们可以从以下几个方面来构建这节课的教学设计：首先，通过一个生活中的趣味实验（比如推箱子）来引入概念；接着，通过控制变量法分步探究加速度与力、质量的关系；最后，进行总结并布置分层作业。
+          </p>
+
+          <!-- 三个点的菜单按钮 -->
+          <button class="more-btn" aria-label="更多选项">
+            <span></span><span></span><span></span>
+          </button>
+
+          <!-- 弹出的上下文菜单 -->
+          <div class="context-menu">
+            <button class="menu-item" id="rename-btn">重命名</button>
+            <button class="menu-item" id="share-btn">分享</button>
+            <button class="menu-item" id="delete-btn">删除</button>
+          </div>
+        </div>
+      </div>
+      <!-- 可以添加更多的 message-wrapper 来展示多条消息 -->
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
