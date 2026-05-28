@@ -67,9 +67,22 @@ function refresh() {
 }
 
 function handleNewChat() {
-  const s = assistant.createSession();
-  refresh();
-  activeId.value = s.id;
+  // 检查是否已存在空的对话（没有消息的对话）
+  const emptySession = sessions.value.find(
+    (s) => !s.messages || s.messages.length === 0,
+  );
+
+  if (emptySession) {
+    // 如果已有空对话，直接跳转到该对话
+    activeId.value = emptySession.id;
+    assistant.setActive(emptySession.id);
+  } else {
+    // 没有空对话才创建新的
+    const s = assistant.createSession();
+    refresh();
+    activeId.value = s.id;
+  }
+
   inputText.value = "";
   sidebarOpen.value = false;
 }
@@ -100,12 +113,132 @@ async function handleSend(text = inputText.value) {
   scrollToBottom();
 }
 
-// 截断标题
-function truncateTitle(title, length = 10) {
-  if (title.length <= length) {
-    return title;
+// 提取关键词作为标题（12字以内）
+function truncateTitle(title, maxLength = 12) {
+  if (!title || title.length <= maxLength) {
+    return title || "新对话";
   }
-  return title.substring(0, length) + "...";
+
+  // 定义常见停用词
+  const stopWords = new Set([
+    "的",
+    "了",
+    "是",
+    "我",
+    "你",
+    "他",
+    "她",
+    "它",
+    "们",
+    "在",
+    "有",
+    "和",
+    "与",
+    "或",
+    "就",
+    "都",
+    "而",
+    "及",
+    "等",
+    "对",
+    "能",
+    "会",
+    "要",
+    "去",
+    "到",
+    "从",
+    "把",
+    "被",
+    "给",
+    "让",
+    "向",
+    "往",
+    "为",
+    "因",
+    "于",
+    "即",
+    "使",
+    "但",
+    "却",
+    "虽",
+    "如果",
+    "那么",
+    "因为",
+    "所以",
+    "而且",
+    "或者",
+    "请",
+    "帮",
+    "帮我",
+    "给我",
+    "给我个",
+    "给我一个",
+    "给我一",
+    "想",
+    "想要",
+    "需要",
+    "希望",
+    "可以",
+    "能不能",
+    "能不能帮",
+    "能不能帮我",
+    "怎么",
+    "怎么样",
+    "如何",
+    "什么",
+    "哪些",
+    "吗",
+    "呢",
+    "吧",
+    "啊",
+    "哦",
+    "嗯",
+    "这个",
+    "那个",
+    "一个",
+    "一下",
+    "一些",
+    "这些",
+    "那些",
+    "它们",
+  ]);
+
+  // 尝试提取关键词
+  // 1. 先尝试提取引号内的内容
+  const quoteMatch = title.match(/[""""']([^""""']{2,12})[""""']/);
+  if (quoteMatch) {
+    return quoteMatch[1];
+  }
+
+  // 2. 尝试提取书名号内的内容
+  const bookMatch = title.match(/[《<]([^》>]{2,12})[》>]/);
+  if (bookMatch) {
+    return bookMatch[1];
+  }
+
+  // 3. 提取核心名词（去除停用词后的前几个词）
+  const words = title
+    .replace(/[，。？！；：""""'《》（）【】\[\]]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !stopWords.has(w));
+
+  if (words.length > 0) {
+    // 取前几个关键词组合
+    let result = "";
+    for (const word of words) {
+      if ((result + word).length <= maxLength) {
+        result += word;
+      } else {
+        break;
+      }
+    }
+    if (result.length >= 2) {
+      return result;
+    }
+  }
+
+  // 4. 如果以上都失败，直接截取前12个字符
+  return title.substring(0, maxLength);
 }
 
 // 打开侧边栏菜单
@@ -195,6 +328,17 @@ function pinSession() {
   activeMenuId.value = null;
 }
 
+// 复制消息内容
+async function copyMessage(content) {
+  try {
+    await navigator.clipboard.writeText(content);
+    alert("内容已复制到剪贴板！");
+  } catch (err) {
+    console.error("复制失败:", err);
+    alert("复制失败，请手动复制。");
+  }
+}
+
 function useSuggestion(text) {
   inputText.value = text;
   handleSend(text);
@@ -272,7 +416,7 @@ watch(activeId, scrollToBottom);
               stroke-linecap="round"
             />
           </svg>
-          <span class="new-chat-btn__text">新对话</span>
+          <span class="new-chat-btn__text">创建新对话</span>
         </button>
       </div>
 
@@ -578,8 +722,33 @@ watch(activeId, scrollToBottom);
             <div class="message__avatar">
               {{ msg.role === "assistant" ? "AI" : "师" }}
             </div>
-            <div class="message__bubble">
-              <p>{{ msg.content }}</p>
+            <div class="message__content">
+              <div class="message__bubble">
+                <p>{{ msg.content }}</p>
+              </div>
+              <button
+                class="message__copy-btn"
+                @click="copyMessage(msg.content)"
+                title="复制内容"
+              >
+                <svg viewBox="0 0 16 16" fill="none">
+                  <rect
+                    x="3"
+                    y="3"
+                    width="8"
+                    height="8"
+                    rx="1"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M5 3V2a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-1"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                </svg>
+                <span>复制</span>
+              </button>
             </div>
           </div>
 
@@ -1333,6 +1502,50 @@ watch(activeId, scrollToBottom);
 .message--user .message__avatar {
   background: rgba(10, 15, 26, 0.08);
   color: var(--ink-soft);
+}
+
+.message__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: calc(100% - 48px);
+}
+
+.message__copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.message--user .message__copy-btn {
+  align-self: flex-end;
+}
+
+.message__copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.message:hover .message__copy-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.message__copy-btn:hover {
+  background: rgba(0, 119, 230, 0.08);
+  color: var(--accent);
+  border-color: rgba(0, 119, 230, 0.2);
 }
 
 .message__bubble {
