@@ -2,12 +2,14 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { navItems } from "../../config/nav.js";
+import RegisterModal from "../RegisterModal.vue";
 
 const route = useRoute();
 const router = useRouter();
 const menuOpen = ref(false);
 const navSolid = ref(false);
 const userMenuOpen = ref(false);
+const showRegisterModal = ref(false);
 
 // 模拟用户登录状态
 const isLoggedIn = ref(false);
@@ -15,6 +17,20 @@ const userInfo = ref({
   name: "用户",
   avatar: null,
 });
+
+// 打开注册弹窗
+function openRegisterModal() {
+  closeUserMenu();
+  showRegisterModal.value = true;
+}
+
+// 注册成功回调
+function onRegisterSuccess(data) {
+  showRegisterModal.value = false;
+  isLoggedIn.value = true;
+  userInfo.value.name = data.username;
+  alert(`注册成功！欢迎 ${data.username}`);
+}
 
 function onScroll() {
   navSolid.value = window.scrollY > 32;
@@ -49,7 +65,7 @@ function handleMenuClick(action) {
       router.push("/profile");
       break;
     case "register":
-      alert("注册功能开发中...");
+      openRegisterModal();
       break;
     case "login":
       isLoggedIn.value = true;
@@ -278,6 +294,13 @@ onUnmounted(() => {
       </div>
     </div>
   </header>
+
+  <!-- 注册弹窗 -->
+  <RegisterModal
+    :show="showRegisterModal"
+    @close="showRegisterModal = false"
+    @success="onRegisterSuccess"
+  />
 </template>
 
 <style scoped>
