@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { navItems } from "../../config/nav.js";
 
 const route = useRoute();
+const router = useRouter();
 const menuOpen = ref(false);
 const navSolid = ref(false);
 const userMenuOpen = ref(false);
@@ -45,7 +46,7 @@ function handleMenuClick(action) {
   closeUserMenu();
   switch (action) {
     case "profile":
-      alert("个人中心功能开发中...");
+      router.push("/profile");
       break;
     case "register":
       alert("注册功能开发中...");

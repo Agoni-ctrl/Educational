@@ -771,7 +771,7 @@ watch(activePanel, refresh);
               class="iterate-card"
             >
               <div class="iterate-card__head">
-                <span>{{ getTypeIcon(item.type) }}</span>
+                <span v-html="getTypeIcon(item.type, item.title)"></span>
                 <div>
                   <strong>{{ item.title }}</strong>
                   <span>{{ STATUS_LABELS[item.status] }}</span>
@@ -1178,7 +1178,20 @@ watch(activePanel, refresh);
 }
 
 .recent-item__icon {
-  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 119, 230, 0.08);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.recent-item__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .recent-item__info {
@@ -1763,7 +1776,20 @@ watch(activePanel, refresh);
 }
 
 .history-row__icon {
-  font-size: 1.375rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 119, 230, 0.08);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.history-row__icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .history-row__info {
