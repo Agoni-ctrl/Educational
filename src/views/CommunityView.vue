@@ -15,7 +15,6 @@ const showForm = ref(false)
 const searchQuery = ref('')
 const hotSearches = ['AI 提示词', '翻转课堂', '新课导入', '物理交互动画']
 
-// 模拟右侧边栏数据（可根据实际后端调整）
 const recentViews = ref([
   { id: 1, title: '如何设计「先破后立」的历史课导入？', time: '10分钟前' },
   { id: 2, title: '物理实验课怎样用 AI 生成可交互演示动画？', time: '1小时前' },
@@ -40,6 +39,25 @@ const newPost = ref({
 const tags = ['教学讨论', '课件结构', '互动设计', '多模态参考', 'AI 提示词']
 
 const posts = computed(() => getPosts(filter.value))
+const allPosts = computed(() => getPosts('all'))
+
+const communityStats = computed(() => [
+  { value: allPosts.value.length, label: '共创话题' },
+  { value: allPosts.value.reduce((sum, post) => sum + post.comments.length, 0), label: '同行回复' },
+  { value: allPosts.value.reduce((sum, post) => sum + post.likes, 0), label: '经验认可' },
+])
+
+const topicLanes = [
+  { title: '备课共创', desc: '课件结构、教案骨架、课堂节奏', tone: 'blue' },
+  { title: '互动实验', desc: '课堂提问、投票、演示动画脚本', tone: 'cyan' },
+  { title: '资料融合', desc: 'PDF、图片、校本模板使用方法', tone: 'green' },
+]
+
+const activeTeachers = [
+  { name: '王老师', field: '高中历史', work: '情境导入案例' },
+  { name: '李老师', field: '高中物理', work: '实验交互脚本' },
+  { name: '张老师', field: '初中语文', work: '单元任务设计' },
+]
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -128,10 +146,40 @@ onMounted(() => {
 
     <main class="main">
       <div class="hero-block">
-        <p class="eyebrow">Community</p>
-        <h1>教师交流社区</h1>
-        <p class="lead">分享教学疑难、交流课件共创经验，与同行一起探索 AI 赋能教学的可能</p>
+        <div class="hero-block__copy">
+          <p class="eyebrow">Teacher Community</p>
+          <h1>教师共创社区</h1>
+          <p class="lead">把备课难题、课件结构、互动创意和多模态资料处理经验沉淀下来，与同行一起把 AI 教学从“会用”推进到“用好”。</p>
+          <div class="hero-actions">
+            <button class="btn btn--dark" @click="showForm = true">发布教研话题</button>
+            <button class="btn btn--ghost" @click="filter = 'hot'">查看热门经验</button>
+          </div>
+        </div>
+
+        <div class="community-orbit" aria-label="社区活跃概览">
+          <div class="orbit-card">
+            <span class="orbit-card__label">今日教研热度</span>
+            <strong>92%</strong>
+            <p>课件生成、互动设计与资料融合正在被集中讨论</p>
+          </div>
+          <div class="orbit-ring orbit-ring--one" />
+          <div class="orbit-ring orbit-ring--two" />
+          <div class="orbit-dot orbit-dot--one">问</div>
+          <div class="orbit-dot orbit-dot--two">案</div>
+          <div class="orbit-dot orbit-dot--three">评</div>
+        </div>
       </div>
+
+      <section class="community-strip" aria-label="社区数据">
+        <article v-for="item in communityStats" :key="item.label" class="stat-card">
+          <strong>{{ item.value }}</strong>
+          <span>{{ item.label }}</span>
+        </article>
+        <article v-for="lane in topicLanes" :key="lane.title" class="topic-lane" :data-tone="lane.tone">
+          <strong>{{ lane.title }}</strong>
+          <span>{{ lane.desc }}</span>
+        </article>
+      </section>
 
       <div class="layout-container">
         
@@ -149,7 +197,7 @@ onMounted(() => {
               </button>
             </div>
             <button class="btn btn--dark" @click="showForm = !showForm">
-              {{ showForm ? '取消发布' : '+ 发布话题' }}
+              {{ showForm ? '取消发布' : '发布话题' }}
             </button>
           </div>
 
@@ -205,6 +253,7 @@ onMounted(() => {
         <aside class="sidebar">
           
           <div class="sidebar-card search-card">
+            <div class="card-kicker">快速定位</div>
             <div class="search-box">
               <input 
                 v-model="searchQuery" 
@@ -229,7 +278,12 @@ onMounted(() => {
 
           <div class="sidebar-card">
             <div class="card-header">
-              <span class="card-title">📋 最近浏览</span>
+              <span class="card-title">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 4h10M5 8h10M5 12h6M4 17h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                </svg>
+                最近浏览
+              </span>
             </div>
             <div v-if="recentViews.length" class="recent-list">
               <div v-for="item in recentViews" :key="item.id" class="recent-item">
@@ -243,7 +297,12 @@ onMounted(() => {
 
           <div class="sidebar-card">
             <div class="card-header">
-              <span class="card-title">🔥 热门推荐</span>
+              <span class="card-title">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M10 3l1.9 4.1 4.4.5-3.2 3.1.8 4.3L10 12.8 6.1 15l.8-4.3-3.2-3.1 4.4-.5L10 3z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" />
+                </svg>
+                热门推荐
+              </span>
             </div>
             <div class="recommend-list">
               <div v-for="(item, index) in hotRecommendations" :key="item.id" class="recommend-item">
@@ -251,8 +310,28 @@ onMounted(() => {
                   <span class="rank-num" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
                   <span class="item-title" :title="item.title">{{ item.title }}</span>
                 </div>
-                <span class="item-reads">👁️ {{ item.reads }} 阅读</span>
+                <span class="item-reads">{{ item.reads }} 阅读</span>
               </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card teacher-card">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM13.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 17a4.5 4.5 0 0 1 9 0M11.5 16a3.5 3.5 0 0 1 6 0" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+                </svg>
+                活跃教师
+              </span>
+            </div>
+            <div class="teacher-list">
+              <article v-for="teacher in activeTeachers" :key="teacher.name" class="teacher-item">
+                <span class="teacher-avatar">{{ teacher.name.charAt(0) }}</span>
+                <div>
+                  <strong>{{ teacher.name }}</strong>
+                  <p>{{ teacher.field }} · {{ teacher.work }}</p>
+                </div>
+              </article>
             </div>
           </div>
 
@@ -268,10 +347,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 保持原有基础全局变量和毛玻璃底层逻辑 */
 .community-page {
   position: relative;
   min-height: 100vh;
+  color: var(--ink);
 }
 
 .aurora {
@@ -279,7 +358,10 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(165deg, #f8fafc 0%, #eef4fb 45%, #f5f8fc 100%);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(0, 194, 212, 0.12), transparent 28%),
+    radial-gradient(circle at 86% 4%, rgba(0, 119, 230, 0.16), transparent 30%),
+    linear-gradient(165deg, #f8fafc 0%, #edf5fb 45%, #f7fbff 100%);
 }
 
 .aurora__blob {
@@ -312,17 +394,28 @@ onMounted(() => {
   50% { transform: translate(-20px, 30px); }
 }
 
-/* 布局调整：扩大主容器的最大宽度，容纳双栏 */
 .main {
   position: relative;
   z-index: 1;
-  max-width: 1200px; /* 从原先的800px改为1200px */
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 104px 24px 72px;
 }
 
 .hero-block {
-  margin-bottom: 36px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) 380px;
+  gap: 34px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.46)),
+    radial-gradient(circle at 20% 0%, rgba(0, 194, 212, 0.16), transparent 42%);
+  box-shadow: 0 28px 90px rgba(0, 87, 217, 0.11);
+  backdrop-filter: blur(24px) saturate(1.25);
 }
 
 .eyebrow {
@@ -335,29 +428,165 @@ onMounted(() => {
 }
 
 .hero-block h1 {
-  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.6rem);
   font-weight: 800;
-  letter-spacing: -0.04em;
-  margin-bottom: 12px;
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  margin-bottom: 18px;
 }
 
 .lead {
-  font-size: 1rem;
-  line-height: 1.7;
+  max-width: 660px;
+  font-size: 1.03rem;
+  line-height: 1.78;
   color: var(--ink-soft, #4b5563);
 }
 
-/* 核心：新增双栏 Grid 响应式布局 */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.community-orbit {
+  position: relative;
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+}
+
+.orbit-card {
+  position: relative;
+  z-index: 2;
+  width: 220px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 87, 217, 0.16);
+  text-align: center;
+}
+
+.orbit-card__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.orbit-card strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--accent-deep);
+}
+
+.orbit-card p {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.orbit-ring {
+  position: absolute;
+  inset: 36px;
+  border: 1px dashed rgba(0, 119, 230, 0.24);
+  border-radius: 50%;
+}
+
+.orbit-ring--two {
+  inset: 78px;
+  border-style: solid;
+  border-color: rgba(0, 194, 212, 0.18);
+}
+
+.orbit-dot {
+  position: absolute;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--accent-deep);
+  font-family: var(--font-display);
+  font-weight: 800;
+  box-shadow: 0 14px 34px rgba(0, 87, 217, 0.14);
+}
+
+.orbit-dot--one { top: 34px; right: 82px; animation: float-one 5s ease-in-out infinite; }
+.orbit-dot--two { left: 42px; bottom: 76px; animation: float-two 6s ease-in-out infinite; }
+.orbit-dot--three { right: 42px; bottom: 46px; animation: float-one 5.4s ease-in-out infinite 0.5s; }
+
+.community-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 0.62fr) repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-card,
+.topic-lane {
+  padding: 16px;
+  border: 1px solid rgba(10, 15, 26, 0.07);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.stat-card strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  color: var(--accent-deep);
+}
+
+.stat-card span,
+.topic-lane span {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.48;
+  color: var(--ink-muted);
+}
+
+.topic-lane {
+  position: relative;
+  overflow: hidden;
+}
+
+.topic-lane::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--accent);
+}
+
+.topic-lane[data-tone='cyan']::before { background: var(--cyan); }
+.topic-lane[data-tone='green']::before { background: #18a06d; }
+
+.topic-lane strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.92rem;
+}
+
 .layout-container {
   display: grid;
-  grid-template-columns: 1fr 360px; /* 左侧自适应，右侧固定360px */
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 30px;
   align-items: start;
 }
 
-/* 左侧主内容区 */
 .main-content {
-  min-width: 0; /* 防止子元素撑破grid */
+  min-width: 0;
 }
 
 .toolbar {
@@ -365,7 +594,12 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
+  padding: 10px;
+  border: 1px solid rgba(10, 15, 26, 0.06);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(18px);
   flex-wrap: wrap;
 }
 
@@ -376,12 +610,12 @@ onMounted(() => {
 }
 
 .filter-btn {
-  padding: 8px 16px;
+  padding: 10px 17px;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--ink-soft, #4b5563);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--border, #e2e8f0);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s;
@@ -393,9 +627,10 @@ onMounted(() => {
 }
 
 .filter-btn--active {
-  color: #0077e6;
-  background: rgba(0, 119, 230, 0.1);
+  color: var(--accent-deep);
+  background: #fff;
   border-color: rgba(0, 119, 230, 0.25);
+  box-shadow: 0 10px 28px rgba(0, 87, 217, 0.08);
 }
 
 .btn {
@@ -408,7 +643,7 @@ onMounted(() => {
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  transition: transform 0.25s, box-shadow 0.25s;
+  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s, border-color 0.2s, background 0.2s;
   white-space: nowrap;
 }
 
@@ -424,9 +659,14 @@ onMounted(() => {
 }
 
 .btn--ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.64);
   color: var(--ink, #0f172a);
   border: 1px solid var(--border-strong, #cbd5e1);
+}
+
+.btn--ghost:hover {
+  border-color: rgba(0, 119, 230, 0.24);
+  background: #fff;
 }
 
 .post-form {
@@ -435,10 +675,11 @@ onMounted(() => {
   gap: 16px;
   padding: 24px;
   margin-bottom: 24px;
-  border-radius: 12px;
+  border-radius: 22px;
   border: 1px solid var(--border, #e2e8f0);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 18px 60px rgba(0, 87, 217, 0.09);
 }
 
 .post-form__row {
@@ -452,7 +693,7 @@ onMounted(() => {
 .post-form textarea {
   padding: 12px 14px;
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 14px;
   font-size: 0.9375rem;
   outline: none;
   background: #fff;
@@ -464,30 +705,35 @@ onMounted(() => {
   gap: 16px;
 }
 
-/* ==========================================================================
-   右侧侧边栏组件样式 (依照图片设计定制)
-   ========================================================================== */
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   position: sticky;
-  top: 90px; /* 随页面滚动时悬浮固定 */
+  top: 92px;
 }
 
-/* 侧边栏通用卡片 */
 .sidebar-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.62));
+  border: 1px solid rgba(10, 15, 26, 0.07);
+  border-radius: 22px;
   padding: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 14px 44px rgba(0, 87, 217, 0.07);
 }
 
-/* 搜索卡片特别定制 */
 .search-card {
-  background: rgba(255, 255, 255, 0.9);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(0, 194, 212, 0.18), transparent 42%),
+    rgba(255, 255, 255, 0.88);
+}
+
+.card-kicker {
+  margin-bottom: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-deep);
 }
 
 .search-box {
@@ -499,7 +745,7 @@ onMounted(() => {
   flex: 1;
   padding: 10px 16px;
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 10px;
+  border-radius: 14px;
   font-size: 0.875rem;
   outline: none;
   transition: border-color 0.2s;
@@ -514,7 +760,7 @@ onMounted(() => {
   background: #0077e6;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -540,29 +786,37 @@ onMounted(() => {
   margin-right: 10px;
   cursor: pointer;
   display: inline-block;
+  font-weight: 600;
 }
 
 .hot-word:hover {
   text-decoration: underline;
 }
 
-/* 卡片头部 */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(10, 15, 26, 0.06);
   padding-bottom: 8px;
 }
 
 .card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--ink, #0f172a);
 }
 
-/* 最近浏览列表 */
+.card-title svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-deep);
+}
+
 .recent-list, .recommend-list {
   display: flex;
   flex-direction: column;
@@ -606,7 +860,7 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid var(--border, #e2e8f0);
   color: #64748b;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.8125rem;
   cursor: pointer;
   margin-top: 6px;
@@ -618,7 +872,6 @@ onMounted(() => {
   color: var(--ink, #0f172a);
 }
 
-/* 热门推荐排行榜 */
 .recommend-left {
   display: flex;
   align-items: center;
@@ -640,10 +893,45 @@ onMounted(() => {
   color: #64748b;
 }
 
-/* 前三名高亮橙黄色系样式 */
 .rank-1 { background: #fee2e2; color: #ef4444; }
 .rank-2 { background: #ffedd5; color: #f97316; }
 .rank-3 { background: #fef9c3; color: #eab308; }
+
+.teacher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teacher-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.teacher-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: #fff;
+  font-weight: 800;
+}
+
+.teacher-item strong {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.teacher-item p {
+  margin-top: 2px;
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+}
 
 .sidebar-empty {
   text-align: center;
@@ -673,11 +961,29 @@ onMounted(() => {
   box-shadow: 0 12px 40px rgba(10, 15, 26, 0.2);
 }
 
-/* ==========================================================================
-   移动端响应式断点处理
-   ========================================================================== */
+@keyframes float-one {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float-two {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(8px, -8px); }
+}
+
 @media (max-width: 968px) {
-  /* 当屏幕宽度小于 968px 时，切换回单栏，将侧边栏挪到最下面或隐藏 */
+  .hero-block {
+    grid-template-columns: 1fr;
+  }
+
+  .community-orbit {
+    min-height: 240px;
+  }
+
+  .community-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .layout-container {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -688,6 +994,24 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .main {
+    padding: 94px 18px 48px;
+  }
+
+  .hero-block {
+    padding: 22px;
+    border-radius: 26px;
+  }
+
+  .hero-actions,
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .community-strip {
+    grid-template-columns: 1fr;
+  }
+
   .post-form__row {
     grid-template-columns: 1fr;
   }
