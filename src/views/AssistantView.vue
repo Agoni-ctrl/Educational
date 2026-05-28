@@ -21,6 +21,10 @@ const fileInput = ref(null);
 const activeMenuId = ref(null);
 const menuPosition = ref({ top: 0, left: 0 });
 
+// 功能开关状态
+const isSmartSearchEnabled = ref(false);
+const isDeepThinkingEnabled = ref(false);
+
 // 重命名弹窗状态
 const renameModalOpen = ref(false);
 const renameTargetId = ref(null);
@@ -603,6 +607,54 @@ watch(activeId, scrollToBottom);
               hidden
               @change="handleFileSelect"
             />
+            <button
+              class="feature-btn"
+              :class="{ 'feature-btn--active': isSmartSearchEnabled }"
+              aria-label="智能搜索"
+              @click="isSmartSearchEnabled = !isSmartSearchEnabled"
+              title="智能搜索"
+            >
+              <svg viewBox="0 0 20 20" fill="none">
+                <circle
+                  cx="9"
+                  cy="9"
+                  r="6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M14 14l4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>智能搜索</span>
+            </button>
+            <button
+              class="feature-btn"
+              :class="{ 'feature-btn--active': isDeepThinkingEnabled }"
+              aria-label="深度思考"
+              @click="isDeepThinkingEnabled = !isDeepThinkingEnabled"
+              title="深度思考"
+            >
+              <svg viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 2v4M10 14v4M2 10h4M14 10h4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+              </svg>
+              <span>深度思考</span>
+            </button>
             <button
               class="icon-btn upload-btn"
               aria-label="上传文件"
@@ -1291,15 +1343,17 @@ watch(activeId, scrollToBottom);
 }
 
 .message--assistant .message__bubble {
-  background: rgba(0, 119, 230, 0.07);
-  color: var(--ink-soft);
+  background: linear-gradient(135deg, #0077e6 0%, #0057d9 100%);
+  color: #fff;
   border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 119, 230, 0.2);
 }
 
 .message--user .message__bubble {
-  background: var(--ink);
-  color: #fff;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  color: #4a4a4a;
   border-bottom-right-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .message__bubble--typing {
@@ -1398,6 +1452,48 @@ watch(activeId, scrollToBottom);
 .upload-btn:hover {
   background: rgba(0, 0, 0, 0.05);
   color: var(--ink-soft);
+}
+
+/* 功能按钮样式 */
+.feature-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.feature-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.feature-btn:hover {
+  background: rgba(0, 119, 230, 0.06);
+  border-color: rgba(0, 119, 230, 0.3);
+  color: var(--accent);
+}
+
+.feature-btn--active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 119, 230, 0.3);
+}
+
+.feature-btn--active:hover {
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 119, 230, 0.4);
 }
 
 .send-btn {
