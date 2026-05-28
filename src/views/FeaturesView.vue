@@ -1,130 +1,199 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useFeatures, formatFeatureTime, getTypeIcon } from '../composables/useFeatures.js'
+import { ref, computed, watch } from "vue";
+import { RouterLink } from "vue-router";
+import {
+  useFeatures,
+  formatFeatureTime,
+  getTypeIcon,
+} from "../composables/useFeatures.js";
 
-const { getHistory, getStats, addRecord, deleteRecord, TYPE_LABELS, STATUS_LABELS } = useFeatures()
+const {
+  getHistory,
+  getStats,
+  addRecord,
+  deleteRecord,
+  TYPE_LABELS,
+  STATUS_LABELS,
+} = useFeatures();
 
-const activePanel = ref('overview')
-const sidebarOpen = ref(false)
-const history = ref(getHistory())
-const stats = ref(getStats())
+const activePanel = ref("overview");
+const sidebarOpen = ref(false);
+const history = ref(getHistory());
+const stats = ref(getStats());
 
-const pptForm = ref({ subject: '', topic: '', duration: '45', style: '实验探究型' })
-const docForm = ref({ subject: '', topic: '', format: '标准教案' })
-const uploadFiles = ref([])
-const isGenerating = ref(false)
-const toast = ref('')
+const pptForm = ref({
+  subject: "",
+  topic: "",
+  duration: "45",
+  style: "实验探究型",
+});
+const docForm = ref({ subject: "", topic: "", format: "标准教案" });
+const uploadFiles = ref([]);
+const isGenerating = ref(false);
+const toast = ref("");
 
 const navGroups = [
   {
-    label: '创作生成',
+    label: "创作生成",
     items: [
-      { id: 'ppt', label: '课件生成', icon: 'ppt', desc: 'PPT 演示文稿' },
-      { id: 'doc', label: '教案生成', icon: 'doc', desc: 'Word 教案文档' },
-      { id: 'interactive', label: '互动创意', icon: 'interactive', desc: '小游戏与动画' },
+      { id: "ppt", label: "课件生成", icon: "ppt", desc: "PPT 演示文稿" },
+      { id: "doc", label: "教案生成", icon: "doc", desc: "Word 教案文档" },
+      {
+        id: "interactive",
+        label: "互动创意",
+        icon: "interactive",
+        desc: "小游戏与动画",
+      },
     ],
   },
   {
-    label: '智能理解',
+    label: "智能理解",
     items: [
-      { id: 'intent', label: '意图理解', icon: 'intent', desc: '多轮对话梳理' },
-      { id: 'multimodal', label: '多模态参考', icon: 'multimodal', desc: 'PDF / Word / 视频' },
+      { id: "intent", label: "意图理解", icon: "intent", desc: "多轮对话梳理" },
+      {
+        id: "multimodal",
+        label: "多模态参考",
+        icon: "multimodal",
+        desc: "PDF / Word / 视频",
+      },
     ],
   },
   {
-    label: '管理与优化',
+    label: "管理与优化",
     items: [
-      { id: 'visualize', label: '可视化', icon: 'visualize', desc: '数据与进度洞察' },
-      { id: 'history', label: '历史记录', icon: 'history', desc: '生成记录管理' },
-      { id: 'iterate', label: '迭代优化', icon: 'iterate', desc: '反馈与再生成' },
+      {
+        id: "visualize",
+        label: "可视化",
+        icon: "visualize",
+        desc: "数据与进度洞察",
+      },
+      {
+        id: "history",
+        label: "历史记录",
+        icon: "history",
+        desc: "生成记录管理",
+      },
+      {
+        id: "iterate",
+        label: "迭代优化",
+        icon: "iterate",
+        desc: "反馈与再生成",
+      },
     ],
   },
-]
+];
 
 const panelTitles = {
-  overview: '工作台概览',
-  ppt: '课件生成',
-  doc: '教案生成',
-  interactive: '互动创意',
-  intent: '意图理解',
-  multimodal: '多模态参考',
-  visualize: '可视化',
-  history: '历史记录',
-  iterate: '迭代优化',
-}
+  overview: "工作台概览",
+  ppt: "课件生成",
+  doc: "教案生成",
+  interactive: "互动创意",
+  intent: "意图理解",
+  multimodal: "多模态参考",
+  visualize: "可视化",
+  history: "历史记录",
+  iterate: "迭代优化",
+};
 
 const vizData = computed(() => ({
   weekly: [3, 5, 2, 8, 6, 4, 7],
   types: [
-    { label: 'PPT 课件', value: stats.value.ppt, color: '#0077e6' },
-    { label: 'Word 教案', value: stats.value.doc, color: '#00c2d4' },
-    { label: '互动创意', value: history.value.filter((h) => h.type === 'interactive').length, color: '#6366f1' },
+    { label: "PPT 课件", value: stats.value.ppt, color: "#0077e6" },
+    { label: "Word 教案", value: stats.value.doc, color: "#00c2d4" },
+    {
+      label: "互动创意",
+      value: history.value.filter((h) => h.type === "interactive").length,
+      color: "#6366f1",
+    },
   ],
-}))
+}));
 
-const iteratingItems = computed(() => history.value.filter((h) => h.status === 'iterating' || h.status === 'draft'))
+const iteratingItems = computed(() =>
+  history.value.filter((h) => h.status === "iterating" || h.status === "draft"),
+);
 
-let toastTimer = null
+let toastTimer = null;
 
 function refresh() {
-  history.value = getHistory()
-  stats.value = getStats()
+  history.value = getHistory();
+  stats.value = getStats();
 }
 
 function selectPanel(id) {
-  activePanel.value = id
-  sidebarOpen.value = false
+  activePanel.value = id;
+  sidebarOpen.value = false;
 }
 
 function showToast(msg) {
-  toast.value = msg
-  clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => { toast.value = '' }, 2600)
+  toast.value = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.value = "";
+  }, 2600);
 }
 
 function simulateGenerate(type, title, subject) {
-  isGenerating.value = true
+  isGenerating.value = true;
   setTimeout(() => {
-    addRecord({ type, title, subject, status: type === 'interactive' ? 'draft' : 'completed' })
-    refresh()
-    isGenerating.value = false
-    showToast('生成任务已加入历史记录')
-    activePanel.value = 'history'
-  }, 1200)
+    addRecord({
+      type,
+      title,
+      subject,
+      status: type === "interactive" ? "draft" : "completed",
+    });
+    refresh();
+    isGenerating.value = false;
+    showToast("生成任务已加入历史记录");
+    activePanel.value = "history";
+  }, 1200);
 }
 
 function handlePptGenerate() {
-  if (!pptForm.value.topic.trim()) return showToast('请填写课题名称')
-  simulateGenerate('ppt', `${pptForm.value.topic} · PPT 课件`, pptForm.value.subject || '未分类')
+  if (!pptForm.value.topic.trim()) return showToast("请填写课题名称");
+  simulateGenerate(
+    "ppt",
+    `${pptForm.value.topic} · PPT 课件`,
+    pptForm.value.subject || "未分类",
+  );
 }
 
 function handleDocGenerate() {
-  if (!docForm.value.topic.trim()) return showToast('请填写课题名称')
-  simulateGenerate('doc', `${docForm.value.topic} · Word 教案`, docForm.value.subject || '未分类')
+  if (!docForm.value.topic.trim()) return showToast("请填写课题名称");
+  simulateGenerate(
+    "doc",
+    `${docForm.value.topic} · Word 教案`,
+    docForm.value.subject || "未分类",
+  );
 }
 
 function handleInteractiveGenerate() {
-  simulateGenerate('interactive', '课堂互动创意方案', pptForm.value.subject || '未分类')
+  simulateGenerate(
+    "interactive",
+    "课堂互动创意方案",
+    pptForm.value.subject || "未分类",
+  );
 }
 
 function onFileChange(e) {
-  const files = Array.from(e.target.files || [])
-  uploadFiles.value = [...uploadFiles.value, ...files.map((f) => ({ name: f.name, size: f.size, type: f.type }))]
-  e.target.value = ''
+  const files = Array.from(e.target.files || []);
+  uploadFiles.value = [
+    ...uploadFiles.value,
+    ...files.map((f) => ({ name: f.name, size: f.size, type: f.type })),
+  ];
+  e.target.value = "";
 }
 
 function removeFile(i) {
-  uploadFiles.value.splice(i, 1)
+  uploadFiles.value.splice(i, 1);
 }
 
 function handleDelete(id) {
-  deleteRecord(id)
-  refresh()
-  showToast('已删除记录')
+  deleteRecord(id);
+  refresh();
+  showToast("已删除记录");
 }
 
-watch(activePanel, refresh)
+watch(activePanel, refresh);
 </script>
 
 <template>
@@ -133,7 +202,13 @@ watch(activePanel, refresh)
       <div class="sidebar__head">
         <RouterLink to="/" class="icon-btn" title="返回首页">
           <svg viewBox="0 0 20 20" fill="none">
-            <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M12 4l-6 6 6 6"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </RouterLink>
         <div class="sidebar__brand">
@@ -148,10 +223,42 @@ watch(activePanel, refresh)
         @click="selectPanel('overview')"
       >
         <svg viewBox="0 0 20 20" fill="none">
-          <rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
-          <rect x="11" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
-          <rect x="3" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
-          <rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+          <rect
+            x="3"
+            y="3"
+            width="6"
+            height="6"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <rect
+            x="11"
+            y="3"
+            width="6"
+            height="6"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <rect
+            x="3"
+            y="11"
+            width="6"
+            height="6"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
+          <rect
+            x="11"
+            y="11"
+            width="6"
+            height="6"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="1.3"
+          />
         </svg>
         工作台概览
       </button>
@@ -165,7 +272,7 @@ watch(activePanel, refresh)
           :class="{ 'nav-item--active': activePanel === item.id }"
           @click="selectPanel(item.id)"
         >
-        <!--  这里是图标  -->
+          <!--  这里是图标  -->
           <span class="nav-item__icon" :data-icon="item.icon">
             <template v-if="item.icon === 'ppt'">📊</template>
             <template v-else-if="item.icon === 'doc'">📝</template>
@@ -186,20 +293,37 @@ watch(activePanel, refresh)
       <div class="sidebar__foot">
         <RouterLink to="/assistant" class="assistant-link">
           <svg viewBox="0 0 20 20" fill="none">
-            <path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z" stroke="currentColor" stroke-width="1.3" />
+            <path
+              d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z"
+              stroke="currentColor"
+              stroke-width="1.3"
+            />
           </svg>
           前往 AI 助手对话
         </RouterLink>
       </div>
     </aside>
 
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
+    <div
+      v-if="sidebarOpen"
+      class="sidebar-overlay"
+      @click="sidebarOpen = false"
+    />
 
     <main class="main">
       <header class="main__header">
-        <button class="icon-btn mobile-only" aria-label="打开菜单" @click="sidebarOpen = true">
+        <button
+          class="icon-btn mobile-only"
+          aria-label="打开菜单"
+          @click="sidebarOpen = true"
+        >
           <svg viewBox="0 0 20 20" fill="none">
-            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path
+              d="M3 5h14M3 10h14M3 15h14"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <div>
@@ -231,12 +355,37 @@ watch(activePanel, refresh)
           </div>
 
           <div class="overview-grid">
-            <div class="capability-card" v-for="cap in [
-              { title: '理解意图', desc: '多轮对话确认教学目标与讲授逻辑', icon: '💬', panel: 'intent' },
-              { title: '多模态融合', desc: '解析 PDF、Word、视频等参考资料', icon: '📎', panel: 'multimodal' },
-              { title: '生成初稿', desc: '输出 PPT、教案及互动创意', icon: '✨', panel: 'ppt' },
-              { title: '迭代优化', desc: '预览反馈，持续完善课件', icon: '🔄', panel: 'iterate' },
-            ]" :key="cap.title" @click="selectPanel(cap.panel)">
+            <div
+              class="capability-card"
+              v-for="cap in [
+                {
+                  title: '理解意图',
+                  desc: '多轮对话确认教学目标与讲授逻辑',
+                  icon: '💬',
+                  panel: 'intent',
+                },
+                {
+                  title: '多模态融合',
+                  desc: '解析 PDF、Word、视频等参考资料',
+                  icon: '📎',
+                  panel: 'multimodal',
+                },
+                {
+                  title: '生成初稿',
+                  desc: '输出 PPT、教案及互动创意',
+                  icon: '✨',
+                  panel: 'ppt',
+                },
+                {
+                  title: '迭代优化',
+                  desc: '预览反馈，持续完善课件',
+                  icon: '🔄',
+                  panel: 'iterate',
+                },
+              ]"
+              :key="cap.title"
+              @click="selectPanel(cap.panel)"
+            >
               <span class="capability-card__icon">{{ cap.icon }}</span>
               <h3>{{ cap.title }}</h3>
               <p>{{ cap.desc }}</p>
@@ -247,16 +396,30 @@ watch(activePanel, refresh)
           <div class="recent-block">
             <div class="recent-block__head">
               <h2>最近生成</h2>
-              <button class="text-link" @click="selectPanel('history')">查看全部</button>
+              <button class="text-link" @click="selectPanel('history')">
+                查看全部
+              </button>
             </div>
             <div class="recent-list">
-              <div v-for="item in history.slice(0, 4)" :key="item.id" class="recent-item">
-                <span class="recent-item__icon">{{ getTypeIcon(item.type) }}</span>
+              <div
+                v-for="item in history.slice(0, 4)"
+                :key="item.id"
+                class="recent-item"
+              >
+                <span
+                  class="recent-item__icon"
+                  v-html="getTypeIcon(item.type, item.title)"
+                ></span>
                 <div class="recent-item__info">
                   <strong>{{ item.title }}</strong>
-                  <span>{{ item.subject }} · {{ formatFeatureTime(item.createdAt) }}</span>
+                  <span
+                    >{{ item.subject }} ·
+                    {{ formatFeatureTime(item.createdAt) }}</span
+                  >
                 </div>
-                <span class="status-badge" :data-status="item.status">{{ STATUS_LABELS[item.status] }}</span>
+                <span class="status-badge" :data-status="item.status">{{
+                  STATUS_LABELS[item.status]
+                }}</span>
               </div>
             </div>
           </div>
@@ -267,17 +430,27 @@ watch(activePanel, refresh)
           <div class="panel-grid">
             <div class="form-card">
               <h2>生成 PPT 课件</h2>
-              <p class="form-card__desc">基于已理解的教学意图，生成结构完整的演示文稿初稿</p>
-              <label>学科 <input v-model="pptForm.subject" placeholder="如：高中物理" /></label>
-              <label>课题 <input v-model="pptForm.topic" placeholder="如：牛顿第二定律" /></label>
-              <label>课时时长
+              <p class="form-card__desc">
+                基于已理解的教学意图，生成结构完整的演示文稿初稿
+              </p>
+              <label
+                >学科
+                <input v-model="pptForm.subject" placeholder="如：高中物理"
+              /></label>
+              <label
+                >课题
+                <input v-model="pptForm.topic" placeholder="如：牛顿第二定律"
+              /></label>
+              <label
+                >课时时长
                 <select v-model="pptForm.duration">
                   <option value="40">40 分钟</option>
                   <option value="45">45 分钟</option>
                   <option value="90">90 分钟</option>
                 </select>
               </label>
-              <label>讲授风格
+              <label
+                >讲授风格
                 <select v-model="pptForm.style">
                   <option>实验探究型</option>
                   <option>讲授演示型</option>
@@ -285,14 +458,31 @@ watch(activePanel, refresh)
                   <option>翻转课堂型</option>
                 </select>
               </label>
-              <button class="btn-primary" :disabled="isGenerating" @click="handlePptGenerate">
-                {{ isGenerating ? '生成中...' : '开始生成 PPT' }}
+              <button
+                class="btn-primary"
+                :disabled="isGenerating"
+                @click="handlePptGenerate"
+              >
+                {{ isGenerating ? "生成中..." : "开始生成 PPT" }}
               </button>
             </div>
             <div class="preview-card">
-              <div class="preview-card__chrome"><span /><span /><span /><em>课件预览</em></div>
+              <div class="preview-card__chrome">
+                <span /><span /><span /><em>课件预览</em>
+              </div>
               <div class="preview-slides">
-                <div v-for="(slide, i) in ['封面', '导入', '实验探究', '公式推导', '练习']" :key="i" class="preview-slide" :class="{ active: i === 2 }">
+                <div
+                  v-for="(slide, i) in [
+                    '封面',
+                    '导入',
+                    '实验探究',
+                    '公式推导',
+                    '练习',
+                  ]"
+                  :key="i"
+                  class="preview-slide"
+                  :class="{ active: i === 2 }"
+                >
                   <span>{{ i + 1 }}</span>
                   <p>{{ slide }}</p>
                 </div>
@@ -307,10 +497,19 @@ watch(activePanel, refresh)
           <div class="panel-grid">
             <div class="form-card">
               <h2>生成 Word 教案</h2>
-              <p class="form-card__desc">输出包含教学目标、重难点、教学过程的标准教案文档</p>
-              <label>学科 <input v-model="docForm.subject" placeholder="如：高中物理" /></label>
-              <label>课题 <input v-model="docForm.topic" placeholder="如：牛顿第二定律" /></label>
-              <label>模板格式
+              <p class="form-card__desc">
+                输出包含教学目标、重难点、教学过程的标准教案文档
+              </p>
+              <label
+                >学科
+                <input v-model="docForm.subject" placeholder="如：高中物理"
+              /></label>
+              <label
+                >课题
+                <input v-model="docForm.topic" placeholder="如：牛顿第二定律"
+              /></label>
+              <label
+                >模板格式
                 <select v-model="docForm.format">
                   <option>标准教案</option>
                   <option>详细教案</option>
@@ -318,8 +517,12 @@ watch(activePanel, refresh)
                   <option>匹配学校模板</option>
                 </select>
               </label>
-              <button class="btn-primary" :disabled="isGenerating" @click="handleDocGenerate">
-                {{ isGenerating ? '生成中...' : '开始生成教案' }}
+              <button
+                class="btn-primary"
+                :disabled="isGenerating"
+                @click="handleDocGenerate"
+              >
+                {{ isGenerating ? "生成中..." : "开始生成教案" }}
               </button>
             </div>
             <div class="doc-preview">
@@ -341,18 +544,26 @@ watch(activePanel, refresh)
         <!-- 互动创意 -->
         <div v-else-if="activePanel === 'interactive'" class="panel">
           <div class="interactive-grid">
-            <div class="interactive-card" v-for="item in [
-              { icon: '🎯', title: '课堂投票', desc: '快速检验学生理解程度' },
-              { icon: '🧩', title: '拖拽排序', desc: '知识点逻辑排列互动' },
-              { icon: '⏱️', title: '限时挑战', desc: '巩固练习小游戏' },
-              { icon: '🎬', title: '知识点动画', desc: '抽象概念可视化演示' },
-            ]" :key="item.title">
+            <div
+              class="interactive-card"
+              v-for="item in [
+                { icon: '🎯', title: '课堂投票', desc: '快速检验学生理解程度' },
+                { icon: '🧩', title: '拖拽排序', desc: '知识点逻辑排列互动' },
+                { icon: '⏱️', title: '限时挑战', desc: '巩固练习小游戏' },
+                { icon: '🎬', title: '知识点动画', desc: '抽象概念可视化演示' },
+              ]"
+              :key="item.title"
+            >
               <span>{{ item.icon }}</span>
               <h3>{{ item.title }}</h3>
               <p>{{ item.desc }}</p>
             </div>
           </div>
-          <button class="btn-primary" :disabled="isGenerating" @click="handleInteractiveGenerate">
+          <button
+            class="btn-primary"
+            :disabled="isGenerating"
+            @click="handleInteractiveGenerate"
+          >
             生成互动创意方案
           </button>
         </div>
@@ -362,7 +573,16 @@ watch(activePanel, refresh)
           <div class="intent-card">
             <div class="intent-card__visual">
               <div class="intent-flow">
-                <div v-for="(step, i) in ['描述设想', 'AI 追问', '确认逻辑', '形成方案']" :key="i" class="intent-step">
+                <div
+                  v-for="(step, i) in [
+                    '描述设想',
+                    'AI 追问',
+                    '确认逻辑',
+                    '形成方案',
+                  ]"
+                  :key="i"
+                  class="intent-step"
+                >
                   <span class="intent-step__num">{{ i + 1 }}</span>
                   <p>{{ step }}</p>
                 </div>
@@ -370,13 +590,17 @@ watch(activePanel, refresh)
             </div>
             <div class="intent-card__content">
               <h2>多轮对话，深度理解教学意图</h2>
-              <p>智能体会主动询问教学目标、核心知识点、讲授逻辑、重难点与互动设计，直至完整理解您的教学思路。</p>
+              <p>
+                智能体会主动询问教学目标、核心知识点、讲授逻辑、重难点与互动设计，直至完整理解您的教学思路。
+              </p>
               <ul class="check-list">
                 <li>支持语音 / 文字输入</li>
                 <li>主动追问细节，避免理解偏差</li>
                 <li>确认后自动进入生成流程</li>
               </ul>
-              <RouterLink to="/assistant" class="btn-primary">打开 AI 助手开始对话</RouterLink>
+              <RouterLink to="/assistant" class="btn-primary"
+                >打开 AI 助手开始对话</RouterLink
+              >
             </div>
           </div>
         </div>
@@ -384,7 +608,14 @@ watch(activePanel, refresh)
         <!-- 多模态参考 -->
         <div v-else-if="activePanel === 'multimodal'" class="panel">
           <div class="upload-zone">
-            <input id="file-input" type="file" multiple accept=".pdf,.doc,.docx,.mp4,.png,.jpg" hidden @change="onFileChange" />
+            <input
+              id="file-input"
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.mp4,.png,.jpg"
+              hidden
+              @change="onFileChange"
+            />
             <label for="file-input" class="upload-zone__drop">
               <span class="upload-zone__icon">📎</span>
               <strong>点击或拖拽上传参考资料</strong>
@@ -399,10 +630,18 @@ watch(activePanel, refresh)
           </div>
           <div class="multimodal-options">
             <h3>融合策略</h3>
-            <label class="option-chip"><input type="checkbox" checked /> 提取知识结构</label>
-            <label class="option-chip"><input type="checkbox" checked /> 保留案例素材</label>
-            <label class="option-chip"><input type="checkbox" /> 仿照排版风格</label>
-            <label class="option-chip"><input type="checkbox" /> 引用图表数据</label>
+            <label class="option-chip"
+              ><input type="checkbox" checked /> 提取知识结构</label
+            >
+            <label class="option-chip"
+              ><input type="checkbox" checked /> 保留案例素材</label
+            >
+            <label class="option-chip"
+              ><input type="checkbox" /> 仿照排版风格</label
+            >
+            <label class="option-chip"
+              ><input type="checkbox" /> 引用图表数据</label
+            >
           </div>
         </div>
 
@@ -412,16 +651,30 @@ watch(activePanel, refresh)
             <div class="viz-card viz-card--wide">
               <h3>本周生成趋势</h3>
               <div class="bar-chart">
-                <div v-for="(v, i) in vizData.weekly" :key="i" class="bar-chart__bar" :style="{ height: `${v * 12}%` }">
-                  <span>{{ ['一', '二', '三', '四', '五', '六', '日'][i] }}</span>
+                <div
+                  v-for="(v, i) in vizData.weekly"
+                  :key="i"
+                  class="bar-chart__bar"
+                  :style="{ height: `${v * 12}%` }"
+                >
+                  <span>{{
+                    ["一", "二", "三", "四", "五", "六", "日"][i]
+                  }}</span>
                 </div>
               </div>
             </div>
             <div class="viz-card">
               <h3>生成类型分布</h3>
               <div class="donut-list">
-                <div v-for="t in vizData.types" :key="t.label" class="donut-item">
-                  <span class="donut-item__dot" :style="{ background: t.color }" />
+                <div
+                  v-for="t in vizData.types"
+                  :key="t.label"
+                  class="donut-item"
+                >
+                  <span
+                    class="donut-item__dot"
+                    :style="{ background: t.color }"
+                  />
                   <span>{{ t.label }}</span>
                   <strong>{{ t.value }}</strong>
                 </div>
@@ -431,20 +684,50 @@ watch(activePanel, refresh)
               <h3>能力掌握雷达</h3>
               <div class="radar-placeholder">
                 <svg viewBox="0 0 200 200">
-                  <polygon points="100,20 170,70 150,150 50,150 30,70" fill="rgba(0,119,230,0.08)" stroke="rgba(0,119,230,0.2)" />
-                  <polygon points="100,40 150,75 135,135 65,135 50,75" fill="rgba(0,119,230,0.15)" stroke="#0077e6" stroke-width="1.5" />
-                  <text x="100" y="14" text-anchor="middle" font-size="9" fill="#6b7c93">意图理解</text>
-                  <text x="178" y="74" font-size="9" fill="#6b7c93">多模态</text>
-                  <text x="158" y="168" font-size="9" fill="#6b7c93">课件生成</text>
-                  <text x="42" y="168" font-size="9" fill="#6b7c93">迭代优化</text>
-                  <text x="18" y="74" font-size="9" fill="#6b7c93">互动设计</text>
+                  <polygon
+                    points="100,20 170,70 150,150 50,150 30,70"
+                    fill="rgba(0,119,230,0.08)"
+                    stroke="rgba(0,119,230,0.2)"
+                  />
+                  <polygon
+                    points="100,40 150,75 135,135 65,135 50,75"
+                    fill="rgba(0,119,230,0.15)"
+                    stroke="#0077e6"
+                    stroke-width="1.5"
+                  />
+                  <text
+                    x="100"
+                    y="14"
+                    text-anchor="middle"
+                    font-size="9"
+                    fill="#6b7c93"
+                  >
+                    意图理解
+                  </text>
+                  <text x="178" y="74" font-size="9" fill="#6b7c93">
+                    多模态
+                  </text>
+                  <text x="158" y="168" font-size="9" fill="#6b7c93">
+                    课件生成
+                  </text>
+                  <text x="42" y="168" font-size="9" fill="#6b7c93">
+                    迭代优化
+                  </text>
+                  <text x="18" y="74" font-size="9" fill="#6b7c93">
+                    互动设计
+                  </text>
                 </svg>
               </div>
             </div>
             <div class="viz-card">
               <h3>闭环进度</h3>
               <div class="progress-steps">
-                <div v-for="(s, i) in ['对话', '参考', '生成', '优化']" :key="s" class="progress-step" :class="{ done: i < 3, active: i === 2 }">
+                <div
+                  v-for="(s, i) in ['对话', '参考', '生成', '优化']"
+                  :key="s"
+                  class="progress-step"
+                  :class="{ done: i < 3, active: i === 2 }"
+                >
                   <span>{{ i + 1 }}</span>
                   <p>{{ s }}</p>
                 </div>
@@ -457,12 +740,20 @@ watch(activePanel, refresh)
         <div v-else-if="activePanel === 'history'" class="panel">
           <div class="history-list">
             <div v-for="item in history" :key="item.id" class="history-row">
-              <span class="history-row__icon">{{ getTypeIcon(item.type) }}</span>
+              <span
+                class="history-row__icon"
+                v-html="getTypeIcon(item.type, item.title)"
+              ></span>
               <div class="history-row__info">
                 <strong>{{ item.title }}</strong>
-                <span>{{ TYPE_LABELS[item.type] }} · {{ item.subject }} · {{ formatFeatureTime(item.createdAt) }}</span>
+                <span
+                  >{{ TYPE_LABELS[item.type] }} · {{ item.subject }} ·
+                  {{ formatFeatureTime(item.createdAt) }}</span
+                >
               </div>
-              <span class="status-badge" :data-status="item.status">{{ STATUS_LABELS[item.status] }}</span>
+              <span class="status-badge" :data-status="item.status">{{
+                STATUS_LABELS[item.status]
+              }}</span>
               <div class="history-row__actions">
                 <button title="下载">↓</button>
                 <button title="删除" @click="handleDelete(item.id)">×</button>
@@ -474,7 +765,11 @@ watch(activePanel, refresh)
         <!-- 迭代优化 -->
         <div v-else-if="activePanel === 'iterate'" class="panel">
           <div v-if="iteratingItems.length" class="iterate-list">
-            <div v-for="item in iteratingItems" :key="item.id" class="iterate-card">
+            <div
+              v-for="item in iteratingItems"
+              :key="item.id"
+              class="iterate-card"
+            >
               <div class="iterate-card__head">
                 <span>{{ getTypeIcon(item.type) }}</span>
                 <div>
@@ -487,14 +782,19 @@ watch(activePanel, refresh)
                 <div class="iterate-preview-block short" />
               </div>
               <div class="iterate-card__feedback">
-                <input type="text" placeholder="描述修改意见，如：第二页增加实验图片..." />
+                <input
+                  type="text"
+                  placeholder="描述修改意见，如：第二页增加实验图片..."
+                />
                 <button class="btn-primary btn-sm">提交反馈并再生成</button>
               </div>
             </div>
           </div>
           <div v-else class="empty-state">
             <p>暂无待迭代的内容</p>
-            <button class="btn-ghost" @click="selectPanel('ppt')">去生成课件</button>
+            <button class="btn-ghost" @click="selectPanel('ppt')">
+              去生成课件
+            </button>
           </div>
         </div>
       </div>
@@ -551,8 +851,13 @@ watch(activePanel, refresh)
   transition: background 0.2s;
 }
 
-.icon-btn svg { width: 18px; height: 18px; }
-.icon-btn:hover { background: #fff; }
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.icon-btn:hover {
+  background: #fff;
+}
 
 .sidebar__brand-name {
   display: block;
@@ -584,7 +889,11 @@ watch(activePanel, refresh)
   transition: all 0.2s;
 }
 
-.overview-btn svg { width: 18px; height: 18px; opacity: 0.6; }
+.overview-btn svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+}
 
 .overview-btn:hover,
 .overview-btn--active {
@@ -593,7 +902,9 @@ watch(activePanel, refresh)
   color: var(--accent-deep);
 }
 
-.nav-group { margin-bottom: 12px; }
+.nav-group {
+  margin-bottom: 12px;
+}
 
 .nav-group__label {
   font-size: 0.6875rem;
@@ -620,7 +931,9 @@ watch(activePanel, refresh)
   transition: background 0.2s;
 }
 
-.nav-item:hover { background: rgba(255, 255, 255, 0.7); }
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
 
 .nav-item--active {
   background: rgba(0, 144, 255, 0.12);
@@ -680,8 +993,13 @@ watch(activePanel, refresh)
   transition: background 0.2s;
 }
 
-.assistant-link svg { width: 16px; height: 16px; }
-.assistant-link:hover { background: rgba(0, 144, 255, 0.16); }
+.assistant-link svg {
+  width: 16px;
+  height: 16px;
+}
+.assistant-link:hover {
+  background: rgba(0, 144, 255, 0.16);
+}
 
 /* Main */
 .main {
@@ -712,7 +1030,9 @@ watch(activePanel, refresh)
   margin-top: 4px;
 }
 
-.mobile-only { display: none; }
+.mobile-only {
+  display: none;
+}
 
 .main__body {
   flex: 1;
@@ -772,7 +1092,10 @@ watch(activePanel, refresh)
   border-radius: 14px;
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: transform 0.3s var(--ease-out), box-shadow 0.3s, border-color 0.3s;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s,
+    border-color 0.3s;
 }
 
 .capability-card:hover {
@@ -781,7 +1104,10 @@ watch(activePanel, refresh)
   border-color: rgba(0, 119, 230, 0.25);
 }
 
-.capability-card__icon { font-size: 1.5rem; margin-bottom: 10px; }
+.capability-card__icon {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
 
 .capability-card h3 {
   font-family: var(--font-display);
@@ -831,7 +1157,11 @@ watch(activePanel, refresh)
   cursor: pointer;
 }
 
-.recent-list { display: flex; flex-direction: column; gap: 8px; }
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .recent-item {
   display: flex;
@@ -843,9 +1173,13 @@ watch(activePanel, refresh)
   transition: background 0.2s;
 }
 
-.recent-item:hover { background: rgba(0, 119, 230, 0.04); }
+.recent-item:hover {
+  background: rgba(0, 119, 230, 0.04);
+}
 
-.recent-item__icon { font-size: 1.25rem; }
+.recent-item__icon {
+  font-size: 1.25rem;
+}
 
 .recent-item__info {
   flex: 1;
@@ -854,8 +1188,13 @@ watch(activePanel, refresh)
   gap: 2px;
 }
 
-.recent-item__info strong { font-size: 0.875rem; }
-.recent-item__info span { font-size: 0.75rem; color: var(--ink-muted); }
+.recent-item__info strong {
+  font-size: 0.875rem;
+}
+.recent-item__info span {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
 
 .status-badge {
   padding: 4px 10px;
@@ -936,7 +1275,9 @@ watch(activePanel, refresh)
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s;
+  transition:
+    transform 0.25s var(--ease-spring),
+    box-shadow 0.25s;
   text-decoration: none;
 }
 
@@ -945,9 +1286,15 @@ watch(activePanel, refresh)
   box-shadow: 0 8px 24px rgba(10, 15, 26, 0.15);
 }
 
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-.btn-sm { padding: 10px 18px; font-size: 0.8125rem; }
+.btn-sm {
+  padding: 10px 18px;
+  font-size: 0.8125rem;
+}
 
 .btn-ghost {
   padding: 10px 20px;
@@ -978,13 +1325,24 @@ watch(activePanel, refresh)
 }
 
 .preview-card__chrome span {
-  width: 9px; height: 9px; border-radius: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
 }
 
-.preview-card__chrome span:nth-child(1) { background: #ff6b6b; }
-.preview-card__chrome span:nth-child(2) { background: #ffd166; }
-.preview-card__chrome span:nth-child(3) { background: #06d6a0; }
-.preview-card__chrome em { margin-left: auto; font-style: normal; }
+.preview-card__chrome span:nth-child(1) {
+  background: #ff6b6b;
+}
+.preview-card__chrome span:nth-child(2) {
+  background: #ffd166;
+}
+.preview-card__chrome span:nth-child(3) {
+  background: #06d6a0;
+}
+.preview-card__chrome em {
+  margin-left: auto;
+  font-style: normal;
+}
 
 .preview-slides {
   display: flex;
@@ -1006,7 +1364,9 @@ watch(activePanel, refresh)
   gap: 4px;
   font-size: 0.75rem;
   color: var(--ink-muted);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .preview-slide.active {
@@ -1036,7 +1396,9 @@ watch(activePanel, refresh)
   margin-bottom: 16px;
 }
 
-.doc-preview ul { list-style: none; }
+.doc-preview ul {
+  list-style: none;
+}
 
 .doc-preview li {
   display: flex;
@@ -1048,7 +1410,9 @@ watch(activePanel, refresh)
   border-bottom: 1px solid var(--border);
 }
 
-.doc-preview li.indent { padding-left: 24px; }
+.doc-preview li.indent {
+  padding-left: 24px;
+}
 
 .doc-preview li span {
   font-size: 0.75rem;
@@ -1070,7 +1434,9 @@ watch(activePanel, refresh)
   border: 1px solid var(--border);
   border-radius: 14px;
   text-align: center;
-  transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s;
 }
 
 .interactive-card:hover {
@@ -1078,7 +1444,9 @@ watch(activePanel, refresh)
   box-shadow: 0 12px 32px rgba(0, 87, 217, 0.08);
 }
 
-.interactive-card span { font-size: 2rem; }
+.interactive-card span {
+  font-size: 2rem;
+}
 
 .interactive-card h3 {
   font-size: 0.9375rem;
@@ -1155,7 +1523,7 @@ watch(activePanel, refresh)
 }
 
 .check-list li::before {
-  content: '✓';
+  content: "✓";
   position: absolute;
   left: 0;
   color: #059669;
@@ -1173,7 +1541,9 @@ watch(activePanel, refresh)
   border-radius: 16px;
   background: rgba(0, 119, 230, 0.04);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   text-align: center;
 }
 
@@ -1182,7 +1552,10 @@ watch(activePanel, refresh)
   background: rgba(0, 119, 230, 0.08);
 }
 
-.upload-zone__icon { font-size: 2.5rem; margin-bottom: 12px; }
+.upload-zone__icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
 
 .upload-zone__drop strong {
   font-size: 1rem;
@@ -1194,7 +1567,9 @@ watch(activePanel, refresh)
   color: var(--ink-muted);
 }
 
-.file-list { margin: 16px 0; }
+.file-list {
+  margin: 16px 0;
+}
 
 .file-item {
   display: flex;
@@ -1247,7 +1622,9 @@ watch(activePanel, refresh)
   border-radius: 14px;
 }
 
-.viz-card--wide { grid-column: span 2; }
+.viz-card--wide {
+  grid-column: span 2;
+}
 
 .viz-card h3 {
   font-size: 0.9375rem;
@@ -1284,11 +1661,20 @@ watch(activePanel, refresh)
 }
 
 @keyframes bar-grow {
-  from { transform: scaleY(0); transform-origin: bottom; }
-  to { transform: scaleY(1); }
+  from {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 
-.donut-list { display: flex; flex-direction: column; gap: 12px; }
+.donut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
 .donut-item {
   display: flex;
@@ -1303,9 +1689,16 @@ watch(activePanel, refresh)
   border-radius: 50%;
 }
 
-.donut-item strong { margin-left: auto; }
+.donut-item strong {
+  margin-left: auto;
+}
 
-.radar-placeholder svg { width: 100%; max-width: 200px; margin: 0 auto; display: block; }
+.radar-placeholder svg {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+  display: block;
+}
 
 .progress-steps {
   display: flex;
@@ -1343,10 +1736,17 @@ watch(activePanel, refresh)
   color: var(--accent);
 }
 
-.progress-step p { font-size: 0.75rem; color: var(--ink-muted); }
+.progress-step p {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
 
 /* History */
-.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .history-row {
   display: flex;
@@ -1358,9 +1758,13 @@ watch(activePanel, refresh)
   transition: background 0.2s;
 }
 
-.history-row:hover { background: rgba(0, 119, 230, 0.03); }
+.history-row:hover {
+  background: rgba(0, 119, 230, 0.03);
+}
 
-.history-row__icon { font-size: 1.375rem; }
+.history-row__icon {
+  font-size: 1.375rem;
+}
 
 .history-row__info {
   flex: 1;
@@ -1369,8 +1773,13 @@ watch(activePanel, refresh)
   gap: 2px;
 }
 
-.history-row__info strong { font-size: 0.9375rem; }
-.history-row__info span { font-size: 0.75rem; color: var(--ink-muted); }
+.history-row__info strong {
+  font-size: 0.9375rem;
+}
+.history-row__info span {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
 
 .history-row__actions {
   display: flex;
@@ -1386,7 +1795,9 @@ watch(activePanel, refresh)
   cursor: pointer;
   font-size: 0.875rem;
   color: var(--ink-muted);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .history-row__actions button:hover {
@@ -1395,7 +1806,11 @@ watch(activePanel, refresh)
 }
 
 /* Iterate */
-.iterate-list { display: flex; flex-direction: column; gap: 16px; }
+.iterate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .iterate-card {
   padding: 20px;
@@ -1410,10 +1825,18 @@ watch(activePanel, refresh)
   margin-bottom: 16px;
 }
 
-.iterate-card__head span { font-size: 1.5rem; }
+.iterate-card__head span {
+  font-size: 1.5rem;
+}
 
-.iterate-card__head strong { display: block; font-size: 0.9375rem; }
-.iterate-card__head span + div span { font-size: 0.75rem; color: var(--ink-muted); }
+.iterate-card__head strong {
+  display: block;
+  font-size: 0.9375rem;
+}
+.iterate-card__head span + div span {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
 
 .iterate-card__preview {
   display: flex;
@@ -1425,11 +1848,17 @@ watch(activePanel, refresh)
   flex: 1;
   height: 80px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(0, 119, 230, 0.08), rgba(0, 194, 212, 0.06));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 119, 230, 0.08),
+    rgba(0, 194, 212, 0.06)
+  );
   border: 1px solid var(--border);
 }
 
-.iterate-preview-block.short { flex: 0.5; }
+.iterate-preview-block.short {
+  flex: 0.5;
+}
 
 .iterate-card__feedback {
   display: flex;
@@ -1451,7 +1880,9 @@ watch(activePanel, refresh)
   color: var(--ink-muted);
 }
 
-.empty-state p { margin-bottom: 16px; }
+.empty-state p {
+  margin-bottom: 16px;
+}
 
 .toast {
   position: fixed;
@@ -1468,30 +1899,56 @@ watch(activePanel, refresh)
   box-shadow: 0 12px 40px rgba(10, 15, 26, 0.2);
 }
 
-.toast-enter-active, .toast-leave-active { transition: opacity 0.3s, transform 0.3s; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
+}
 
-.sidebar-overlay { display: none; }
+.sidebar-overlay {
+  display: none;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .stat-cards, .overview-grid, .interactive-grid { grid-template-columns: repeat(2, 1fr); }
-  .panel-grid, .intent-card { grid-template-columns: 1fr; }
-  .viz-card--wide { grid-column: span 1; }
-  .viz-grid { grid-template-columns: 1fr; }
+  .stat-cards,
+  .overview-grid,
+  .interactive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .panel-grid,
+  .intent-card {
+    grid-template-columns: 1fr;
+  }
+  .viz-card--wide {
+    grid-column: span 1;
+  }
+  .viz-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    top: 0; left: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
     z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.3s var(--ease-out);
     box-shadow: 4px 0 24px rgba(10, 15, 26, 0.1);
   }
 
-  .sidebar--open { transform: translateX(0); }
+  .sidebar--open {
+    transform: translateX(0);
+  }
 
   .sidebar-overlay {
     display: block;
@@ -1501,11 +1958,25 @@ watch(activePanel, refresh)
     background: rgba(10, 15, 26, 0.3);
   }
 
-  .main { padding: 12px; }
-  .main__body { padding: 20px 16px; border-radius: 16px; }
-  .mobile-only { display: flex; }
-  .stat-cards { grid-template-columns: 1fr 1fr; }
-  .overview-grid, .interactive-grid { grid-template-columns: 1fr; }
-  .iterate-card__feedback { flex-direction: column; }
+  .main {
+    padding: 12px;
+  }
+  .main__body {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  .mobile-only {
+    display: flex;
+  }
+  .stat-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-grid,
+  .interactive-grid {
+    grid-template-columns: 1fr;
+  }
+  .iterate-card__feedback {
+    flex-direction: column;
+  }
 }
 </style>
