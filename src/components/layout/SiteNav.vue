@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { navItems } from "../../config/nav.js";
 import RegisterModal from "../RegisterModal.vue";
+import LoginModal from "../LoginModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -10,6 +11,7 @@ const menuOpen = ref(false);
 const navSolid = ref(false);
 const userMenuOpen = ref(false);
 const showRegisterModal = ref(false);
+const showLoginModal = ref(false);
 
 // 模拟用户登录状态
 const isLoggedIn = ref(false);
@@ -30,6 +32,26 @@ function onRegisterSuccess(data) {
   isLoggedIn.value = true;
   userInfo.value.name = data.username;
   alert(`注册成功！欢迎 ${data.username}`);
+}
+
+// 打开登录弹窗
+function openLoginModal() {
+  closeUserMenu();
+  showLoginModal.value = true;
+}
+
+// 登录成功回调
+function onLoginSuccess(data) {
+  showLoginModal.value = false;
+  isLoggedIn.value = true;
+  userInfo.value.name = data.username;
+  alert(`登录成功！欢迎回来，${data.username}`);
+}
+
+// 切换到注册弹窗
+function switchToRegister() {
+  showLoginModal.value = false;
+  showRegisterModal.value = true;
 }
 
 function onScroll() {
@@ -68,9 +90,7 @@ function handleMenuClick(action) {
       openRegisterModal();
       break;
     case "login":
-      isLoggedIn.value = true;
-      userInfo.value.name = "测试用户";
-      alert("登录成功！");
+      openLoginModal();
       break;
     case "logout":
       isLoggedIn.value = false;
@@ -253,11 +273,15 @@ onUnmounted(() => {
               >
                 <svg viewBox="0 0 20 20" fill="none">
                   <path
-                    d="M10 2v16M4 8l6-6 6 6M4 12l6 6 6-6"
+                    d="M10 2a5 5 0 015 5v2a5 5 0 01-10 0V7a5 5 0 015-5z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M2 18c0-3 3-5 8-5s8 2 8 5"
                     stroke="currentColor"
                     stroke-width="1.5"
                     stroke-linecap="round"
-                    stroke-linejoin="round"
                   />
                 </svg>
                 <span>用户登录</span>
@@ -300,6 +324,14 @@ onUnmounted(() => {
     :show="showRegisterModal"
     @close="showRegisterModal = false"
     @success="onRegisterSuccess"
+  />
+
+  <!-- 登录弹窗 -->
+  <LoginModal
+    :show="showLoginModal"
+    @close="showLoginModal = false"
+    @success="onLoginSuccess"
+    @switchToRegister="switchToRegister"
   />
 </template>
 

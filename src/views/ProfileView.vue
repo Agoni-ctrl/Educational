@@ -23,20 +23,146 @@ const showEmojiPicker = ref(false);
 
 // Emoji 列表
 const emojis = [
-  "😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂",
-  "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋",
-  "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩",
-  "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣",
-  "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬",
-  "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗",
-  "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯",
-  "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐",
-  "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈",
-  "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾",
-  "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿",
-  "😾", "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎",
-  "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟",
-  "👍", "👎", "👏", "🙌", "👐", "🤲", "🤝", "🤜", "🤛", "✊",
+  "😀",
+  "😃",
+  "😄",
+  "😁",
+  "😅",
+  "😂",
+  "🤣",
+  "😊",
+  "😇",
+  "🙂",
+  "🙃",
+  "😉",
+  "😌",
+  "😍",
+  "🥰",
+  "😘",
+  "😗",
+  "😙",
+  "😚",
+  "😋",
+  "😛",
+  "😝",
+  "😜",
+  "🤪",
+  "🤨",
+  "🧐",
+  "🤓",
+  "😎",
+  "🥸",
+  "🤩",
+  "🥳",
+  "😏",
+  "😒",
+  "😞",
+  "😔",
+  "😟",
+  "😕",
+  "🙁",
+  "☹️",
+  "😣",
+  "😖",
+  "😫",
+  "😩",
+  "🥺",
+  "😢",
+  "😭",
+  "😤",
+  "😠",
+  "😡",
+  "🤬",
+  "🤯",
+  "😳",
+  "🥵",
+  "🥶",
+  "😱",
+  "😨",
+  "😰",
+  "😥",
+  "😓",
+  "🤗",
+  "🤔",
+  "🤭",
+  "🤫",
+  "🤥",
+  "😶",
+  "😐",
+  "😑",
+  "😬",
+  "🙄",
+  "😯",
+  "😦",
+  "😧",
+  "😮",
+  "😲",
+  "🥱",
+  "😴",
+  "🤤",
+  "😪",
+  "😵",
+  "🤐",
+  "🥴",
+  "🤢",
+  "🤮",
+  "🤧",
+  "😷",
+  "🤒",
+  "🤕",
+  "🤑",
+  "🤠",
+  "😈",
+  "👿",
+  "👹",
+  "👺",
+  "🤡",
+  "💩",
+  "👻",
+  "💀",
+  "☠️",
+  "👽",
+  "👾",
+  "🤖",
+  "🎃",
+  "😺",
+  "😸",
+  "😹",
+  "😻",
+  "😼",
+  "😽",
+  "🙀",
+  "😿",
+  "😾",
+  "❤️",
+  "🧡",
+  "💛",
+  "💚",
+  "💙",
+  "💜",
+  "🖤",
+  "🤍",
+  "🤎",
+  "💔",
+  "❣️",
+  "💕",
+  "💞",
+  "💓",
+  "💗",
+  "💖",
+  "💘",
+  "💝",
+  "💟",
+  "👍",
+  "👎",
+  "👏",
+  "🙌",
+  "👐",
+  "🤲",
+  "🤝",
+  "🤜",
+  "🤛",
+  "✊",
 ];
 
 // 已发布的想法列表
@@ -56,17 +182,163 @@ const activeMenu = ref("profile");
 // 菜单列表
 const menuItems = [
   { id: "profile", label: "个人资料", icon: "👤" },
+  { id: "usage", label: "使用记录", icon: "📊" },
   { id: "verify", label: "实名认证", icon: "✅" },
   { id: "posts", label: "发布想法", icon: "💡" },
   { id: "settings", label: "账号设置", icon: "⚙️" },
 ];
+
+// 使用记录数据
+const usageTimeRange = ref("week"); // 'week' | 'month'
+const hoveredDataPoint = ref(null);
+const selectedDate = ref(null);
+
+// 模拟使用数据
+const usageData = ref({
+  week: {
+    labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+    data: [3, 5, 2, 8, 4, 6, 7],
+    files: {
+      周一: ["数学课件.pptx", "语文教案.docx", "英语单词表.xlsx"],
+      周二: [
+        "物理实验.pptx",
+        "化学方程式.docx",
+        "生物图解.pptx",
+        "历史年表.xlsx",
+        "地理地图.pptx",
+      ],
+      周三: ["作文模板.docx", "阅读理解.docx"],
+      周四: [
+        "期末复习.pptx",
+        "模拟试卷.docx",
+        "成绩统计.xlsx",
+        "家长会.pptx",
+        "课程表.xlsx",
+        "教学计划.docx",
+        "学生名单.xlsx",
+        "活动方案.pptx",
+      ],
+      周五: [
+        "班会课件.pptx",
+        "安全教育.docx",
+        "心理健康.pptx",
+        "体育锻炼.xlsx",
+      ],
+      周六: [
+        "周末作业.docx",
+        "阅读材料.pptx",
+        "练习题.xlsx",
+        "答案解析.docx",
+        "补充资料.pptx",
+        "复习提纲.docx",
+      ],
+      周日: [
+        "下周计划.pptx",
+        "备课笔记.docx",
+        "教学反思.xlsx",
+        "学生评价.docx",
+        "家长信.docx",
+        "活动照片.pptx",
+        "总结报告.docx",
+      ],
+    },
+  },
+  month: {
+    labels: Array.from({ length: 30 }, (_, i) => `${i + 1}日`),
+    data: [
+      2, 4, 1, 5, 3, 6, 4, 2, 7, 5, 3, 4, 6, 2, 8, 4, 5, 3, 6, 4, 2, 5, 7, 3, 4,
+      6, 5, 3, 4, 2,
+    ],
+    files: {},
+  },
+});
+
+// 生成月度的模拟文件数据
+for (let i = 1; i <= 30; i++) {
+  const day = `${i}日`;
+  const count = usageData.value.month.data[i - 1];
+  const fileTypes = [".pptx", ".docx", ".xlsx", ".pdf", ".txt"];
+  const prefixes = [
+    "课件",
+    "教案",
+    "试卷",
+    "统计",
+    "计划",
+    "总结",
+    "报告",
+    "笔记",
+  ];
+  usageData.value.month.files[day] = Array.from({ length: count }, (_, j) => {
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const type = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+    return `${prefix}${i}-${j + 1}${type}`;
+  });
+}
+
+// 计算折线图路径
+const chartPath = computed(() => {
+  const data = usageData.value[usageTimeRange.value].data;
+  const max = Math.max(...data);
+  const width = 700;
+  const height = 200;
+  const padding = 40;
+  const chartWidth = width - padding * 2;
+  const chartHeight = height - padding * 2;
+
+  const points = data.map((value, index) => {
+    const x = padding + (index / (data.length - 1)) * chartWidth;
+    const y = height - padding - (value / max) * chartHeight;
+    return { x, y, value, index };
+  });
+
+  if (points.length === 0) return "";
+
+  // 生成平滑曲线
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const cpx1 = prev.x + (curr.x - prev.x) / 3;
+    const cpy1 = prev.y;
+    const cpx2 = prev.x + (2 * (curr.x - prev.x)) / 3;
+    const cpy2 = curr.y;
+    path += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${curr.x} ${curr.y}`;
+  }
+
+  return { path, points, max };
+});
+
+// 切换时间范围
+function switchTimeRange(range) {
+  usageTimeRange.value = range;
+  selectedDate.value = null;
+}
+
+// 处理数据点悬停
+function handlePointHover(point) {
+  hoveredDataPoint.value = point;
+}
+
+// 处理数据点离开
+function handlePointLeave() {
+  hoveredDataPoint.value = null;
+}
+
+// 处理数据点点击
+function handlePointClick(point) {
+  const labels = usageData.value[usageTimeRange.value].labels;
+  selectedDate.value = labels[point.index];
+}
 
 // 计算属性：检测内容中的链接
 const parsedContent = computed(() => {
   let content = postContent.value;
   // 检测 URL 并转换为可点击链接
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return content.replace(urlRegex, '<a href="$1" target="_blank" class="link">$1</a>');
+  return content.replace(
+    urlRegex,
+    '<a href="$1" target="_blank" class="link">$1</a>',
+  );
 });
 
 // 头像上传
@@ -163,7 +435,13 @@ function likePost(post) {
       <div class="profile-header__inner">
         <RouterLink to="/" class="back-link">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M19 12H5M12 19l-7-7 7-7"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
           返回首页
         </RouterLink>
@@ -175,13 +453,18 @@ function likePost(post) {
       <!-- 左侧菜单 -->
       <aside class="profile-sidebar">
         <div class="user-card">
-          <div class="user-card__avatar" :class="{ 'has-avatar': userInfo.avatar }">
+          <div
+            class="user-card__avatar"
+            :class="{ 'has-avatar': userInfo.avatar }"
+          >
             <img v-if="userInfo.avatar" :src="userInfo.avatar" alt="头像" />
             <span v-else>{{ userInfo.name.charAt(0) }}</span>
           </div>
           <h3 class="user-card__name">{{ userInfo.name }}</h3>
           <p class="user-card__email">{{ userInfo.email }}</p>
-          <span v-if="userInfo.isVerified" class="verified-badge">✓ 已认证</span>
+          <span v-if="userInfo.isVerified" class="verified-badge"
+            >✓ 已认证</span
+          >
         </div>
 
         <nav class="profile-menu">
@@ -203,18 +486,32 @@ function likePost(post) {
         <!-- 个人资料 -->
         <div v-if="activeMenu === 'profile'" class="content-panel">
           <h2 class="panel-title">个人资料</h2>
-          
+
           <div class="form-section">
             <label class="form-label">头像</label>
             <div class="avatar-upload">
-              <div class="avatar-preview" :class="{ 'has-avatar': userInfo.avatar }">
+              <div
+                class="avatar-preview"
+                :class="{ 'has-avatar': userInfo.avatar }"
+              >
                 <img v-if="userInfo.avatar" :src="userInfo.avatar" alt="头像" />
                 <span v-else>{{ userInfo.name.charAt(0) }}</span>
               </div>
               <label class="upload-btn">
-                <input type="file" accept="image/*" @change="handleAvatarUpload" hidden />
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="handleAvatarUpload"
+                  hidden
+                />
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
                 上传头像
               </label>
@@ -232,15 +529,31 @@ function likePost(post) {
                   maxlength="20"
                   @keyup.enter="saveName"
                 />
-                <button class="btn-icon btn-success" @click="saveName">✓</button>
-                <button class="btn-icon btn-cancel" @click="cancelEditName">✕</button>
+                <button class="btn-icon btn-success" @click="saveName">
+                  ✓
+                </button>
+                <button class="btn-icon btn-cancel" @click="cancelEditName">
+                  ✕
+                </button>
               </template>
               <template v-else>
                 <span class="name-display">{{ userInfo.name }}</span>
                 <button class="btn-edit" @click="isEditingName = true">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   编辑
                 </button>
@@ -257,7 +570,7 @@ function likePost(post) {
         <!-- 实名认证 -->
         <div v-if="activeMenu === 'verify'" class="content-panel">
           <h2 class="panel-title">实名认证</h2>
-          
+
           <div v-if="userInfo.isVerified" class="verify-success">
             <div class="success-icon">✓</div>
             <h3>已完成实名认证</h3>
@@ -291,9 +604,23 @@ function likePost(post) {
               <div class="idcard-upload">
                 <div class="upload-placeholder">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                    <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                    <path
+                      d="M21 15l-5-5L5 21"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   <span>点击上传身份证正面</span>
                 </div>
@@ -305,9 +632,23 @@ function likePost(post) {
               <div class="idcard-upload">
                 <div class="upload-placeholder">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                    <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                    <path
+                      d="M21 15l-5-5L5 21"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   <span>点击上传身份证反面</span>
                 </div>
@@ -323,7 +664,7 @@ function likePost(post) {
         <!-- 发布想法 -->
         <div v-if="activeMenu === 'posts'" class="content-panel">
           <h2 class="panel-title">发布想法</h2>
-          
+
           <!-- 发布框 -->
           <div class="post-composer">
             <div class="composer-textarea-wrapper">
@@ -333,13 +674,16 @@ function likePost(post) {
                 placeholder="分享你的想法..."
                 rows="4"
               ></textarea>
-              
+
               <!-- 工具栏 -->
               <div class="composer-toolbar">
                 <div class="toolbar-left">
                   <!-- Emoji 按钮 -->
                   <div class="emoji-wrapper">
-                    <button class="toolbar-btn" @click="showEmojiPicker = !showEmojiPicker">
+                    <button
+                      class="toolbar-btn"
+                      @click="showEmojiPicker = !showEmojiPicker"
+                    >
                       😊
                     </button>
                     <!-- Emoji 选择器 -->
@@ -359,9 +703,20 @@ function likePost(post) {
 
                   <!-- 文件上传 -->
                   <label class="toolbar-btn">
-                    <input type="file" multiple @change="handleFileUpload" hidden />
+                    <input
+                      type="file"
+                      multiple
+                      @change="handleFileUpload"
+                      hidden
+                    />
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path
+                        d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                     文件
                   </label>
@@ -385,12 +740,26 @@ function likePost(post) {
                 class="file-tag"
               >
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M14 2v6h6M16 13H8M16 17H8M10 9H8"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
                 <span class="file-name">{{ file.name }}</span>
                 <span class="file-size">{{ file.size }}</span>
-                <button class="file-remove" @click="removeFile(index)">×</button>
+                <button class="file-remove" @click="removeFile(index)">
+                  ×
+                </button>
               </div>
             </div>
           </div>
@@ -398,11 +767,7 @@ function likePost(post) {
           <!-- 已发布的想法列表 -->
           <div class="posts-list">
             <h3 class="posts-list__title">我的想法</h3>
-            <div
-              v-for="post in posts"
-              :key="post.id"
-              class="post-card"
-            >
+            <div v-for="post in posts" :key="post.id" class="post-card">
               <div class="post-header">
                 <div class="post-avatar">{{ userInfo.name.charAt(0) }}</div>
                 <div class="post-meta">
@@ -414,13 +779,25 @@ function likePost(post) {
               <div class="post-actions">
                 <button class="post-action" @click="likePost(post)">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   {{ post.likes }}
                 </button>
                 <button class="post-action">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                   {{ post.comments }}
                 </button>
