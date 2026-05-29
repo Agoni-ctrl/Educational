@@ -5,8 +5,12 @@ import {
   useAssistant,
   formatSessionTime,
 } from "../composables/useAssistant.js";
+import TypewriterText from "../components/TypewriterText.vue";
 
 const assistant = useAssistant();
+
+// 记录哪些消息已经显示过打字机效果
+const typedMessageIds = ref(new Set());
 
 const sessions = ref(assistant.getSessions());
 const activeId = ref(assistant.getActiveSession()?.id || null);
@@ -337,6 +341,11 @@ async function copyMessage(content) {
     console.error("复制失败:", err);
     alert("复制失败，请手动复制。");
   }
+}
+
+// 打字机效果完成回调
+function onTypeComplete(messageId) {
+  typedMessageIds.value.add(messageId);
 }
 
 function useSuggestion(text) {
@@ -714,7 +723,7 @@ watch(activeId, scrollToBottom);
         <!-- 对话态 -->
         <div v-else ref="messagesEl" class="messages">
           <div
-            v-for="msg in activeSession?.messages"
+            v-for="(msg, index) in activeSession?.messages"
             :key="msg.id"
             class="message"
             :class="`message--${msg.role}`"
@@ -724,7 +733,23 @@ watch(activeId, scrollToBottom);
             </div>
             <div class="message__content">
               <div class="message__bubble">
-                <p>{{ msg.content }}</p>
+                <!-- AI消息使用打字机效果，但只在最新消息上启用 -->
+                <p
+                  v-if="
+                    msg.role === 'assistant' &&
+                    index === activeSession.messages.length - 1 &&
+                    !typedMessageIds.has(msg.id)
+                  "
+                >
+                  <TypewriterText
+                    :key="'typewriter-' + msg.id"
+                    :text="msg.content"
+                    :speed="30"
+                    @complete="onTypeComplete(msg.id)"
+                    @typing="scrollToBottom"
+                  />
+                </p>
+                <p v-else>{{ msg.content }}</p>
               </div>
               <button
                 class="message__copy-btn"
