@@ -12,6 +12,11 @@ const SEED_POSTS = [
     author: '王老师',
     createdAt: Date.now() - 86400000 * 2,
     likes: 42,
+    images: [
+      'https://picsum.photos/400/300?random=1',
+      'https://picsum.photos/300/400?random=2',
+      'https://picsum.photos/400/400?random=3',
+    ],
     comments: [
       {
         id: 'c1',
@@ -38,6 +43,10 @@ const SEED_POSTS = [
     author: '李老师',
     createdAt: Date.now() - 86400000 * 4,
     likes: 36,
+    images: [
+      'https://picsum.photos/350/500?random=4',
+      'https://picsum.photos/500/350?random=5',
+    ],
     comments: [
       {
         id: 'c3',
@@ -57,6 +66,12 @@ const SEED_POSTS = [
     author: '张老师',
     createdAt: Date.now() - 86400000 * 6,
     likes: 58,
+    images: [
+      'https://picsum.photos/400/600?random=6',
+      'https://picsum.photos/600/400?random=7',
+      'https://picsum.photos/400/400?random=8',
+      'https://picsum.photos/300/500?random=9',
+    ],
     comments: [],
   },
 ]
