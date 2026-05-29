@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { RouterLink } from "vue-router";
+import { useCommunity, formatTime } from "../composables/useCommunity.js";
 
 // 用户信息
 const userInfo = reactive({
@@ -10,6 +11,10 @@ const userInfo = reactive({
   isVerified: false,
   realName: "",
   idCard: "",
+  birthday: "",
+  qq: "",
+  wechat: "",
+  motto: "",
 });
 
 // 编辑状态
@@ -183,15 +188,34 @@ const activeMenu = ref("profile");
 const menuItems = [
   { id: "profile", label: "个人资料", icon: "👤" },
   { id: "usage", label: "使用记录", icon: "📊" },
+  { id: "favorites", label: "我的收藏", icon: "⭐" },
   { id: "verify", label: "实名认证", icon: "✅" },
   { id: "posts", label: "发布想法", icon: "💡" },
   { id: "settings", label: "账号设置", icon: "⚙️" },
 ];
 
 // 使用记录数据
-const usageTimeRange = ref("week"); // 'week' | 'month'
+const usageTimeRange = ref("week"); // 'week' | 'year'
 const hoveredDataPoint = ref(null);
 const selectedDate = ref(null);
+
+// 社区收藏功能
+const community = useCommunity();
+
+// 获取收藏的文章列表
+const favoritePosts = computed(() => {
+  return community.getPosts("favorite");
+});
+
+// 取消收藏
+function removeFavorite(postId) {
+  community.toggleFavorite(postId);
+}
+
+// 跳转到社区详情
+function goToCommunityPost(postId) {
+  window.location.href = `/community?post=${postId}`;
+}
 
 // 模拟使用数据
 const usageData = ref({
@@ -243,37 +267,64 @@ const usageData = ref({
       ],
     },
   },
-  month: {
-    labels: Array.from({ length: 30 }, (_, i) => `${i + 1}日`),
-    data: [
-      2, 4, 1, 5, 3, 6, 4, 2, 7, 5, 3, 4, 6, 2, 8, 4, 5, 3, 6, 4, 2, 5, 7, 3, 4,
-      6, 5, 3, 4, 2,
+  year: {
+    labels: [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月",
     ],
+    data: [45, 38, 52, 41, 48, 55, 42, 39, 46, 50, 44, 58],
     files: {},
   },
 });
 
-// 生成月度的模拟文件数据
-for (let i = 1; i <= 30; i++) {
-  const day = `${i}日`;
-  const count = usageData.value.month.data[i - 1];
-  const fileTypes = [".pptx", ".docx", ".xlsx", ".pdf", ".txt"];
-  const prefixes = [
-    "课件",
-    "教案",
-    "试卷",
-    "统计",
-    "计划",
-    "总结",
-    "报告",
-    "笔记",
-  ];
-  usageData.value.month.files[day] = Array.from({ length: count }, (_, j) => {
+// 生成年度的模拟文件数据
+const months = [
+  "1月",
+  "2月",
+  "3月",
+  "4月",
+  "5月",
+  "6月",
+  "7月",
+  "8月",
+  "9月",
+  "10月",
+  "11月",
+  "12月",
+];
+const fileTypes = [".pptx", ".docx", ".xlsx", ".pdf", ".txt"];
+const prefixes = [
+  "课件",
+  "教案",
+  "试卷",
+  "统计",
+  "计划",
+  "总结",
+  "报告",
+  "笔记",
+  "方案",
+  "记录",
+];
+
+months.forEach((month, index) => {
+  const count = usageData.value.year.data[index];
+  usageData.value.year.files[month] = Array.from({ length: count }, (_, j) => {
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const type = fileTypes[Math.floor(Math.random() * fileTypes.length)];
-    return `${prefix}${i}-${j + 1}${type}`;
+    const weekNum = Math.floor(j / 7) + 1;
+    return `${month}${weekNum}周-${prefix}${j + 1}${type}`;
   });
-}
+});
 
 // 计算折线图路径
 const chartPath = computed(() => {
@@ -426,6 +477,11 @@ function publishPost() {
 function likePost(post) {
   post.likes++;
 }
+
+// 保存个人资料
+function saveProfile() {
+  alert("个人资料保存成功！");
+}
 </script>
 
 <template>
@@ -564,6 +620,528 @@ function likePost(post) {
           <div class="form-section">
             <label class="form-label">邮箱</label>
             <p class="info-text">{{ userInfo.email }}</p>
+          </div>
+
+          <!-- 生日 -->
+          <div class="form-section">
+            <label class="form-label">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M16 2v4M8 2v4M3 10h18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              生日
+            </label>
+            <input v-model="userInfo.birthday" type="date" class="form-input" />
+          </div>
+
+          <!-- QQ -->
+          <div class="form-section">
+            <label class="form-label">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C8.5 2 6 4.5 6 7c0 1.5.5 2.5 1.5 3.5-1 1-2.5 2-3 3.5-.5 2 1 3.5 2.5 4-.5 1.5-.5 3 0 4.5 2-1 4.5-1.5 6-1.5s4 .5 6 1.5c.5-1.5.5-3 0-4.5 1.5-.5 3-2 2.5-4-.5-1.5-2-2.5-3-3.5 1-1 1.5-2 1.5-3.5 0-2.5-2.5-5-6-5z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+              </svg>
+              QQ
+            </label>
+            <input
+              v-model="userInfo.qq"
+              type="text"
+              class="form-input"
+              placeholder="请输入QQ号码"
+              maxlength="15"
+            />
+          </div>
+
+          <!-- 微信 -->
+          <div class="form-section">
+            <label class="form-label">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 11a2 2 0 100-4 2 2 0 000 4zM15 11a2 2 0 100-4 2 2 0 000 4z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M8 16c0 2 2.5 4 6 4s6-2 6-4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M18 8c2.5 1.5 4 4 4 6.5 0 4-3.5 7.5-9 7.5-1.5 0-3-.5-4-1l-4 1 1.5-3C4 17 3 15 3 12.5 3 7.5 7 4 12 4c1 0 2 .5 2.5.5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              微信
+            </label>
+            <input
+              v-model="userInfo.wechat"
+              type="text"
+              class="form-input"
+              placeholder="请输入微信号"
+              maxlength="20"
+            />
+          </div>
+
+          <!-- 个人座右铭 -->
+          <div class="form-section">
+            <label class="form-label">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3c-4.5 0-8 3-8 7 0 2 1 3.5 2.5 4.5L5 20l4-1.5c1 .5 2 .5 3 .5 4.5 0 8-3 8-7s-3.5-7-8-7z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <circle cx="9" cy="10" r="1" fill="currentColor" />
+                <circle cx="15" cy="10" r="1" fill="currentColor" />
+                <path
+                  d="M9 13c1 1 2.5 1 4 0"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              个人座右铭
+            </label>
+            <textarea
+              v-model="userInfo.motto"
+              class="form-textarea"
+              placeholder="写下你的人生格言..."
+              rows="3"
+              maxlength="100"
+            ></textarea>
+            <span class="char-count">{{ userInfo.motto.length }}/100</span>
+          </div>
+
+          <!-- 保存按钮 -->
+          <div class="form-section">
+            <button class="btn-save" @click="saveProfile">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M17 21v-8H7v8M7 3v5h8"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              保存资料
+            </button>
+          </div>
+        </div>
+
+        <!-- 使用记录 -->
+        <div v-if="activeMenu === 'usage'" class="content-panel">
+          <div class="usage-header">
+            <h2 class="panel-title">使用记录</h2>
+            <div class="time-range-switch">
+              <button
+                class="range-btn"
+                :class="{ 'range-btn--active': usageTimeRange === 'week' }"
+                @click="switchTimeRange('week')"
+              >
+                近一周
+              </button>
+              <button
+                class="range-btn"
+                :class="{ 'range-btn--active': usageTimeRange === 'year' }"
+                @click="switchTimeRange('year')"
+              >
+                近一年
+              </button>
+            </div>
+          </div>
+
+          <!-- 统计概览 -->
+          <div class="usage-stats">
+            <div class="stat-card">
+              <div class="stat-value">
+                {{ usageData[usageTimeRange].data.reduce((a, b) => a + b, 0) }}
+              </div>
+              <div class="stat-label">创建文件总数</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">
+                {{ Math.max(...usageData[usageTimeRange].data) }}
+              </div>
+              <div class="stat-label">单日最高创建</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">
+                {{
+                  (
+                    usageData[usageTimeRange].data.reduce((a, b) => a + b, 0) /
+                    usageData[usageTimeRange].data.length
+                  ).toFixed(1)
+                }}
+              </div>
+              <div class="stat-label">日均创建</div>
+            </div>
+          </div>
+
+          <!-- 折线图 -->
+          <div class="chart-container">
+            <svg
+              class="chart-svg"
+              viewBox="0 0 700 250"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <!-- 网格线 -->
+              <g class="grid-lines">
+                <line
+                  x1="40"
+                  y1="40"
+                  x2="660"
+                  y2="40"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  stroke-dasharray="4"
+                />
+                <line
+                  x1="40"
+                  y1="90"
+                  x2="660"
+                  y2="90"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  stroke-dasharray="4"
+                />
+                <line
+                  x1="40"
+                  y1="140"
+                  x2="660"
+                  y2="140"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  stroke-dasharray="4"
+                />
+                <line
+                  x1="40"
+                  y1="190"
+                  x2="660"
+                  y2="190"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  stroke-dasharray="4"
+                />
+              </g>
+
+              <!-- Y轴标签 -->
+              <g class="y-labels">
+                <text
+                  x="30"
+                  y="45"
+                  text-anchor="end"
+                  fill="#94a3b8"
+                  font-size="12"
+                >
+                  {{ chartPath.max }}
+                </text>
+                <text
+                  x="30"
+                  y="95"
+                  text-anchor="end"
+                  fill="#94a3b8"
+                  font-size="12"
+                >
+                  {{ Math.round(chartPath.max * 0.75) }}
+                </text>
+                <text
+                  x="30"
+                  y="145"
+                  text-anchor="end"
+                  fill="#94a3b8"
+                  font-size="12"
+                >
+                  {{ Math.round(chartPath.max * 0.5) }}
+                </text>
+                <text
+                  x="30"
+                  y="195"
+                  text-anchor="end"
+                  fill="#94a3b8"
+                  font-size="12"
+                >
+                  {{ Math.round(chartPath.max * 0.25) }}
+                </text>
+                <text
+                  x="30"
+                  y="220"
+                  text-anchor="end"
+                  fill="#94a3b8"
+                  font-size="12"
+                >
+                  0
+                </text>
+              </g>
+
+              <!-- 折线 -->
+              <path
+                v-if="chartPath.path"
+                class="chart-line"
+                :d="chartPath.path"
+                fill="none"
+                stroke="url(#lineGradient)"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+
+              <!-- 渐变填充区域 -->
+              <path
+                v-if="chartPath.path"
+                class="chart-area"
+                :d="
+                  chartPath.path +
+                  ` L ${chartPath.points[chartPath.points.length - 1].x} 210 L ${chartPath.points[0].x} 210 Z`
+                "
+                fill="url(#areaGradient)"
+                opacity="0.3"
+              />
+
+              <!-- 数据点 -->
+              <g class="data-points">
+                <circle
+                  v-for="point in chartPath.points"
+                  :key="point.index"
+                  class="data-point"
+                  :cx="point.x"
+                  :cy="point.y"
+                  r="6"
+                  fill="white"
+                  stroke="#0090ff"
+                  stroke-width="2"
+                  @mouseenter="handlePointHover(point)"
+                  @mouseleave="handlePointLeave"
+                  @click="handlePointClick(point)"
+                />
+              </g>
+
+              <!-- X轴标签 -->
+              <g class="x-labels">
+                <text
+                  v-for="(label, index) in usageData[usageTimeRange].labels"
+                  :key="index"
+                  :x="chartPath.points[index]?.x || 0"
+                  y="235"
+                  text-anchor="middle"
+                  fill="#64748b"
+                  font-size="11"
+                >
+                  {{ label }}
+                </text>
+              </g>
+
+              <!-- 渐变定义 -->
+              <defs>
+                <linearGradient
+                  id="lineGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset="0%" stop-color="#0090ff" />
+                  <stop offset="100%" stop-color="#00c6ff" />
+                </linearGradient>
+                <linearGradient
+                  id="areaGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stop-color="#0090ff" stop-opacity="0.4" />
+                  <stop
+                    offset="100%"
+                    stop-color="#0090ff"
+                    stop-opacity="0.05"
+                  />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <!-- 悬停提示 -->
+            <div
+              v-if="hoveredDataPoint"
+              class="chart-tooltip"
+              :style="{
+                left: hoveredDataPoint.x + 'px',
+                top: hoveredDataPoint.y - 60 + 'px',
+              }"
+            >
+              <div class="tooltip-date">
+                {{ usageData[usageTimeRange].labels[hoveredDataPoint.index] }}
+              </div>
+              <div class="tooltip-value">
+                创建 {{ hoveredDataPoint.value }} 个文件
+              </div>
+              <div class="tooltip-files">
+                {{
+                  usageData[usageTimeRange].files[
+                    usageData[usageTimeRange].labels[hoveredDataPoint.index]
+                  ]
+                    ?.slice(0, 3)
+                    .join(", ") || ""
+                }}
+                <span
+                  v-if="
+                    (usageData[usageTimeRange].files[
+                      usageData[usageTimeRange].labels[hoveredDataPoint.index]
+                    ]?.length || 0) > 3
+                  "
+                  >...</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- 选中日期详情 -->
+          <div v-if="selectedDate" class="date-detail">
+            <div class="detail-header">
+              <h3>{{ selectedDate }} 创建的文件</h3>
+              <button class="close-detail" @click="selectedDate = null">
+                ✕
+              </button>
+            </div>
+            <div class="file-list">
+              <div
+                v-for="(file, index) in usageData[usageTimeRange].files[
+                  selectedDate
+                ]"
+                :key="index"
+                class="file-item"
+              >
+                <svg class="file-icon" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 2h10l6 6v14a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"
+                    fill="#f0f5ff"
+                    stroke="#4472c4"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M14 2v6h6"
+                    stroke="#4472c4"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span class="file-name">{{ file }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 我的收藏 -->
+        <div v-if="activeMenu === 'favorites'" class="content-panel">
+          <h2 class="panel-title">我的收藏</h2>
+          <p class="panel-subtitle">来自社区的精选内容</p>
+
+          <div v-if="favoritePosts.length === 0" class="favorites-empty">
+            <div class="empty-icon">⭐</div>
+            <h3>暂无收藏</h3>
+            <p>去社区浏览精彩内容，点击收藏按钮即可保存到这里</p>
+            <RouterLink to="/community" class="btn-primary">
+              去社区看看
+            </RouterLink>
+          </div>
+
+          <div v-else class="favorites-list">
+            <div
+              v-for="post in favoritePosts"
+              :key="post.id"
+              class="favorite-card"
+              @click="goToCommunityPost(post.id)"
+            >
+              <div class="favorite-card__header">
+                <span class="favorite-tag">{{ post.tag }}</span>
+                <button
+                  class="favorite-remove"
+                  @click.stop="removeFavorite(post.id)"
+                  title="取消收藏"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <h3 class="favorite-title">{{ post.title }}</h3>
+              <p class="favorite-content">{{ post.content }}</p>
+
+              <div
+                v-if="post.images && post.images.length"
+                class="favorite-images"
+              >
+                <img
+                  v-for="(img, idx) in post.images.slice(0, 3)"
+                  :key="idx"
+                  :src="img"
+                  :alt="`图片 ${idx + 1}`"
+                />
+                <div v-if="post.images.length > 3" class="image-more">
+                  +{{ post.images.length - 3 }}
+                </div>
+              </div>
+
+              <div class="favorite-footer">
+                <div class="favorite-author">
+                  <span class="author-avatar">{{ post.author.charAt(0) }}</span>
+                  <span>{{ post.author }}</span>
+                </div>
+                <div class="favorite-meta">
+                  <span class="meta-item">
+                    <svg viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M10 17s-6-4.35-6-8.5A3.5 3.5 0 0 1 10 6a3.5 3.5 0 0 1 6 2.5C16 12.65 10 17 10 17z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                    {{ post.likes }}
+                  </span>
+                  <span class="meta-item">
+                    <svg viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                    {{ post.comments.length }}
+                  </span>
+                  <time>{{ formatTime(post.createdAt) }}</time>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -819,8 +1397,12 @@ function likePost(post) {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding-top: 80px;
+  background: linear-gradient(
+    135deg,
+    var(--color-gray-50) 0%,
+    var(--color-gray-100) 100%
+  );
+  padding-top: var(--space-20);
 }
 
 .profile-header {
@@ -828,33 +1410,33 @@ function likePost(post) {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: var(--z-fixed);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .profile-header__inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: var(--space-4) var(--space-6);
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .back-link {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #64748b;
+  gap: var(--space-2);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.875rem;
-  transition: color 0.2s;
+  font-size: var(--text-sm);
+  transition: color var(--transition-fast);
 }
 
 .back-link:hover {
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .back-link svg {
@@ -863,18 +1445,18 @@ function likePost(post) {
 }
 
 .profile-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
 }
 
 .profile-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--space-6);
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 /* 侧边栏 */
@@ -885,31 +1467,35 @@ function likePost(post) {
 }
 
 .user-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
 }
 
 .user-card__avatar {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
-  color: white;
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-700)
+  );
+  color: var(--text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0 auto 16px;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin: 0 auto var(--space-4);
   overflow: hidden;
 }
 
 .user-card__avatar.has-avatar {
-  background: #f1f5f9;
+  background: var(--color-gray-100);
 }
 
 .user-card__avatar img {
@@ -1031,6 +1617,87 @@ function likePost(post) {
   border-radius: 12px;
   color: #64748b;
   font-size: 0.9375rem;
+}
+
+/* 表单标签带图标 */
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-label svg {
+  width: 18px;
+  height: 18px;
+  color: #0090ff;
+}
+
+/* 文本域 */
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #0090ff;
+  box-shadow: 0 0 0 3px rgba(0, 144, 255, 0.1);
+}
+
+.form-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* 保存按钮 */
+.btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #0090ff, #0057d9);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 144, 255, 0.3);
+}
+
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 144, 255, 0.4);
+}
+
+.btn-save:active {
+  transform: translateY(0);
+}
+
+.btn-save svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* 头像上传 */
@@ -1239,6 +1906,199 @@ function likePost(post) {
 .btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 144, 255, 0.3);
+}
+
+/* 使用记录 */
+.usage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.time-range-switch {
+  display: flex;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.range-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.range-btn:hover {
+  color: #0f172a;
+}
+
+.range-btn--active {
+  background: white;
+  color: #0090ff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.usage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #bae6fd;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0090ff;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.chart-container {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-line {
+  filter: drop-shadow(0 2px 4px rgba(0, 144, 255, 0.3));
+}
+
+.data-point {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.data-point:hover {
+  r: 8;
+  stroke-width: 3;
+}
+
+.chart-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 10;
+  min-width: 200px;
+  transform: translateX(-50%);
+}
+
+.tooltip-date {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.tooltip-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0090ff;
+  margin-bottom: 8px;
+}
+
+.tooltip-files {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.date-detail {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.detail-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.close-detail {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-detail:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.file-item:hover {
+  background: #f1f5f9;
+}
+
+.file-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: #334155;
 }
 
 /* 发布想法 */
@@ -1556,5 +2416,211 @@ function likePost(post) {
   .menu-item {
     white-space: nowrap;
   }
+}
+
+/* 我的收藏 */
+.favorites-empty {
+  text-align: center;
+  padding: 64px 32px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.favorites-empty h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.favorites-empty p {
+  color: #64748b;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #0090ff, #0057d9);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 144, 255, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 144, 255, 0.4);
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.favorite-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.favorite-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 144, 255, 0.2);
+}
+
+.favorite-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.favorite-tag {
+  display: inline-flex;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0090ff;
+  background: rgba(0, 144, 255, 0.08);
+  border-radius: 999px;
+}
+
+.favorite-remove {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fbbf24;
+  transition: all 0.2s ease;
+}
+
+.favorite-remove:hover {
+  background: #fef3c7;
+  color: #f59e0b;
+  transform: scale(1.1);
+}
+
+.favorite-remove svg {
+  width: 20px;
+  height: 20px;
+}
+
+.favorite-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.favorite-content {
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.favorite-images {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.favorite-images img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.favorite-images .image-more {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.favorite-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.favorite-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0090ff, #0057d9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.favorite-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-item svg {
+  width: 16px;
+  height: 16px;
 }
 </style>
