@@ -279,7 +279,7 @@ onMounted(() => {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(165deg, #f8fafc 0%, #eef4fb 45%, #f5f8fc 100%);
+  background: transparent;
 }
 
 .aurora__blob {

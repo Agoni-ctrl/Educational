@@ -177,7 +177,7 @@ const team = [
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(168deg, #fafcff 0%, #eef5fc 50%, #f6f9fd 100%);
+  background: transparent;
 }
 
 .bg__orb {

@@ -810,7 +810,7 @@ watch(activePanel, refresh);
 .features-page {
   display: flex;
   height: 100vh;
-  background: linear-gradient(160deg, #e8f2fc 0%, #dceaf8 50%, #e5f0fa 100%);
+  background: transparent;
   overflow: hidden;
 }
 

@@ -1397,11 +1397,7 @@ function saveProfile() {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    var(--color-gray-50) 0%,
-    var(--color-gray-100) 100%
-  );
+  background: transparent;
   padding-top: var(--space-20);
 }
 
