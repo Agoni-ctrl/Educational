@@ -1,13 +1,13 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useCommunity, formatTime } from '../../composables/useCommunity.js'
+import { ref, computed, watch } from "vue";
+import { useCommunity, formatTime } from "../../composables/useCommunity.js";
 
 const props = defineProps({
   post: { type: Object, required: true },
   expanded: { type: Boolean, default: false },
-})
+});
 
-const emit = defineEmits(['toggle-expand', 'share', 'action'])
+const emit = defineEmits(["toggle-expand", "share", "action"]);
 
 const {
   isLiked,
@@ -17,45 +17,86 @@ const {
   toggleFavorite,
   toggleCommentLike,
   addComment,
-} = useCommunity()
+} = useCommunity();
 
-const commentText = ref('')
-const likePop = ref(false)
-const favPop = ref(false)
-const sharePop = ref(false)
+const commentText = ref("");
+const likePop = ref(false);
+const favPop = ref(false);
+const sharePop = ref(false);
+const showAllImages = ref(false);
+const maxDisplayImages = 6;
 
-const liked = computed(() => isLiked(props.post.id))
-const favorited = computed(() => isFavorite(props.post.id))
+const liked = computed(() => isLiked(props.post.id));
+const favorited = computed(() => isFavorite(props.post.id));
+
+const displayedImages = computed(() => {
+  if (showAllImages.value) return props.post.images;
+  return props.post.images.slice(0, maxDisplayImages);
+});
+
+const hasMoreImages = computed(() => {
+  return props.post.images.length > maxDisplayImages && !showAllImages.value;
+});
+
+function getImageAspectRatio(url) {
+  // 根据 URL 参数判断图片比例
+  if (
+    url.includes("300/400") ||
+    url.includes("350/500") ||
+    url.includes("400/600") ||
+    url.includes("300/500")
+  ) {
+    return "portrait";
+  } else if (
+    url.includes("400/300") ||
+    url.includes("500/350") ||
+    url.includes("600/400")
+  ) {
+    return "landscape";
+  }
+  return "square";
+}
+
+function openImagePreview(idx) {
+  // 可以在这里实现图片预览功能
+  console.log("预览图片:", idx);
+}
 
 function handleLike() {
-  toggleLike(props.post.id)
-  likePop.value = true
-  emit('action', 'like')
-  setTimeout(() => { likePop.value = false }, 400)
+  toggleLike(props.post.id);
+  likePop.value = true;
+  emit("action", "like");
+  setTimeout(() => {
+    likePop.value = false;
+  }, 400);
 }
 
 function handleFavorite() {
-  toggleFavorite(props.post.id)
-  favPop.value = true
-  emit('action', 'favorite')
-  setTimeout(() => { favPop.value = false }, 400)
+  toggleFavorite(props.post.id);
+  favPop.value = true;
+  emit("action", "favorite");
+  setTimeout(() => {
+    favPop.value = false;
+  }, 400);
 }
 
 function handleShare() {
-  sharePop.value = true
-  emit('share', props.post)
-  setTimeout(() => { sharePop.value = false }, 600)
+  sharePop.value = true;
+  emit("share", props.post);
+  setTimeout(() => {
+    sharePop.value = false;
+  }, 600);
 }
 
 function submitComment() {
-  if (!commentText.value.trim()) return
-  addComment(props.post.id, commentText.value)
-  commentText.value = ''
-  emit('action', 'comment')
+  if (!commentText.value.trim()) return;
+  addComment(props.post.id, commentText.value);
+  commentText.value = "";
+  emit("action", "comment");
 }
 
 function handleCommentLike(commentId) {
-  toggleCommentLike(commentId)
+  toggleCommentLike(commentId);
 }
 </script>
 
@@ -66,12 +107,44 @@ function handleCommentLike(commentId) {
       <time class="post-card__time">{{ formatTime(post.createdAt) }}</time>
     </div>
 
-    <h3 class="post-card__title" @click="emit('toggle-expand')">{{ post.title }}</h3>
+    <h3 class="post-card__title" @click="emit('toggle-expand')">
+      {{ post.title }}
+    </h3>
     <p class="post-card__content">{{ post.content }}</p>
 
     <div class="post-card__author">
       <span class="avatar">{{ post.author.charAt(0) }}</span>
       <span>{{ post.author }}</span>
+    </div>
+
+    <!-- 图片网格 - Masonry 瀑布流布局 -->
+    <div v-if="post.images && post.images.length" class="post-card__images">
+      <div
+        v-for="(img, idx) in displayedImages"
+        :key="idx"
+        class="image-item"
+        :class="`image-item--${getImageAspectRatio(img)}`"
+        @click="openImagePreview(idx)"
+      >
+        <img :src="img" :alt="`图片 ${idx + 1}`" loading="lazy" />
+        <div class="image-overlay">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1" />
+          </svg>
+        </div>
+      </div>
+      <div
+        v-if="hasMoreImages"
+        class="image-more"
+        @click="showAllImages = true"
+      >
+        <span>+{{ post.images.length - maxDisplayImages }}</span>
+      </div>
     </div>
 
     <div class="post-card__actions">
@@ -104,7 +177,7 @@ function handleCommentLike(commentId) {
             stroke-width="1.5"
           />
         </svg>
-        <span>{{ favorited ? '已收藏' : '收藏' }}</span>
+        <span>{{ favorited ? "已收藏" : "收藏" }}</span>
       </button>
 
       <button class="action-btn" @click="emit('toggle-expand')">
@@ -119,7 +192,11 @@ function handleCommentLike(commentId) {
         <span>{{ post.comments.length }} 评论</span>
       </button>
 
-      <button class="action-btn" :class="{ 'action-btn--pop': sharePop }" @click="handleShare">
+      <button
+        class="action-btn"
+        :class="{ 'action-btn--pop': sharePop }"
+        @click="handleShare"
+      >
         <svg viewBox="0 0 20 20" fill="none">
           <path
             d="M14 4l4 4-4 4M18 8H8a4 4 0 0 0-4 4v1"
@@ -169,7 +246,13 @@ function handleCommentLike(commentId) {
             placeholder="写下你的经验或建议..."
             @keyup.enter="submitComment"
           />
-          <button class="btn-send" :disabled="!commentText.trim()" @click="submitComment">发送</button>
+          <button
+            class="btn-send"
+            :disabled="!commentText.trim()"
+            @click="submitComment"
+          >
+            发送
+          </button>
         </div>
       </div>
     </Transition>
@@ -183,16 +266,118 @@ function handleCommentLike(commentId) {
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(16px);
-  transition: box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+  transition:
+    box-shadow 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    border-color 0.3s ease;
+  will-change: transform, box-shadow;
 }
 
 .post-card:hover {
-  box-shadow: 0 16px 48px rgba(10, 15, 26, 0.07);
+  transform: translateY(-6px);
+  box-shadow:
+    0 20px 60px rgba(10, 15, 26, 0.12),
+    0 8px 24px rgba(0, 119, 230, 0.08);
+  border-color: rgba(0, 119, 230, 0.2);
 }
 
 .post-card--expanded {
   border-color: rgba(0, 119, 230, 0.25);
   box-shadow: 0 20px 56px rgba(0, 87, 217, 0.1);
+}
+
+/* Masonry 瀑布流图片网格 */
+.post-card__images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 120px;
+  gap: 8px;
+  margin: 16px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.image-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s ease;
+}
+
+.image-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.image-item:hover img {
+  transform: scale(1.08);
+}
+
+.image-item--landscape {
+  grid-column: span 2;
+}
+
+.image-item--portrait {
+  grid-row: span 2;
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-item:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-overlay svg {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  transform: scale(0.8);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.image-item:hover .image-overlay svg {
+  transform: scale(1);
+}
+
+.image-more {
+  position: relative;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.image-more:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.image-more span {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .post-card__head {
@@ -282,6 +467,7 @@ function handleCommentLike(commentId) {
 }
 
 .action-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -293,7 +479,12 @@ function handleCommentLike(commentId) {
   border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.25s var(--ease-spring);
+  overflow: hidden;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.25s var(--ease-spring);
 }
 
 .action-btn svg {
@@ -313,13 +504,81 @@ function handleCommentLike(commentId) {
 }
 
 .action-btn--pop {
-  animation: action-pop 0.4s var(--ease-spring);
+  animation: action-pop 0.5s var(--ease-spring);
+}
+
+/* 点赞按钮心形动画 */
+.action-btn--active.action-btn--pop svg {
+  animation: heart-beat 0.5s var(--ease-spring);
+}
+
+.action-btn--active svg path {
+  transition:
+    fill 0.3s ease,
+    stroke 0.3s ease;
 }
 
 @keyframes action-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heart-beat {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 心形粒子效果 */
+.action-btn--active.action-btn--pop::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(239, 68, 68, 0.4) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: heart-ripple 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes heart-ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 .post-card__comments {
@@ -378,7 +637,9 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .comment-like svg {
@@ -428,7 +689,9 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .btn-send:hover:not(:disabled) {
@@ -442,12 +705,71 @@ function handleCommentLike(commentId) {
 
 .comments-enter-active,
 .comments-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
 .comments-enter-from,
 .comments-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  max-height: 0;
+  transform: translateY(-12px);
+}
+
+.comments-enter-to,
+.comments-leave-from {
+  opacity: 1;
+  max-height: 600px;
+  transform: translateY(0);
+}
+
+/* 评论列表项依次进入动画 */
+.comment-list .comment-item {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: comment-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.comment-list .comment-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.comment-list .comment-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.comment-list .comment-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.comment-list .comment-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.comment-list .comment-item:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+@keyframes comment-slide-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 评论点赞动画 */
+.comment-like--active svg {
+  animation: comment-heart-pop 0.4s var(--ease-spring);
+}
+
+@keyframes comment-heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>

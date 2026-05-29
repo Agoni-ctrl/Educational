@@ -254,24 +254,29 @@ onUnmounted(() => {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  color: var(--ink);
+  color: var(--text-primary);
 }
 
-/* Aurora */
+/* Aurora - 极光背景 */
 .aurora {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(168deg, #fafcff 0%, #eef5fc 42%, #f4f8fd 100%);
+  background: linear-gradient(
+    168deg,
+    var(--color-gray-50) 0%,
+    #eef5fc 42%,
+    #f4f8fd 100%
+  );
 }
 
 .aurora__blob {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   filter: blur(88px);
   will-change: transform;
-  transition: transform 0.45s var(--ease-out);
+  transition: transform var(--transition-slow);
 }
 
 .aurora__blob--1 {
@@ -350,51 +355,55 @@ onUnmounted(() => {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 100px 28px 60px;
+  padding: var(--space-24) var(--space-6) var(--space-16);
 }
 
 .hero__inner {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 56px;
+  gap: var(--space-14);
   align-items: center;
 }
 
 .hero__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   letter-spacing: 0.03em;
-  color: var(--accent);
+  color: var(--color-primary);
 }
 
 .pulse {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 0 var(--accent-glow);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 0 var(--color-primary-200);
   animation: pulse-ring 2s ease-out infinite;
 }
 
 .hero__title {
-  font-family: var(--font-display);
-  font-size: clamp(2.625rem, 5.2vw, 4.125rem);
-  font-weight: 800;
-  line-height: 1.06;
-  letter-spacing: -0.045em;
-  margin-bottom: 28px;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.04em;
+  margin-bottom: var(--space-6);
 }
 
 .hero__title em {
   font-style: normal;
-  background: linear-gradient(102deg, #0077e6 0%, #00c2d4 52%, #4da6ff 100%);
+  background: linear-gradient(
+    102deg,
+    var(--color-primary-600) 0%,
+    var(--color-secondary-500) 52%,
+    var(--color-primary-400) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -402,63 +411,62 @@ onUnmounted(() => {
 
 .hero__lead {
   max-width: 500px;
-  font-size: 1.0625rem;
-  line-height: 1.78;
-  color: var(--ink-soft);
-  margin-bottom: 36px;
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-8);
 }
 
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--space-3);
 }
 
+/* 按钮样式 - 使用设计令牌 */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  border-radius: 999px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-full);
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition:
-    transform 0.25s var(--ease-spring),
-    box-shadow 0.25s,
-    background 0.25s;
+  transition: all var(--transition-base);
   white-space: nowrap;
 }
 
 .btn--dark {
-  background: var(--ink);
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(10, 15, 26, 0.14);
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--dark:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 32px rgba(10, 15, 26, 0.18);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-gray-800);
 }
 
 .btn--ghost {
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--ink);
-  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
   backdrop-filter: blur(8px);
 }
 
 .btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(10, 15, 26, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--border-dark);
 }
 
 .btn--lg {
-  padding: 15px 26px;
-  font-size: 0.95rem;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-base);
 }
 
 /* Float card */
@@ -480,12 +488,12 @@ onUnmounted(() => {
 
 .float-card {
   position: absolute;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(28px) saturate(1.35);
   box-shadow:
-    0 1px 2px rgba(10, 15, 26, 0.04),
+    var(--shadow-sm),
     0 28px 90px rgba(0, 87, 217, 0.12);
 }
 
@@ -506,40 +514,40 @@ onUnmounted(() => {
 .float-card__chrome {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.75rem;
-  color: var(--ink-muted);
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }
 
 .float-card__chrome span {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 }
 
 .float-card__chrome span:nth-child(1) {
-  background: #ff6b6b;
+  background: var(--color-error);
 }
 .float-card__chrome span:nth-child(2) {
-  background: #ffd166;
+  background: var(--color-warning);
 }
 .float-card__chrome span:nth-child(3) {
-  background: #06d6a0;
+  background: var(--color-success);
 }
 .float-card__chrome em {
   margin-left: auto;
   font-style: normal;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .float-card__content {
-  padding: 26px 24px;
+  padding: var(--space-6) var(--space-5);
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--space-5);
 }
 
 /* Card Stack - 3D扑克牌堆叠效果 */
