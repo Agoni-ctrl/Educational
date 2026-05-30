@@ -1,13 +1,13 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { useCommunity, formatTime } from "../../composables/useCommunity.js";
+import { ref, computed } from 'vue'
+import { useCommunity, formatTime } from '../../composables/useCommunity.js'
 
 const props = defineProps({
   post: { type: Object, required: true },
   expanded: { type: Boolean, default: false },
-});
+})
 
-const emit = defineEmits(["toggle-expand", "share", "action"]);
+const emit = defineEmits(['toggle-expand', 'share', 'action'])
 
 const {
   isLiked,
@@ -17,133 +17,168 @@ const {
   toggleFavorite,
   toggleCommentLike,
   addComment,
-} = useCommunity();
+} = useCommunity()
 
-const commentText = ref("");
-const likePop = ref(false);
-const favPop = ref(false);
-const sharePop = ref(false);
-const showAllImages = ref(false);
-const maxDisplayImages = 6;
+const commentText = ref('')
+const likePop = ref(false)
+const favPop = ref(false)
+const sharePop = ref(false)
 
-const liked = computed(() => isLiked(props.post.id));
-const favorited = computed(() => isFavorite(props.post.id));
-
-const displayedImages = computed(() => {
-  if (showAllImages.value) return props.post.images;
-  return props.post.images.slice(0, maxDisplayImages);
-});
-
-const hasMoreImages = computed(() => {
-  return props.post.images.length > maxDisplayImages && !showAllImages.value;
-});
-
-function getImageAspectRatio(url) {
-  // 根据 URL 参数判断图片比例
-  if (
-    url.includes("300/400") ||
-    url.includes("350/500") ||
-    url.includes("400/600") ||
-    url.includes("300/500")
-  ) {
-    return "portrait";
-  } else if (
-    url.includes("400/300") ||
-    url.includes("500/350") ||
-    url.includes("600/400")
-  ) {
-    return "landscape";
+const liked = computed(() => isLiked(props.post.id))
+const favorited = computed(() => isFavorite(props.post.id))
+const media = computed(() => props.post.media || {})
+const visualShots = computed(() => media.value.shots || [])
+const visualChips = computed(() => media.value.chips || [])
+const visualScene = computed(() => media.value.scene || 'discussion')
+const visualStyle = computed(() => {
+  const palette = media.value.palette || ['#edf5ff', '#dcecff', '#acc8f0']
+  return {
+    '--cover-1': palette[0],
+    '--cover-2': palette[1],
+    '--cover-3': palette[2],
   }
-  return "square";
-}
-
-function openImagePreview(idx) {
-  // 可以在这里实现图片预览功能
-  console.log("预览图片:", idx);
-}
+})
 
 function handleLike() {
-  toggleLike(props.post.id);
-  likePop.value = true;
-  emit("action", "like");
-  setTimeout(() => {
-    likePop.value = false;
-  }, 400);
+  toggleLike(props.post.id)
+  likePop.value = true
+  emit('action', 'like')
+  setTimeout(() => { likePop.value = false }, 400)
 }
 
 function handleFavorite() {
-  toggleFavorite(props.post.id);
-  favPop.value = true;
-  emit("action", "favorite");
-  setTimeout(() => {
-    favPop.value = false;
-  }, 400);
+  toggleFavorite(props.post.id)
+  favPop.value = true
+  emit('action', 'favorite')
+  setTimeout(() => { favPop.value = false }, 400)
 }
 
 function handleShare() {
-  sharePop.value = true;
-  emit("share", props.post);
-  setTimeout(() => {
-    sharePop.value = false;
-  }, 600);
+  sharePop.value = true
+  emit('share', props.post)
+  setTimeout(() => { sharePop.value = false }, 600)
 }
 
 function submitComment() {
-  if (!commentText.value.trim()) return;
-  addComment(props.post.id, commentText.value);
-  commentText.value = "";
-  emit("action", "comment");
+  if (!commentText.value.trim()) return
+  addComment(props.post.id, commentText.value)
+  commentText.value = ''
+  emit('action', 'comment')
 }
 
 function handleCommentLike(commentId) {
-  toggleCommentLike(commentId);
+  toggleCommentLike(commentId)
 }
 </script>
 
 <template>
   <article class="post-card" :class="{ 'post-card--expanded': expanded }">
-    <div class="post-card__head">
-      <span class="post-card__tag">{{ post.tag }}</span>
-      <time class="post-card__time">{{ formatTime(post.createdAt) }}</time>
-    </div>
+    <span class="post-card__glow" aria-hidden="true" />
 
-    <h3 class="post-card__title" @click="emit('toggle-expand')">
-      {{ post.title }}
-    </h3>
-    <p class="post-card__content">{{ post.content }}</p>
-
-    <div class="post-card__author">
-      <span class="avatar">{{ post.author.charAt(0) }}</span>
-      <span>{{ post.author }}</span>
-    </div>
-
-    <!-- 图片网格 - Masonry 瀑布流布局 -->
-    <div v-if="post.images && post.images.length" class="post-card__images">
-      <div
-        v-for="(img, idx) in displayedImages"
-        :key="idx"
-        class="image-item"
-        :class="`image-item--${getImageAspectRatio(img)}`"
-        @click="openImagePreview(idx)"
+    <div class="post-card__body">
+      <button
+        class="post-card__visual"
+        :style="visualStyle"
+        :data-scene="visualScene"
+        :aria-label="`查看 ${post.title}`"
+        @click="emit('toggle-expand')"
       >
-        <img :src="img" :alt="`图片 ${idx + 1}`" loading="lazy" />
-        <div class="image-overlay">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1" />
-          </svg>
+        <span class="post-card__visual-badge">{{ media.badge || '真实案例' }}</span>
+
+        <div class="post-card__visual-frame">
+          <div class="post-card__scene">
+            <template v-if="visualScene === 'spotlight'">
+              <div class="scene-crowd">
+                <span class="scene-crowd__light" />
+                <span class="scene-crowd__hand scene-crowd__hand--1" />
+                <span class="scene-crowd__hand scene-crowd__hand--2" />
+                <span class="scene-crowd__hand scene-crowd__hand--3" />
+                <span class="scene-crowd__head scene-crowd__head--1" />
+                <span class="scene-crowd__head scene-crowd__head--2" />
+                <span class="scene-crowd__head scene-crowd__head--3" />
+              </div>
+            </template>
+
+            <template v-else-if="visualScene === 'interface'">
+              <div class="scene-interface">
+                <div class="scene-interface__app" />
+                <div class="scene-interface__label" />
+                <div class="scene-interface__bar scene-interface__bar--1" />
+                <div class="scene-interface__bar scene-interface__bar--2" />
+                <div class="scene-interface__bar scene-interface__bar--3" />
+              </div>
+            </template>
+
+            <template v-else-if="visualScene === 'document'">
+              <div class="scene-document">
+                <span class="scene-document__sheet scene-document__sheet--back" />
+                <span class="scene-document__sheet scene-document__sheet--mid" />
+                <span class="scene-document__sheet scene-document__sheet--front" />
+                <span class="scene-document__photo" />
+                <span class="scene-document__line scene-document__line--1" />
+                <span class="scene-document__line scene-document__line--2" />
+              </div>
+            </template>
+
+            <template v-else-if="visualScene === 'prompt'">
+              <div class="scene-prompt">
+                <span class="scene-prompt__bubble scene-prompt__bubble--main" />
+                <span class="scene-prompt__bubble scene-prompt__bubble--sub" />
+                <span class="scene-prompt__chip scene-prompt__chip--1" />
+                <span class="scene-prompt__chip scene-prompt__chip--2" />
+                <span class="scene-prompt__cursor" />
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="scene-discussion">
+                <span class="scene-discussion__board" />
+                <span class="scene-discussion__card scene-discussion__card--1" />
+                <span class="scene-discussion__card scene-discussion__card--2" />
+                <span class="scene-discussion__avatar scene-discussion__avatar--1" />
+                <span class="scene-discussion__avatar scene-discussion__avatar--2" />
+                <span class="scene-discussion__line scene-discussion__line--1" />
+                <span class="scene-discussion__line scene-discussion__line--2" />
+              </div>
+            </template>
+          </div>
+
+          <div class="post-card__visual-meta">
+            <span class="post-card__visual-kicker">{{ media.kicker || '正在热议' }}</span>
+            <strong>{{ media.headline || post.title }}</strong>
+          </div>
         </div>
-      </div>
-      <div
-        v-if="hasMoreImages"
-        class="image-more"
-        @click="showAllImages = true"
-      >
-        <span>+{{ post.images.length - maxDisplayImages }}</span>
+      </button>
+
+      <div class="post-card__main">
+        <div class="post-card__head">
+          <span class="post-card__tag">{{ post.tag }}</span>
+          <time class="post-card__time">{{ formatTime(post.createdAt) }}</time>
+        </div>
+
+        <h3 class="post-card__title" @click="emit('toggle-expand')">{{ post.title }}</h3>
+        <p class="post-card__content">{{ post.content }}</p>
+
+        <div v-if="visualShots.length" class="post-card__meta-strip">
+          <span v-for="shot in visualShots" :key="`${post.id}-${shot.label}-${shot.value}`" class="meta-pill">
+            <small>{{ shot.label }}</small>
+            <strong>{{ shot.value }}</strong>
+          </span>
+        </div>
+
+        <div class="post-card__author">
+          <span class="avatar">{{ post.author.charAt(0) }}</span>
+          <span>
+            <strong>{{ post.author }}</strong>
+            <small>正在参与智课 Agent 教研共创</small>
+          </span>
+        </div>
+
+        <div v-if="visualChips.length" class="post-card__chips">
+          <span v-for="chip in visualChips" :key="`${post.id}-${chip}`" class="post-card__chip">
+            {{ chip }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -177,7 +212,7 @@ function handleCommentLike(commentId) {
             stroke-width="1.5"
           />
         </svg>
-        <span>{{ favorited ? "已收藏" : "收藏" }}</span>
+        <span>{{ favorited ? '已收藏' : '收藏' }}</span>
       </button>
 
       <button class="action-btn" @click="emit('toggle-expand')">
@@ -192,11 +227,7 @@ function handleCommentLike(commentId) {
         <span>{{ post.comments.length }} 评论</span>
       </button>
 
-      <button
-        class="action-btn"
-        :class="{ 'action-btn--pop': sharePop }"
-        @click="handleShare"
-      >
+      <button class="action-btn" :class="{ 'action-btn--pop': sharePop }" @click="handleShare">
         <svg viewBox="0 0 20 20" fill="none">
           <path
             d="M14 4l4 4-4 4M18 8H8a4 4 0 0 0-4 4v1"
@@ -246,13 +277,7 @@ function handleCommentLike(commentId) {
             placeholder="写下你的经验或建议..."
             @keyup.enter="submitComment"
           />
-          <button
-            class="btn-send"
-            :disabled="!commentText.trim()"
-            @click="submitComment"
-          >
-            发送
-          </button>
+          <button class="btn-send" :disabled="!commentText.trim()" @click="submitComment">发送</button>
         </div>
       </div>
     </Transition>
@@ -261,139 +286,472 @@ function handleCommentLike(commentId) {
 
 <style scoped>
 .post-card {
+  position: relative;
   padding: 24px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(16px);
-  transition:
-    box-shadow 0.4s var(--ease-out),
-    transform 0.4s var(--ease-out),
-    border-color 0.3s ease;
-  will-change: transform, box-shadow;
+  border-radius: 26px;
+  border: 1px solid rgba(167, 193, 225, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(76, 150, 255, 0.06), transparent 32%);
+  box-shadow:
+    0 18px 48px rgba(64, 116, 184, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out), border-color 0.35s var(--ease-out);
 }
 
 .post-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-2px);
+  border-color: rgba(100, 154, 222, 0.42);
   box-shadow:
-    0 20px 60px rgba(10, 15, 26, 0.12),
-    0 8px 24px rgba(0, 119, 230, 0.08);
-  border-color: rgba(0, 119, 230, 0.2);
+    0 24px 58px rgba(64, 116, 184, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .post-card--expanded {
-  border-color: rgba(0, 119, 230, 0.25);
-  box-shadow: 0 20px 56px rgba(0, 87, 217, 0.1);
+  border-color: rgba(72, 135, 214, 0.48);
 }
 
-/* Masonry 瀑布流图片网格 */
-.post-card__images {
+.post-card__glow {
+  position: absolute;
+  top: -86px;
+  right: -62px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(117, 173, 255, 0.18), transparent 68%);
+  pointer-events: none;
+}
+
+.post-card__body {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 120px;
-  gap: 8px;
-  margin: 16px 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 
-.image-item {
+.post-card__visual {
   position: relative;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
+  padding: 10px;
+  border: none;
+  border-radius: 28px;
+  background: linear-gradient(180deg, var(--cover-1), var(--cover-2));
+  box-shadow:
+    0 12px 32px rgba(65, 110, 168, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
   cursor: pointer;
-  transition:
-    transform 0.3s var(--ease-out),
-    box-shadow 0.3s ease;
+  text-align: left;
 }
 
-.image-item:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 1;
+.post-card__visual-badge {
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff5036, #ff2446);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 10px 18px rgba(255, 80, 54, 0.24);
 }
 
-.image-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
+.post-card__visual-frame {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(177, 198, 224, 0.5);
 }
 
-.image-item:hover img {
-  transform: scale(1.08);
+.post-card__scene {
+  position: relative;
+  min-height: 184px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(11, 18, 31, 0.02), rgba(11, 18, 31, 0.08)),
+    linear-gradient(135deg, var(--cover-2), var(--cover-3));
 }
 
-.image-item--landscape {
-  grid-column: span 2;
-}
-
-.image-item--portrait {
-  grid-row: span 2;
-}
-
-.image-overlay {
+.post-card__scene::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.25;
 }
 
-.image-item:hover .image-overlay {
-  opacity: 1;
+.post-card__visual-meta {
+  display: grid;
+  gap: 6px;
+  padding: 4px 4px 2px;
 }
 
-.image-overlay svg {
+.post-card__visual-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #5f7ea5;
+}
+
+.post-card__visual-meta strong {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  line-height: 1.3;
+  color: #11284c;
+}
+
+.scene-crowd {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% -8%, rgba(255, 255, 255, 0.5), transparent 36%),
+    linear-gradient(180deg, #1a1f28 0%, #0e1116 72%, #050608 100%);
+}
+
+.scene-crowd__light {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.28), transparent 72%);
+}
+
+.scene-crowd__hand,
+.scene-crowd__head {
+  position: absolute;
+  display: block;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.scene-crowd__head {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  bottom: 34px;
+}
+
+.scene-crowd__head--1 { left: 36px; }
+.scene-crowd__head--2 { left: 102px; width: 20px; height: 20px; bottom: 28px; }
+.scene-crowd__head--3 { right: 42px; width: 16px; height: 16px; }
+
+.scene-crowd__hand {
+  bottom: 40px;
+  width: 12px;
+  border-radius: 999px;
+  transform-origin: bottom center;
+}
+
+.scene-crowd__hand--1 {
+  left: 58px;
+  height: 74px;
+  transform: rotate(-16deg);
+}
+
+.scene-crowd__hand--2 {
+  left: 126px;
+  height: 96px;
+  transform: rotate(10deg);
+}
+
+.scene-crowd__hand--3 {
+  right: 58px;
+  height: 82px;
+  transform: rotate(24deg);
+}
+
+.scene-interface {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, #f9fbff, #eef4ff 56%, #dde8f7);
+}
+
+.scene-interface__app {
+  position: absolute;
+  left: 22px;
+  top: 38px;
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #42d84f, #25b93f);
+  box-shadow: 0 14px 26px rgba(43, 146, 71, 0.2);
+}
+
+.scene-interface__app::before,
+.scene-interface__app::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+}
+
+.scene-interface__app::before {
+  left: 12px;
+  top: 20px;
+  width: 30px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.scene-interface__app::after {
+  right: 12px;
+  top: 24px;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid #fff;
+}
+
+.scene-interface__label {
+  position: absolute;
+  left: 108px;
+  top: 44px;
+  width: 92px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(16, 48, 92, 0.16);
+}
+
+.scene-interface__bar {
+  position: absolute;
+  left: 108px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(16, 48, 92, 0.12);
+}
+
+.scene-interface__bar--1 { top: 76px; width: 84px; }
+.scene-interface__bar--2 { top: 98px; width: 70px; }
+.scene-interface__bar--3 { top: 120px; width: 58px; }
+
+.scene-document {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #edf3fb, #fdfefe);
+}
+
+.scene-document__sheet {
+  position: absolute;
+  display: block;
+  width: 116px;
+  height: 144px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(79, 115, 163, 0.14);
+}
+
+.scene-document__sheet--back {
+  left: 30px;
+  top: 24px;
+  transform: rotate(-8deg);
+}
+
+.scene-document__sheet--mid {
+  left: 76px;
+  top: 20px;
+  transform: rotate(4deg);
+}
+
+.scene-document__sheet--front {
+  left: 56px;
+  top: 36px;
+}
+
+.scene-document__photo {
+  position: absolute;
+  left: 74px;
+  top: 56px;
+  width: 80px;
+  height: 56px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #93b8e6, #d7e8fb);
+}
+
+.scene-document__line {
+  position: absolute;
+  left: 74px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(16, 48, 92, 0.12);
+}
+
+.scene-document__line--1 {
+  top: 122px;
+  width: 64px;
+}
+
+.scene-document__line--2 {
+  top: 138px;
+  width: 48px;
+}
+
+.scene-prompt {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #edf2ff, #fbfcff);
+}
+
+.scene-prompt__bubble,
+.scene-prompt__chip,
+.scene-prompt__cursor {
+  position: absolute;
+  display: block;
+}
+
+.scene-prompt__bubble {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(88, 108, 160, 0.14);
+}
+
+.scene-prompt__bubble--main {
+  left: 26px;
+  top: 42px;
+  width: 156px;
+  height: 58px;
+}
+
+.scene-prompt__bubble--sub {
+  right: 24px;
+  top: 106px;
+  width: 124px;
+  height: 46px;
+  background: linear-gradient(135deg, #4e81ff, #76a8ff);
+}
+
+.scene-prompt__chip {
+  left: 42px;
+  width: 72px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(16, 48, 92, 0.12);
+}
+
+.scene-prompt__chip--1 { top: 58px; }
+.scene-prompt__chip--2 { top: 78px; width: 96px; }
+
+.scene-prompt__cursor {
+  right: 46px;
+  top: 120px;
+  width: 16px;
+  height: 16px;
+  border-right: 3px solid rgba(255, 255, 255, 0.96);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.96);
+  transform: rotate(-45deg);
+}
+
+.scene-discussion {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #f7fbff, #edf3fb);
+}
+
+.scene-discussion__board,
+.scene-discussion__card,
+.scene-discussion__avatar,
+.scene-discussion__line {
+  position: absolute;
+  display: block;
+}
+
+.scene-discussion__board {
+  left: 24px;
+  top: 28px;
+  width: 92px;
+  height: 120px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #6fc4ff, #3980db);
+  box-shadow: 0 16px 32px rgba(56, 115, 187, 0.18);
+}
+
+.scene-discussion__card {
+  width: 72px;
+  height: 92px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(91, 122, 174, 0.12);
+}
+
+.scene-discussion__card--1 {
+  left: 98px;
+  top: 36px;
+  transform: rotate(8deg);
+}
+
+.scene-discussion__card--2 {
+  left: 136px;
+  top: 76px;
+  width: 56px;
+  height: 72px;
+}
+
+.scene-discussion__avatar {
   width: 24px;
   height: 24px;
-  color: #fff;
-  transform: scale(0.8);
-  transition: transform 0.3s var(--ease-spring);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fdcf94, #f08455);
 }
 
-.image-item:hover .image-overlay svg {
-  transform: scale(1);
+.scene-discussion__avatar--1 {
+  left: 42px;
+  bottom: 22px;
 }
 
-.image-more {
-  position: relative;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.3s ease;
+.scene-discussion__avatar--2 {
+  right: 30px;
+  bottom: 28px;
+  background: linear-gradient(135deg, #7399ff, #3f64d8);
 }
 
-.image-more:hover {
-  background: rgba(0, 0, 0, 0.7);
+.scene-discussion__line {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(16, 48, 92, 0.12);
 }
 
-.image-more span {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 600;
+.scene-discussion__line--1 {
+  left: 112px;
+  top: 56px;
+  width: 34px;
+}
+
+.scene-discussion__line--2 {
+  left: 112px;
+  top: 72px;
+  width: 46px;
+}
+
+.post-card__main {
+  min-width: 0;
 }
 
 .post-card__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 .post-card__tag {
-  padding: 4px 10px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: rgba(0, 119, 230, 0.08);
+  padding: 6px 12px;
   border-radius: 999px;
+  background: rgba(64, 129, 215, 0.08);
+  border: 1px solid rgba(64, 129, 215, 0.14);
+  color: #2d66b8;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .post-card__time {
@@ -403,12 +761,14 @@ function handleCommentLike(commentId) {
 
 .post-card__title {
   font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.26rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: color 0.2s;
+  color: #13294c;
+  transition: color 0.2s ease;
 }
 
 .post-card__title:hover {
@@ -416,12 +776,12 @@ function handleCommentLike(commentId) {
 }
 
 .post-card__content {
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  color: var(--ink-soft);
   margin-bottom: 16px;
+  font-size: 0.95rem;
+  line-height: 1.72;
+  color: var(--ink-soft);
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -430,19 +790,66 @@ function handleCommentLike(commentId) {
   -webkit-line-clamp: unset;
 }
 
+.post-card__meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(238, 245, 255, 0.96);
+  border: 1px solid rgba(171, 194, 225, 0.34);
+}
+
+.meta-pill small,
+.meta-pill strong {
+  display: block;
+}
+
+.meta-pill small {
+  font-size: 0.68rem;
+  color: #7590b0;
+}
+
+.meta-pill strong {
+  font-size: 0.77rem;
+  color: #1d3658;
+}
+
 .post-card__author {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 14px;
   font-size: 0.875rem;
   color: var(--ink-muted);
-  margin-bottom: 16px;
+}
+
+.post-card__author strong,
+.post-card__author small {
+  display: block;
+}
+
+.post-card__author strong {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.post-card__author small {
+  margin-top: 1px;
+  font-size: 0.72rem;
 }
 
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,33 +865,46 @@ function handleCommentLike(commentId) {
   font-size: 0.75rem;
 }
 
+.post-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.post-card__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(171, 194, 225, 0.28);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #355e96;
+}
+
 .post-card__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid rgba(171, 194, 225, 0.24);
 }
 
 .action-btn {
-  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--ink-muted);
-  background: transparent;
   border: 1px solid transparent;
   border-radius: 999px;
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  overflow: hidden;
-  transition:
-    color 0.2s,
-    background 0.2s,
-    border-color 0.2s,
-    transform 0.25s var(--ease-spring);
+  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.25s var(--ease-spring);
 }
 
 .action-btn svg {
@@ -494,91 +914,24 @@ function handleCommentLike(commentId) {
 
 .action-btn:hover {
   color: var(--ink);
-  background: rgba(10, 15, 26, 0.04);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(171, 194, 225, 0.28);
 }
 
 .action-btn--active {
   color: var(--accent);
   background: rgba(0, 119, 230, 0.08);
-  border-color: rgba(0, 119, 230, 0.15);
+  border-color: rgba(0, 119, 230, 0.14);
 }
 
 .action-btn--pop {
-  animation: action-pop 0.5s var(--ease-spring);
-}
-
-/* 点赞按钮心形动画 */
-.action-btn--active.action-btn--pop svg {
-  animation: heart-beat 0.5s var(--ease-spring);
-}
-
-.action-btn--active svg path {
-  transition:
-    fill 0.3s ease,
-    stroke 0.3s ease;
+  animation: action-pop 0.4s var(--ease-spring);
 }
 
 @keyframes action-pop {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(0.9);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  70% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes heart-beat {
-  0% {
-    transform: scale(1);
-  }
-  25% {
-    transform: scale(0.8);
-  }
-  50% {
-    transform: scale(1.3);
-  }
-  75% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* 心形粒子效果 */
-.action-btn--active.action-btn--pop::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle,
-    rgba(239, 68, 68, 0.4) 0%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  animation: heart-ripple 0.6s ease-out forwards;
-  pointer-events: none;
-}
-
-@keyframes heart-ripple {
-  0% {
-    transform: scale(0.5);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
 .post-card__comments {
@@ -598,8 +951,9 @@ function handleCommentLike(commentId) {
 
 .comment-item {
   padding: 14px;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 119, 230, 0.04);
+  border-radius: 16px;
+  background: rgba(0, 119, 230, 0.05);
+  border: 1px solid rgba(0, 119, 230, 0.06);
 }
 
 .comment-item__head {
@@ -637,9 +991,7 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    color 0.2s,
-    background 0.2s;
+  transition: color 0.2s, background 0.2s;
 }
 
 .comment-like svg {
@@ -689,9 +1041,7 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
 }
 
 .btn-send:hover:not(:disabled) {
@@ -705,71 +1055,38 @@ function handleCommentLike(commentId) {
 
 .comments-enter-active,
 .comments-leave-active {
-  transition:
-    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-    max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .comments-enter-from,
 .comments-leave-to {
   opacity: 0;
-  max-height: 0;
-  transform: translateY(-12px);
+  transform: translateY(-8px);
 }
 
-.comments-enter-to,
-.comments-leave-from {
-  opacity: 1;
-  max-height: 600px;
-  transform: translateY(0);
-}
+@media (max-width: 768px) {
+  .post-card {
+    padding: 18px;
+  }
 
-/* 评论列表项依次进入动画 */
-.comment-list .comment-item {
-  opacity: 0;
-  transform: translateX(-20px);
-  animation: comment-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+  .post-card__body {
+    grid-template-columns: 1fr;
+  }
 
-.comment-list .comment-item:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.comment-list .comment-item:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.comment-list .comment-item:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.comment-list .comment-item:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.comment-list .comment-item:nth-child(5) {
-  animation-delay: 0.25s;
-}
-
-@keyframes comment-slide-in {
-  to {
-    opacity: 1;
-    transform: translateX(0);
+  .post-card__scene {
+    min-height: 170px;
   }
 }
 
-/* 评论点赞动画 */
-.comment-like--active svg {
-  animation: comment-heart-pop 0.4s var(--ease-spring);
-}
+@media (max-width: 480px) {
+  .post-card__visual-badge {
+    left: 14px;
+    top: 14px;
+  }
 
-@keyframes comment-heart-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1);
+  .post-card__meta-strip,
+  .post-card__actions {
+    gap: 6px;
   }
 }
 </style>

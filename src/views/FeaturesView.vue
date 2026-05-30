@@ -1,219 +1,445 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { RouterLink } from "vue-router";
-import {
-  useFeatures,
-  formatFeatureTime,
-  getTypeIcon,
-} from "../composables/useFeatures.js";
+import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useFeatures, formatFeatureTime, getTypeIcon } from '../composables/useFeatures.js'
 
 const {
   getHistory,
   getStats,
   addRecord,
+  updateRecord,
   deleteRecord,
   TYPE_LABELS,
   STATUS_LABELS,
-} = useFeatures();
+} = useFeatures()
 
-const activePanel = ref("overview");
-const sidebarOpen = ref(false);
-const history = ref(getHistory());
-const stats = ref(getStats());
+const activePanel = ref('overview')
+const sidebarOpen = ref(false)
+const history = ref(getHistory())
+const stats = ref(getStats())
+const uploadFiles = ref([])
+const isGenerating = ref(false)
+const toast = ref('')
+const historyQuery = ref('')
+const historyPage = ref(1)
+const iterateFeedback = ref({})
 
 const pptForm = ref({
-  subject: "",
-  topic: "",
-  duration: "45",
-  style: "实验探究型",
-});
-const docForm = ref({ subject: "", topic: "", format: "标准教案" });
-const uploadFiles = ref([]);
-const isGenerating = ref(false);
-const toast = ref("");
+  subject: '',
+  topic: '',
+  duration: '45分钟',
+  style: '实验探究型',
+})
+
+const docForm = ref({
+  subject: '',
+  topic: '',
+  format: '标准教案',
+  style: '实验探究型',
+})
+
+const questionForm = ref({
+  subject: '',
+  topic: '',
+  type: '分层训练',
+  difficulty: '中等',
+  stage: '高中',
+})
 
 const navGroups = [
   {
-    label: "创作生成",
+    label: '创作生成',
     items: [
-      { id: "ppt", label: "课件生成", icon: "ppt", desc: "PPT 演示文稿" },
-      { id: "doc", label: "教案生成", icon: "doc", desc: "Word 教案文档" },
-      {
-        id: "interactive",
-        label: "互动创意",
-        icon: "interactive",
-        desc: "小游戏与动画",
-      },
+      { id: 'ppt', label: '课件生成', icon: 'ppt', desc: '实时生成课件结构与预览' },
+      { id: 'doc', label: '教案生成', icon: 'doc', desc: '同步输出教学脚本与流程' },
+      { id: 'interactive', label: '教学题生成', icon: 'interactive', desc: '按场景生成课堂题组设计' },
     ],
   },
   {
-    label: "智能理解",
+    label: '教学上下文',
     items: [
-      { id: "intent", label: "意图理解", icon: "intent", desc: "多轮对话梳理" },
-      {
-        id: "multimodal",
-        label: "多模态参考",
-        icon: "multimodal",
-        desc: "PDF / Word / 视频",
-      },
+      { id: 'intent', label: '教学意图', icon: 'intent', desc: '先明确目标，再进入生成流程' },
+      { id: 'multimodal', label: '参考资料', icon: 'multimodal', desc: '上传 PDF、Word、图片作为素材' },
     ],
   },
   {
-    label: "管理与优化",
+    label: '管理与优化',
     items: [
-      {
-        id: "visualize",
-        label: "可视化",
-        icon: "visualize",
-        desc: "数据与进度洞察",
-      },
-      {
-        id: "history",
-        label: "历史记录",
-        icon: "history",
-        desc: "生成记录管理",
-      },
-      {
-        id: "iterate",
-        label: "迭代优化",
-        icon: "iterate",
-        desc: "反馈与再生成",
-      },
+      { id: 'visualize', label: '进度洞察', icon: 'visualize', desc: '查看阶段产出与使用节奏' },
+      { id: 'history', label: '生成记录', icon: 'history', desc: '按时间与类型回看生成历史' },
+      { id: 'iterate', label: '意见反馈', icon: 'iterate', desc: '沉淀修改建议并继续优化' },
     ],
   },
-];
+]
 
 const panelTitles = {
-  overview: "工作台概览",
-  ppt: "课件生成",
-  doc: "教案生成",
-  interactive: "互动创意",
-  intent: "意图理解",
-  multimodal: "多模态参考",
-  visualize: "可视化",
-  history: "历史记录",
-  iterate: "迭代优化",
-};
+  overview: '核心功能概览',
+  ppt: '课件生成',
+  doc: '教案生成',
+  interactive: '教学题生成',
+  intent: '教学意图',
+  multimodal: '参考资料',
+  visualize: '进度洞察',
+  history: '生成记录',
+  iterate: '意见反馈',
+}
 
-const vizData = computed(() => ({
-  weekly: [3, 5, 2, 8, 6, 4, 7],
-  types: [
-    { label: "PPT 课件", value: stats.value.ppt, color: "#0077e6" },
-    { label: "Word 教案", value: stats.value.doc, color: "#00c2d4" },
-    {
-      label: "互动创意",
-      value: history.value.filter((h) => h.type === "interactive").length,
-      color: "#6366f1",
-    },
-  ],
-}));
+const featureIcons = {
+  ppt: ['M4 4.5h12v8H4v-8z', 'M7 15.5h6M10 12.5v3'],
+  doc: ['M6 3.5h6l3 3v10H6v-13z', 'M12 3.5v4h4M8.5 10h5M8.5 13h5'],
+  interactive: ['M4.5 5.5h11v8h-11z', 'M7.5 8.5h5M7.5 11.5h3', 'M13.5 13.5l2 2'],
+  intent: ['M10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z', 'M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM10 10h.01'],
+  multimodal: ['M4.5 15.5h11', 'M6 9.5 10 5l4 4.5M10 5v8.5'],
+  visualize: ['M4 14h2V8H4v6zm5 0h2V5H9v9zm5 0h2v-4h-2v4z', 'M3.5 16.5h13'],
+  history: ['M10 4.5v5l3 1.5', 'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14z'],
+  iterate: ['M15.5 7.5A5.5 5.5 0 0 0 6 5l-1.5 1.5M4.5 3.5v3h3', 'M4.5 12.5A5.5 5.5 0 0 0 14 15l1.5-1.5M15.5 16.5v-3h-3'],
+}
 
-const iteratingItems = computed(() =>
-  history.value.filter((h) => h.status === "iterating" || h.status === "draft"),
-);
+const overviewCards = computed(() => [
+  {
+    label: '本周生成',
+    value: stats.value.total,
+    detail: history.value[0] ? `最近任务：${history.value[0].title}` : '还没有生成记录，先开启一次创作吧',
+    tone: 'blue',
+    icon: '01',
+  },
+  {
+    label: '已完成',
+    value: stats.value.completed,
+    detail: '可直接继续编辑、导出或进入复用',
+    tone: 'mint',
+    icon: '02',
+  },
+  {
+    label: '待优化',
+    value: stats.value.iterating,
+    detail: '适合优先处理带反馈的内容，提高成品质量',
+    tone: 'violet',
+    icon: '03',
+  },
+  {
+    label: '覆盖学科',
+    value: new Set(history.value.map((item) => item.subject)).size || 1,
+    detail: '统一沉淀不同学科的生成经验与历史资产',
+    tone: 'amber',
+    icon: '04',
+  },
+])
 
-let toastTimer = null;
+const trendItems = computed(() => {
+  const labels = ['05.22', '05.23', '05.24', '05.25', '05.26', '05.27', '05.28']
+  const values = [3, 5, 4, 7, 6, 8, 7]
+  const max = Math.max(...values)
+
+  return labels.map((label, index) => ({
+    label,
+    value: values[index],
+    x: 36 + index * 74,
+    y: 198 - (values[index] / max) * 120,
+  }))
+})
+
+const weeklyFlowPath = computed(() =>
+  trendItems.value
+    .map((item, index) => `${index === 0 ? 'M' : 'L'} ${item.x} ${item.y}`)
+    .join(' '),
+)
+
+const weeklyAreaPath = computed(() => `${weeklyFlowPath.value} L 480 214 L 36 214 Z`)
+
+const typeShare = computed(() => {
+  const list = [
+    { label: '课件生成', value: stats.value.ppt, color: '#4c7dff' },
+    { label: '教案生成', value: stats.value.doc, color: '#23c3b2' },
+    { label: '教学题生成', value: stats.value.interactive, color: '#8b5cf6' },
+  ]
+  const total = Math.max(list.reduce((sum, item) => sum + item.value, 0), 1)
+
+  return list.map((item) => ({
+    ...item,
+    percent: Math.round((item.value / total) * 100),
+  }))
+})
+
+const donutSegments = computed(() => {
+  const radius = 56
+  const circumference = 2 * Math.PI * radius
+  let offset = 0
+
+  return typeShare.value.map((item) => {
+    const length = (item.percent / 100) * circumference
+    const segment = {
+      ...item,
+      radius,
+      circumference,
+      length,
+      offset,
+    }
+    offset += length
+    return segment
+  })
+})
+
+const overviewQueue = computed(() =>
+  history.value.slice(0, 4).map((item) => ({
+    ...item,
+    typeLabel: TYPE_LABELS[item.type],
+    statusLabel: STATUS_LABELS[item.status],
+    timeLabel: formatFeatureTime(item.createdAt),
+  })),
+)
+
+const pptPreviewStructure = {
+  实验探究型: ['情境导入', '提出问题', '实验设计', '现象分析', '规律归纳', '课堂训练'],
+  讲授演示型: ['目标导入', '概念讲解', '典型例题', '难点辨析', '课堂小结', '巩固练习'],
+  问题驱动型: ['核心问题', '线索拆解', '推导验证', '方法提炼', '拓展追问', '课堂反馈'],
+  翻转课堂型: ['课前任务', '问题聚焦', '重点讲评', '协作展示', '方法沉淀', '课后延展'],
+}
+
+const docPreviewStructure = {
+  标准教案: ['教学目标', '重点难点', '学情分析', '教学准备', '课堂流程', '作业布置'],
+  详细教案: ['目标分层', '环节脚本', '师生互动', '板书设计', '即时评价', '课后反思'],
+  简版教案: ['目标概览', '流程总览', '重点提示', '例题设计', '收束总结', '课后任务'],
+  校本模板: ['模板字段匹配', '课程目标', '教学流程', '资源使用', '课堂评价', '反思记录'],
+}
+
+const questionPreviewStructure = {
+  分层训练: {
+    基础: ['概念判断', '单步练习', '情境选择', '即时反馈'],
+    中等: ['基础过渡', '方法应用', '变式训练', '课堂回收'],
+    提高: ['关键情境', '综合推理', '迁移挑战', '反思总结'],
+  },
+  课堂检测: {
+    基础: ['快速热身', '知识判断', '基础检测', '出门测'],
+    中等: ['导入检测', '过程诊断', '重点辨析', '结果回收'],
+    提高: ['先行诊断', '综合判断', '高阶追问', '结果复盘'],
+  },
+  探究任务: {
+    基础: ['观察任务', '条件提取', '现象记录', '讨论回顾'],
+    中等: ['问题提出', '变量分析', '探究作答', '结论表达'],
+    提高: ['真实情境', '方案设计', '多步推演', '成果展示'],
+  },
+}
+
+const pptRecommendation = computed(() =>
+  (pptPreviewStructure[pptForm.value.style] || pptPreviewStructure['实验探究型']).map((title, index) => ({
+    index: index + 1,
+    title,
+    note:
+      index === 0
+        ? `${pptForm.value.topic || '等待填写课题'} · ${pptForm.value.duration}`
+        : index === 2
+          ? `当前目录已根据“${pptForm.value.style}”实时联动调整`
+          : `围绕${pptForm.value.subject || '当前学科'}的课堂节奏继续展开`,
+  })),
+)
+
+const docRecommendation = computed(() =>
+  (docPreviewStructure[docForm.value.format] || docPreviewStructure['标准教案']).map((title, index) => ({
+    index: index + 1,
+    title,
+    note:
+      index === 0
+        ? `${docForm.value.topic || '等待填写课题'} · ${docForm.value.format}`
+        : index === 3
+          ? `同步参考“${docForm.value.style}”下的讲授节奏`
+          : `适配${docForm.value.subject || '当前学科'}的教案表达方式`,
+  })),
+)
+
+const questionRecommendation = computed(() => {
+  const structure = questionPreviewStructure[questionForm.value.type] || questionPreviewStructure['分层训练']
+  const entries = structure[questionForm.value.difficulty] || structure['中等']
+
+  return entries.map((title, index) => ({
+    index: index + 1,
+    title,
+    note:
+      index === 0
+        ? `${questionForm.value.topic || '等待填写知识点'} · ${questionForm.value.stage}${questionForm.value.subject || '学科'}`
+        : index === 2
+          ? `已根据“${questionForm.value.type} / ${questionForm.value.difficulty}”自动刷新题组结构`
+          : `适配课堂即时使用、投屏展示与课后回收场景`,
+  }))
+})
+
+const historySummary = computed(() => [
+  { label: '全部记录', value: stats.value.total, note: '累计创作产出' },
+  { label: '课件', value: stats.value.ppt, note: '适合投屏讲授' },
+  { label: '教案', value: stats.value.doc, note: '可继续编辑沉淀' },
+  { label: '教学题', value: stats.value.interactive, note: '课堂练习与检测' },
+])
+
+const filteredHistory = computed(() => {
+  const keyword = historyQuery.value.trim().toLowerCase()
+  if (!keyword) return history.value
+
+  return history.value.filter((item) =>
+    [item.title, item.subject, TYPE_LABELS[item.type]]
+      .filter(Boolean)
+      .some((text) => text.toLowerCase().includes(keyword)),
+  )
+})
+
+const pageSize = 4
+const totalHistoryPages = computed(() => Math.max(1, Math.ceil(filteredHistory.value.length / pageSize)))
+const paginatedHistory = computed(() => {
+  const start = (historyPage.value - 1) * pageSize
+  return filteredHistory.value.slice(start, start + pageSize)
+})
+
+const feedbackItems = computed(() =>
+  history.value
+    .filter((item) => item.status === 'iterating' || item.status === 'draft')
+    .map((item) => ({
+      ...item,
+      typeLabel: TYPE_LABELS[item.type],
+      statusLabel: STATUS_LABELS[item.status],
+      timeLabel: formatFeatureTime(item.createdAt),
+      feedback: iterateFeedback.value[item.id] || '',
+    })),
+)
+
+const intentSupport = [
+  '把“教学意图”做成生成流程的前置信息层，而不是单独孤立的工具页。',
+  '先明确课堂目标、学生难点和使用场景，再让系统去生成课件、教案和教学题。',
+]
+
+const taskMoments = computed(() => [
+  {
+    label: '进行中任务',
+    value: isGenerating.value ? '1个' : `${Math.max(stats.value.iterating, 1)}个`,
+    detail: isGenerating.value ? 'AI 正在整理内容结构与推荐目录' : '待优化内容会在这里形成下一步动作',
+  },
+  {
+    label: '推荐动作',
+    value: activePanel.value === 'overview' ? '3条' : '2条',
+    detail: activePanel.value === 'overview' ? '继续生成课件、整理教案、补充教学题' : `当前聚焦：${panelTitles[activePanel]}`,
+  },
+])
+
+let toastTimer = null
 
 function refresh() {
-  history.value = getHistory();
-  stats.value = getStats();
+  history.value = getHistory()
+  stats.value = getStats()
 }
 
 function selectPanel(id) {
-  activePanel.value = id;
-  sidebarOpen.value = false;
+  activePanel.value = id
+  sidebarOpen.value = false
 }
 
-function showToast(msg) {
-  toast.value = msg;
-  clearTimeout(toastTimer);
+function showToast(message) {
+  toast.value = message
+  clearTimeout(toastTimer)
   toastTimer = setTimeout(() => {
-    toast.value = "";
-  }, 2600);
+    toast.value = ''
+  }, 2600)
 }
 
-function simulateGenerate(type, title, subject) {
-  isGenerating.value = true;
+function simulateGenerate(type, title, subject, pages = 0) {
+  isGenerating.value = true
   setTimeout(() => {
     addRecord({
       type,
       title,
       subject,
-      status: type === "interactive" ? "draft" : "completed",
-    });
-    refresh();
-    isGenerating.value = false;
-    showToast("生成任务已加入历史记录");
-    activePanel.value = "history";
-  }, 1200);
+      pages,
+      status: type === 'interactive' ? 'draft' : 'completed',
+    })
+    refresh()
+    isGenerating.value = false
+    showToast('生成任务已加入记录，可继续查看与优化')
+    activePanel.value = 'history'
+  }, 1000)
 }
 
 function handlePptGenerate() {
-  if (!pptForm.value.topic.trim()) return showToast("请填写课题名称");
+  if (!pptForm.value.topic.trim()) return showToast('请先填写课题名称')
   simulateGenerate(
-    "ppt",
-    `${pptForm.value.topic} · PPT 课件`,
-    pptForm.value.subject || "未分类",
-  );
+    'ppt',
+    `${pptForm.value.topic} · PPT课件`,
+    pptForm.value.subject || '未分类',
+    pptRecommendation.value.length * 2,
+  )
 }
 
 function handleDocGenerate() {
-  if (!docForm.value.topic.trim()) return showToast("请填写课题名称");
+  if (!docForm.value.topic.trim()) return showToast('请先填写课题名称')
   simulateGenerate(
-    "doc",
-    `${docForm.value.topic} · Word 教案`,
-    docForm.value.subject || "未分类",
-  );
+    'doc',
+    `${docForm.value.topic} · 教案`,
+    docForm.value.subject || '未分类',
+    docRecommendation.value.length,
+  )
 }
 
-function handleInteractiveGenerate() {
+function handleQuestionGenerate() {
+  if (!questionForm.value.topic.trim()) return showToast('请先填写知识点或题组主题')
   simulateGenerate(
-    "interactive",
-    "课堂互动创意方案",
-    pptForm.value.subject || "未分类",
-  );
+    'interactive',
+    `${questionForm.value.topic} · 教学题生成`,
+    questionForm.value.subject || '未分类',
+    questionRecommendation.value.length,
+  )
 }
 
-function onFileChange(e) {
-  const files = Array.from(e.target.files || []);
-  uploadFiles.value = [
-    ...uploadFiles.value,
-    ...files.map((f) => ({ name: f.name, size: f.size, type: f.type })),
-  ];
-  e.target.value = "";
+function onFileChange(event) {
+  const files = Array.from(event.target.files || [])
+  uploadFiles.value = [...uploadFiles.value, ...files.map((file) => ({ name: file.name, size: file.size, type: file.type }))]
+  event.target.value = ''
 }
 
-function removeFile(i) {
-  uploadFiles.value.splice(i, 1);
+function removeFile(index) {
+  uploadFiles.value.splice(index, 1)
 }
 
 function handleDelete(id) {
-  deleteRecord(id);
-  refresh();
-  showToast("已删除记录");
+  deleteRecord(id)
+  refresh()
+  showToast('记录已删除')
 }
 
-watch(activePanel, refresh);
+function submitFeedback(item) {
+  const value = iterateFeedback.value[item.id]?.trim()
+  if (!value) return showToast('请先填写反馈内容')
+  updateRecord(item.id, { status: 'iterating' })
+  showToast('反馈已提交，系统会据此继续优化')
+  iterateFeedback.value = {
+    ...iterateFeedback.value,
+    [item.id]: '',
+  }
+  refresh()
+}
+
+watch(activePanel, refresh)
+watch(historyQuery, () => {
+  historyPage.value = 1
+})
+watch(totalHistoryPages, (value) => {
+  if (historyPage.value > value) historyPage.value = value
+})
 </script>
 
 <template>
   <div class="features-page">
+    <div class="features-page__ambient" aria-hidden="true">
+      <span class="ambient-orb ambient-orb--one" />
+      <span class="ambient-orb ambient-orb--two" />
+      <span class="ambient-grid" />
+    </div>
+
     <aside class="sidebar" :class="{ 'sidebar--open': sidebarOpen }">
       <div class="sidebar__head">
         <RouterLink to="/" class="icon-btn" title="返回首页">
           <svg viewBox="0 0 20 20" fill="none">
-            <path
-              d="M12 4l-6 6 6 6"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
+            <path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </RouterLink>
         <div class="sidebar__brand">
           <span class="sidebar__brand-name">核心功能</span>
-          <span class="sidebar__brand-sub">知启灵枢工作台</span>
+          <span class="sidebar__brand-sub">多模态 AI 教学创作工作台</span>
         </div>
       </div>
 
@@ -223,44 +449,12 @@ watch(activePanel, refresh);
         @click="selectPanel('overview')"
       >
         <svg viewBox="0 0 20 20" fill="none">
-          <rect
-            x="3"
-            y="3"
-            width="6"
-            height="6"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.3"
-          />
-          <rect
-            x="11"
-            y="3"
-            width="6"
-            height="6"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.3"
-          />
-          <rect
-            x="3"
-            y="11"
-            width="6"
-            height="6"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.3"
-          />
-          <rect
-            x="11"
-            y="11"
-            width="6"
-            height="6"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.3"
-          />
+          <rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+          <rect x="11" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+          <rect x="3" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+          <rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3" />
         </svg>
-        工作台概览
+        核心功能概览
       </button>
 
       <nav v-for="group in navGroups" :key="group.label" class="nav-group">
@@ -272,16 +466,18 @@ watch(activePanel, refresh);
           :class="{ 'nav-item--active': activePanel === item.id }"
           @click="selectPanel(item.id)"
         >
-          <!--  这里是图标  -->
-          <span class="nav-item__icon" :data-icon="item.icon">
-            <template v-if="item.icon === 'ppt'">📊</template>
-            <template v-else-if="item.icon === 'doc'">📝</template>
-            <template v-else-if="item.icon === 'interactive'">🎮</template>
-            <template v-else-if="item.icon === 'intent'">💬</template>
-            <template v-else-if="item.icon === 'multimodal'">📎</template>
-            <template v-else-if="item.icon === 'visualize'">📈</template>
-            <template v-else-if="item.icon === 'history'">🕐</template>
-            <template v-else-if="item.icon === 'iterate'">🔄</template>
+          <span class="nav-item__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path
+                v-for="path in featureIcons[item.icon]"
+                :key="path"
+                :d="path"
+                stroke="currentColor"
+                stroke-width="1.45"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
           </span>
           <span class="nav-item__text">
             <strong>{{ item.label }}</strong>
@@ -293,164 +489,199 @@ watch(activePanel, refresh);
       <div class="sidebar__foot">
         <RouterLink to="/assistant" class="assistant-link">
           <svg viewBox="0 0 20 20" fill="none">
-            <path
-              d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z"
-              stroke="currentColor"
-              stroke-width="1.3"
-            />
+            <path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z" stroke="currentColor" stroke-width="1.3" />
           </svg>
           前往 AI 助手对话
         </RouterLink>
       </div>
     </aside>
 
-    <div
-      v-if="sidebarOpen"
-      class="sidebar-overlay"
-      @click="sidebarOpen = false"
-    />
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
 
     <main class="main">
       <header class="main__header">
-        <button
-          class="icon-btn mobile-only"
-          aria-label="打开菜单"
-          @click="sidebarOpen = true"
-        >
+        <button class="icon-btn mobile-only" aria-label="打开菜单" @click="sidebarOpen = true">
           <svg viewBox="0 0 20 20" fill="none">
-            <path
-              d="M3 5h14M3 10h14M3 15h14"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
+            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           </svg>
         </button>
         <div>
+          <span class="header-chip">参赛项目 · 多模态 AI 互动式教学</span>
           <h1>{{ panelTitles[activePanel] }}</h1>
-          <p class="main__subtitle">以教学思路为核心，完成课件共创全流程</p>
+          <p class="main__subtitle">把教学意图、课件生成、教案输出、教学题设计和反馈优化，串成一条真正可视化的 AI 教学创作工作流。</p>
         </div>
       </header>
 
       <div class="main__body">
-        <!-- 概览 -->
         <div v-if="activePanel === 'overview'" class="panel panel--overview">
-          <div class="stat-cards">
-            <div class="stat-card">
-              <span class="stat-card__value">{{ stats.total }}</span>
-              <span class="stat-card__label">生成总数</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-card__value">{{ stats.completed }}</span>
-              <span class="stat-card__label">已完成</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-card__value">{{ stats.iterating }}</span>
-              <span class="stat-card__label">迭代中</span>
-            </div>
-            <div class="stat-card stat-card--accent">
-              <span class="stat-card__value">4</span>
-              <span class="stat-card__label">核心能力</span>
-            </div>
-          </div>
+          <section class="overview-stage">
+            <div class="overview-stage__lead">
+              <div class="overview-stage__badge">AI Teaching Workspace</div>
+              <h2>让核心功能区像一个创作工作台，而不是传统后台首页</h2>
+              <p>这里不再强调空洞的大数字，而是把最近任务、创作节奏、生成结构和类型分布放到更清晰的视觉流里。</p>
 
-          <div class="overview-grid">
-            <div
-              class="capability-card"
-              v-for="cap in [
-                {
-                  title: '理解意图',
-                  desc: '多轮对话确认教学目标与讲授逻辑',
-                  icon: '💬',
-                  panel: 'intent',
-                },
-                {
-                  title: '多模态融合',
-                  desc: '解析 PDF、Word、视频等参考资料',
-                  icon: '📎',
-                  panel: 'multimodal',
-                },
-                {
-                  title: '生成初稿',
-                  desc: '输出 PPT、教案及互动创意',
-                  icon: '✨',
-                  panel: 'ppt',
-                },
-                {
-                  title: '迭代优化',
-                  desc: '预览反馈，持续完善课件',
-                  icon: '🔄',
-                  panel: 'iterate',
-                },
-              ]"
-              :key="cap.title"
-              @click="selectPanel(cap.panel)"
-            >
-              <span class="capability-card__icon">{{ cap.icon }}</span>
-              <h3>{{ cap.title }}</h3>
-              <p>{{ cap.desc }}</p>
-              <span class="capability-card__arrow">→</span>
-            </div>
-          </div>
-
-          <div class="recent-block">
-            <div class="recent-block__head">
-              <h2>最近生成</h2>
-              <button class="text-link" @click="selectPanel('history')">
-                查看全部
-              </button>
-            </div>
-            <div class="recent-list">
-              <div
-                v-for="item in history.slice(0, 4)"
-                :key="item.id"
-                class="recent-item"
-              >
-                <span
-                  class="recent-item__icon"
-                  v-html="getTypeIcon(item.type, item.title)"
-                ></span>
-                <div class="recent-item__info">
-                  <strong>{{ item.title }}</strong>
-                  <span
-                    >{{ item.subject }} ·
-                    {{ formatFeatureTime(item.createdAt) }}</span
-                  >
-                </div>
-                <span class="status-badge" :data-status="item.status">{{
-                  STATUS_LABELS[item.status]
-                }}</span>
+              <div class="moment-grid">
+                <article v-for="item in taskMoments" :key="item.label" class="moment-card">
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.value }}</strong>
+                  <p>{{ item.detail }}</p>
+                </article>
               </div>
             </div>
-          </div>
+
+            <div class="metric-grid">
+              <article v-for="card in overviewCards" :key="card.label" class="metric-card" :data-tone="card.tone">
+                <div class="metric-card__icon">{{ card.icon }}</div>
+                <div class="metric-card__body">
+                  <span>{{ card.label }}</span>
+                  <strong>{{ card.value }}</strong>
+                  <p>{{ card.detail }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="insight-grid">
+            <article class="dashboard-card dashboard-card--chart">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">生成节奏</span>
+                  <h3>本周创作趋势</h3>
+                </div>
+                <small>近 7 天</small>
+              </div>
+
+              <div class="line-chart-card">
+                <svg viewBox="0 0 520 230" class="line-chart" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="overviewAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.38" />
+                      <stop offset="100%" stop-color="#7aa2ff" stop-opacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="overviewStrokeGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="#4c7dff" />
+                      <stop offset="100%" stop-color="#7c5cff" />
+                    </linearGradient>
+                  </defs>
+
+                  <line v-for="y in [52, 94, 136, 178]" :key="y" x1="36" :y1="y" x2="480" :y2="y" class="line-chart__grid" />
+                  <path :d="weeklyAreaPath" fill="url(#overviewAreaGradient)" />
+                  <path :d="weeklyFlowPath" fill="none" stroke="url(#overviewStrokeGradient)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                  <g v-for="item in trendItems" :key="item.label">
+                    <circle :cx="item.x" :cy="item.y" r="6" fill="#ffffff" stroke="#4c7dff" stroke-width="3" />
+                  </g>
+                </svg>
+
+                <div class="line-chart__labels">
+                  <div v-for="item in trendItems" :key="item.label" class="line-chart__label">
+                    <strong>{{ item.value }}</strong>
+                    <span>{{ item.label }}</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="dashboard-card dashboard-card--donut">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">产出结构</span>
+                  <h3>当前生成分布</h3>
+                </div>
+              </div>
+
+              <div class="donut-panel">
+                <div class="donut-chart">
+                  <svg viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="56" class="donut-chart__track" />
+                    <circle
+                      v-for="segment in donutSegments"
+                      :key="segment.label"
+                      cx="80"
+                      cy="80"
+                      :r="segment.radius"
+                      fill="none"
+                      :stroke="segment.color"
+                      stroke-width="18"
+                      stroke-linecap="round"
+                      :stroke-dasharray="`${Math.max(segment.length - 3, 0)} ${segment.circumference}`"
+                      :stroke-dashoffset="`${-segment.offset}`"
+                      transform="rotate(-90 80 80)"
+                    />
+                  </svg>
+
+                  <div class="donut-chart__center">
+                    <strong>{{ stats.total }}</strong>
+                    <span>总记录</span>
+                  </div>
+                </div>
+
+                <div class="donut-legend">
+                  <div v-for="item in typeShare" :key="item.label" class="donut-legend__item">
+                    <i :style="{ background: item.color }" />
+                    <div>
+                      <strong>{{ item.label }}</strong>
+                      <span>{{ item.value }} 条 · {{ item.percent }}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="dashboard-card dashboard-card--queue">
+            <div class="section-head">
+              <div>
+                <span class="section-tag">最近任务</span>
+                <h3>最近生成与优化轨迹</h3>
+              </div>
+              <button class="btn-secondary" @click="selectPanel('history')">查看全部记录</button>
+            </div>
+
+            <div class="queue-list">
+              <article v-for="item in overviewQueue" :key="item.id" class="queue-item">
+                <div class="queue-item__icon">{{ getTypeIcon(item.type) }}</div>
+                <div class="queue-item__info">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.subject }} · {{ item.typeLabel }} · {{ item.timeLabel }}</span>
+                </div>
+                <em class="status-badge" :data-status="item.status">{{ item.statusLabel }}</em>
+              </article>
+            </div>
+          </section>
         </div>
 
-        <!-- 课件生成 -->
-        <div v-else-if="activePanel === 'ppt'" class="panel">
-          <div class="panel-grid">
-            <div class="form-card">
-              <h2>生成 PPT 课件</h2>
-              <p class="form-card__desc">
-                基于已理解的教学意图，生成结构完整的演示文稿初稿
-              </p>
-              <label
-                >学科
-                <input v-model="pptForm.subject" placeholder="如：高中物理"
-              /></label>
-              <label
-                >课题
-                <input v-model="pptForm.topic" placeholder="如：牛顿第二定律"
-              /></label>
-              <label
-                >课时时长
+        <section v-else-if="activePanel === 'ppt'" class="panel">
+          <div class="generator-layout">
+            <article class="form-card">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">Prompt Workspace</span>
+                  <h2>课件生成</h2>
+                </div>
+              </div>
+              <p class="form-card__desc">用更轻的输入方式配置课题、学科和讲授风格，右侧目录会根据选择实时联动刷新。</p>
+
+              <label>
+                学科
+                <input v-model="pptForm.subject" type="text" placeholder="例如：物理 / 历史 / 生物" />
+              </label>
+
+              <label>
+                课题
+                <input v-model="pptForm.topic" type="text" placeholder="例如：牛顿第二定律" />
+              </label>
+
+              <label>
+                课时长度
                 <select v-model="pptForm.duration">
-                  <option value="40">40 分钟</option>
-                  <option value="45">45 分钟</option>
-                  <option value="90">90 分钟</option>
+                  <option>40分钟</option>
+                  <option>45分钟</option>
+                  <option>50分钟</option>
                 </select>
               </label>
-              <label
-                >讲授风格
+
+              <label>
+                讲授风格
                 <select v-model="pptForm.style">
                   <option>实验探究型</option>
                   <option>讲授演示型</option>
@@ -458,345 +689,403 @@ watch(activePanel, refresh);
                   <option>翻转课堂型</option>
                 </select>
               </label>
-              <button
-                class="btn-primary"
-                :disabled="isGenerating"
-                @click="handlePptGenerate"
-              >
-                {{ isGenerating ? "生成中..." : "开始生成 PPT" }}
-              </button>
-            </div>
-            <div class="preview-card">
-              <div class="preview-card__chrome">
-                <span /><span /><span /><em>课件预览</em>
+
+              <div class="chip-row">
+                <button type="button" class="chip-row__chip">情境导入</button>
+                <button type="button" class="chip-row__chip">板书提示</button>
+                <button type="button" class="chip-row__chip">课堂追问</button>
               </div>
-              <div class="preview-slides">
-                <div
-                  v-for="(slide, i) in [
-                    '封面',
-                    '导入',
-                    '实验探究',
-                    '公式推导',
-                    '练习',
-                  ]"
-                  :key="i"
-                  class="preview-slide"
-                  :class="{ active: i === 2 }"
-                >
-                  <span>{{ i + 1 }}</span>
-                  <p>{{ slide }}</p>
+
+              <button class="btn-primary" :disabled="isGenerating" @click="handlePptGenerate">
+                {{ isGenerating ? 'AI 正在生成课件...' : '开始生成课件' }}
+              </button>
+            </article>
+
+            <article class="preview-card preview-card--rich">
+              <div class="preview-card__chrome">
+                <span />
+                <span />
+                <span />
+                <em>实时目录预览</em>
+              </div>
+
+              <div class="preview-card__body">
+                <div class="preview-card__head">
+                  <div>
+                    <span class="preview-card__eyebrow">推荐结构</span>
+                    <h3>{{ pptForm.topic || '等待填写课题' }}</h3>
+                    <p>{{ pptForm.style }} · {{ pptForm.subject || '待填写学科' }}</p>
+                  </div>
+                  <div class="ai-badge" :class="{ 'ai-badge--active': isGenerating }">
+                    <i />
+                    {{ isGenerating ? 'Thinking' : 'Ready' }}
+                  </div>
+                </div>
+
+                <div class="recommendation-list">
+                  <article v-for="item in pptRecommendation" :key="item.index" class="recommendation-item">
+                    <span>{{ item.index }}</span>
+                    <div>
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.note }}</p>
+                    </div>
+                  </article>
                 </div>
               </div>
-              <p class="preview-hint">生成后将在此预览幻灯片结构</p>
-            </div>
+            </article>
           </div>
-        </div>
+        </section>
 
-        <!-- 教案生成 -->
-        <div v-else-if="activePanel === 'doc'" class="panel">
-          <div class="panel-grid">
-            <div class="form-card">
-              <h2>生成 Word 教案</h2>
-              <p class="form-card__desc">
-                输出包含教学目标、重难点、教学过程的标准教案文档
-              </p>
-              <label
-                >学科
-                <input v-model="docForm.subject" placeholder="如：高中物理"
-              /></label>
-              <label
-                >课题
-                <input v-model="docForm.topic" placeholder="如：牛顿第二定律"
-              /></label>
-              <label
-                >模板格式
+        <section v-else-if="activePanel === 'doc'" class="panel">
+          <div class="generator-layout">
+            <article class="form-card">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">Prompt Workspace</span>
+                  <h2>教案生成</h2>
+                </div>
+              </div>
+              <p class="form-card__desc">让教案结构跟着教学风格和模板同步变化，避免左边改了参数、右边还是旧目录的割裂感。</p>
+
+              <label>
+                学科
+                <input v-model="docForm.subject" type="text" placeholder="例如：物理 / 语文 / 地理" />
+              </label>
+
+              <label>
+                课题
+                <input v-model="docForm.topic" type="text" placeholder="例如：力的分解" />
+              </label>
+
+              <label>
+                教案格式
                 <select v-model="docForm.format">
                   <option>标准教案</option>
                   <option>详细教案</option>
-                  <option>简案</option>
-                  <option>匹配学校模板</option>
+                  <option>简版教案</option>
+                  <option>校本模板</option>
                 </select>
               </label>
-              <button
-                class="btn-primary"
-                :disabled="isGenerating"
-                @click="handleDocGenerate"
-              >
-                {{ isGenerating ? "生成中..." : "开始生成教案" }}
+
+              <label>
+                讲授风格
+                <select v-model="docForm.style">
+                  <option>实验探究型</option>
+                  <option>讲授演示型</option>
+                  <option>问题驱动型</option>
+                  <option>翻转课堂型</option>
+                </select>
+              </label>
+
+              <div class="chip-row">
+                <button type="button" class="chip-row__chip">学情分析</button>
+                <button type="button" class="chip-row__chip">板书设计</button>
+                <button type="button" class="chip-row__chip">作业布置</button>
+              </div>
+
+              <button class="btn-primary" :disabled="isGenerating" @click="handleDocGenerate">
+                {{ isGenerating ? 'AI 正在生成教案...' : '开始生成教案' }}
               </button>
-            </div>
-            <div class="doc-preview">
-              <h3>教案结构预览</h3>
-              <ul>
-                <li><span>一</span> 教学目标</li>
-                <li><span>二</span> 教学重难点</li>
-                <li><span>三</span> 教学过程</li>
-                <li class="indent"><span>3.1</span> 情境导入</li>
-                <li class="indent"><span>3.2</span> 实验探究</li>
-                <li class="indent"><span>3.3</span> 归纳总结</li>
-                <li><span>四</span> 板书设计</li>
-                <li><span>五</span> 作业布置</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+            </article>
 
-        <!-- 互动创意 -->
-        <div v-else-if="activePanel === 'interactive'" class="panel">
-          <div class="interactive-grid">
-            <div
-              class="interactive-card"
-              v-for="item in [
-                { icon: '🎯', title: '课堂投票', desc: '快速检验学生理解程度' },
-                { icon: '🧩', title: '拖拽排序', desc: '知识点逻辑排列互动' },
-                { icon: '⏱️', title: '限时挑战', desc: '巩固练习小游戏' },
-                { icon: '🎬', title: '知识点动画', desc: '抽象概念可视化演示' },
-              ]"
-              :key="item.title"
-            >
-              <span>{{ item.icon }}</span>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.desc }}</p>
-            </div>
-          </div>
-          <button
-            class="btn-primary"
-            :disabled="isGenerating"
-            @click="handleInteractiveGenerate"
-          >
-            生成互动创意方案
-          </button>
-        </div>
+            <article class="preview-card preview-card--rich">
+              <div class="preview-card__chrome">
+                <span />
+                <span />
+                <span />
+                <em>实时结构预览</em>
+              </div>
 
-        <!-- 意图理解 -->
-        <div v-else-if="activePanel === 'intent'" class="panel">
-          <div class="intent-card">
-            <div class="intent-card__visual">
-              <div class="intent-flow">
-                <div
-                  v-for="(step, i) in [
-                    '描述设想',
-                    'AI 追问',
-                    '确认逻辑',
-                    '形成方案',
-                  ]"
-                  :key="i"
-                  class="intent-step"
-                >
-                  <span class="intent-step__num">{{ i + 1 }}</span>
-                  <p>{{ step }}</p>
+              <div class="preview-card__body">
+                <div class="preview-card__head">
+                  <div>
+                    <span class="preview-card__eyebrow">推荐章节</span>
+                    <h3>{{ docForm.topic || '等待填写课题' }}</h3>
+                    <p>{{ docForm.format }} · {{ docForm.subject || '待填写学科' }}</p>
+                  </div>
+                  <div class="ai-badge" :class="{ 'ai-badge--active': isGenerating }">
+                    <i />
+                    {{ isGenerating ? 'Generating' : 'Synced' }}
+                  </div>
+                </div>
+
+                <div class="recommendation-list">
+                  <article v-for="item in docRecommendation" :key="item.index" class="recommendation-item">
+                    <span>{{ item.index }}</span>
+                    <div>
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.note }}</p>
+                    </div>
+                  </article>
                 </div>
               </div>
-            </div>
-            <div class="intent-card__content">
-              <h2>多轮对话，深度理解教学意图</h2>
-              <p>
-                智能体会主动询问教学目标、核心知识点、讲授逻辑、重难点与互动设计，直至完整理解您的教学思路。
-              </p>
-              <ul class="check-list">
-                <li>支持语音 / 文字输入</li>
-                <li>主动追问细节，避免理解偏差</li>
-                <li>确认后自动进入生成流程</li>
-              </ul>
-              <RouterLink to="/assistant" class="btn-primary"
-                >打开 AI 助手开始对话</RouterLink
-              >
-            </div>
+            </article>
           </div>
-        </div>
+        </section>
 
-        <!-- 多模态参考 -->
-        <div v-else-if="activePanel === 'multimodal'" class="panel">
-          <div class="upload-zone">
-            <input
-              id="file-input"
-              type="file"
-              multiple
-              accept=".pdf,.doc,.docx,.mp4,.png,.jpg"
-              hidden
-              @change="onFileChange"
-            />
-            <label for="file-input" class="upload-zone__drop">
-              <span class="upload-zone__icon">📎</span>
-              <strong>点击或拖拽上传参考资料</strong>
-              <p>支持 PDF 教案、Word 文档、参考视频、图片等格式</p>
-            </label>
-          </div>
-          <div v-if="uploadFiles.length" class="file-list">
-            <div v-for="(f, i) in uploadFiles" :key="i" class="file-item">
-              <span>📄 {{ f.name }}</span>
-              <button @click="removeFile(i)">移除</button>
-            </div>
-          </div>
-          <div class="multimodal-options">
-            <h3>融合策略</h3>
-            <label class="option-chip"
-              ><input type="checkbox" checked /> 提取知识结构</label
-            >
-            <label class="option-chip"
-              ><input type="checkbox" checked /> 保留案例素材</label
-            >
-            <label class="option-chip"
-              ><input type="checkbox" /> 仿照排版风格</label
-            >
-            <label class="option-chip"
-              ><input type="checkbox" /> 引用图表数据</label
-            >
-          </div>
-        </div>
-
-        <!-- 可视化 -->
-        <div v-else-if="activePanel === 'visualize'" class="panel">
-          <div class="viz-grid">
-            <div class="viz-card viz-card--wide">
-              <h3>本周生成趋势</h3>
-              <div class="bar-chart">
-                <div
-                  v-for="(v, i) in vizData.weekly"
-                  :key="i"
-                  class="bar-chart__bar"
-                  :style="{ height: `${v * 12}%` }"
-                >
-                  <span>{{
-                    ["一", "二", "三", "四", "五", "六", "日"][i]
-                  }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="viz-card">
-              <h3>生成类型分布</h3>
-              <div class="donut-list">
-                <div
-                  v-for="t in vizData.types"
-                  :key="t.label"
-                  class="donut-item"
-                >
-                  <span
-                    class="donut-item__dot"
-                    :style="{ background: t.color }"
-                  />
-                  <span>{{ t.label }}</span>
-                  <strong>{{ t.value }}</strong>
-                </div>
-              </div>
-            </div>
-            <div class="viz-card">
-              <h3>能力掌握雷达</h3>
-              <div class="radar-placeholder">
-                <svg viewBox="0 0 200 200">
-                  <polygon
-                    points="100,20 170,70 150,150 50,150 30,70"
-                    fill="rgba(0,119,230,0.08)"
-                    stroke="rgba(0,119,230,0.2)"
-                  />
-                  <polygon
-                    points="100,40 150,75 135,135 65,135 50,75"
-                    fill="rgba(0,119,230,0.15)"
-                    stroke="#0077e6"
-                    stroke-width="1.5"
-                  />
-                  <text
-                    x="100"
-                    y="14"
-                    text-anchor="middle"
-                    font-size="9"
-                    fill="#6b7c93"
-                  >
-                    意图理解
-                  </text>
-                  <text x="178" y="74" font-size="9" fill="#6b7c93">
-                    多模态
-                  </text>
-                  <text x="158" y="168" font-size="9" fill="#6b7c93">
-                    课件生成
-                  </text>
-                  <text x="42" y="168" font-size="9" fill="#6b7c93">
-                    迭代优化
-                  </text>
-                  <text x="18" y="74" font-size="9" fill="#6b7c93">
-                    互动设计
-                  </text>
-                </svg>
-              </div>
-            </div>
-            <div class="viz-card">
-              <h3>闭环进度</h3>
-              <div class="progress-steps">
-                <div
-                  v-for="(s, i) in ['对话', '参考', '生成', '优化']"
-                  :key="s"
-                  class="progress-step"
-                  :class="{ done: i < 3, active: i === 2 }"
-                >
-                  <span>{{ i + 1 }}</span>
-                  <p>{{ s }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 历史记录 -->
-        <div v-else-if="activePanel === 'history'" class="panel">
-          <div class="history-list">
-            <div v-for="item in history" :key="item.id" class="history-row">
-              <span
-                class="history-row__icon"
-                v-html="getTypeIcon(item.type, item.title)"
-              ></span>
-              <div class="history-row__info">
-                <strong>{{ item.title }}</strong>
-                <span
-                  >{{ TYPE_LABELS[item.type] }} · {{ item.subject }} ·
-                  {{ formatFeatureTime(item.createdAt) }}</span
-                >
-              </div>
-              <span class="status-badge" :data-status="item.status">{{
-                STATUS_LABELS[item.status]
-              }}</span>
-              <div class="history-row__actions">
-                <button title="下载">↓</button>
-                <button title="删除" @click="handleDelete(item.id)">×</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 迭代优化 -->
-        <div v-else-if="activePanel === 'iterate'" class="panel">
-          <div v-if="iteratingItems.length" class="iterate-list">
-            <div
-              v-for="item in iteratingItems"
-              :key="item.id"
-              class="iterate-card"
-            >
-              <div class="iterate-card__head">
-                <span v-html="getTypeIcon(item.type, item.title)"></span>
+        <section v-else-if="activePanel === 'interactive'" class="panel">
+          <div class="generator-layout">
+            <article class="form-card">
+              <div class="section-head">
                 <div>
-                  <strong>{{ item.title }}</strong>
-                  <span>{{ STATUS_LABELS[item.status] }}</span>
+                  <span class="section-tag">Teaching Question Flow</span>
+                  <h2>教学题生成</h2>
                 </div>
               </div>
-              <div class="iterate-card__preview">
-                <div class="iterate-preview-block" />
-                <div class="iterate-preview-block short" />
+              <p class="form-card__desc">把原来的互动设计改成更实用的教学题工作区，适合做导入题、分层训练、课堂检测和探究任务。</p>
+
+              <label>
+                学科
+                <input v-model="questionForm.subject" type="text" placeholder="例如：物理" />
+              </label>
+
+              <label>
+                知识点 / 题组主题
+                <input v-model="questionForm.topic" type="text" placeholder="例如：牛顿第二定律应用" />
+              </label>
+
+              <label>
+                题组类型
+                <select v-model="questionForm.type">
+                  <option>分层训练</option>
+                  <option>课堂检测</option>
+                  <option>探究任务</option>
+                </select>
+              </label>
+
+              <label>
+                难度
+                <select v-model="questionForm.difficulty">
+                  <option>基础</option>
+                  <option>中等</option>
+                  <option>提高</option>
+                </select>
+              </label>
+
+              <label>
+                学段
+                <select v-model="questionForm.stage">
+                  <option>小学</option>
+                  <option>初中</option>
+                  <option>高中</option>
+                </select>
+              </label>
+
+              <div class="chip-row">
+                <button type="button" class="chip-row__chip">投屏讲解</button>
+                <button type="button" class="chip-row__chip">随堂检测</button>
+                <button type="button" class="chip-row__chip">分层练习</button>
               </div>
-              <div class="iterate-card__feedback">
-                <input
-                  type="text"
-                  placeholder="描述修改意见，如：第二页增加实验图片..."
-                />
-                <button class="btn-primary btn-sm">提交反馈并再生成</button>
+
+              <button class="btn-primary" :disabled="isGenerating" @click="handleQuestionGenerate">
+                {{ isGenerating ? 'AI 正在生成题组...' : '开始生成教学题' }}
+              </button>
+            </article>
+
+            <article class="preview-card preview-card--rich">
+              <div class="preview-card__chrome">
+                <span />
+                <span />
+                <span />
+                <em>题组结构预览</em>
+              </div>
+
+              <div class="preview-card__body">
+                <div class="preview-card__head">
+                  <div>
+                    <span class="preview-card__eyebrow">实时题组推荐</span>
+                    <h3>{{ questionForm.topic || '等待填写知识点' }}</h3>
+                    <p>{{ questionForm.type }} · {{ questionForm.difficulty }} · {{ questionForm.stage }}</p>
+                  </div>
+                  <div class="ai-badge" :class="{ 'ai-badge--active': isGenerating }">
+                    <i />
+                    {{ isGenerating ? 'Reasoning' : 'Live Sync' }}
+                  </div>
+                </div>
+
+                <div class="preview-highlight">
+                  <strong>当前联动说明</strong>
+                  <p>修改题组类型、难度或学段后，右侧结构会立即刷新，不再出现“左边改了，右边不变”的问题。</p>
+                </div>
+
+                <div class="recommendation-list">
+                  <article v-for="item in questionRecommendation" :key="item.index" class="recommendation-item">
+                    <span>{{ item.index }}</span>
+                    <div>
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.note }}</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+
+              
+            </article>
+          </div>
+        </section>
+
+        <section v-else-if="activePanel === 'intent'" class="panel">
+          <article class="support-card">
+            <div class="section-head">
+              <div>
+                <span class="section-tag">前置信息层</span>
+                <h2>教学意图</h2>
               </div>
             </div>
+            <p class="form-card__desc">这一块不再像独立工具，而是服务于上面的所有生成流程，帮助系统先理解课堂目标和学生状态。</p>
+
+            <div class="support-list">
+              <article v-for="(item, index) in intentSupport" :key="item" class="support-item">
+                <span>0{{ index + 1 }}</span>
+                <p>{{ item }}</p>
+              </article>
+            </div>
+          </article>
+        </section>
+
+        <section v-else-if="activePanel === 'multimodal'" class="panel">
+          <article class="support-card">
+            <div class="section-head">
+              <div>
+                <span class="section-tag">多模态输入</span>
+                <h2>参考资料</h2>
+              </div>
+            </div>
+
+            <label class="upload-zone__drop">
+              <input type="file" multiple hidden @change="onFileChange" />
+              <span class="upload-zone__icon">+</span>
+              <strong>上传 PDF、Word、图片作为生成参考</strong>
+              <p>支持把教辅资料、课堂截图、课标片段一起作为生成上下文。</p>
+            </label>
+
+            <div v-if="uploadFiles.length" class="file-list">
+              <div v-for="(file, index) in uploadFiles" :key="`${file.name}-${index}`" class="file-item">
+                <span>{{ file.name }}</span>
+                <button @click="removeFile(index)">移除</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section v-else-if="activePanel === 'visualize'" class="panel">
+          <div class="insight-grid insight-grid--simple">
+            <article class="viz-card viz-card--flow">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">工作流</span>
+                  <h2>生成路径</h2>
+                </div>
+              </div>
+
+              <svg viewBox="0 0 420 170" class="mini-flow" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="flowStroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#4c7dff" />
+                    <stop offset="100%" stop-color="#7c5cff" />
+                  </linearGradient>
+                </defs>
+                <path d="M20 110 C100 110 110 40 180 40 S300 130 390 68" fill="none" stroke="url(#flowStroke)" stroke-width="6" stroke-linecap="round" />
+                <circle cx="20" cy="110" r="8" fill="#4c7dff" />
+                <circle cx="180" cy="40" r="8" fill="#23c3b2" />
+                <circle cx="390" cy="68" r="8" fill="#8b5cf6" />
+              </svg>
+              <p class="viz-note">把“教学意图 → 生成内容 → 反馈优化”做成更容易理解的工作流，而不是传统统计图堆砌。</p>
+            </article>
+
+            <article class="viz-card">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">推荐动作</span>
+                  <h2>下一步建议</h2>
+                </div>
+              </div>
+
+              <div class="support-list">
+                <article class="support-item">
+                  <span>01</span>
+                  <p>优先补齐“教学题生成”的课堂检测模板，让课件、教案和题组三者形成闭环。</p>
+                </article>
+                <article class="support-item">
+                  <span>02</span>
+                  <p>把高频学科沉淀成可复用模板，减少重复填写成本。</p>
+                </article>
+                <article class="support-item">
+                  <span>03</span>
+                  <p>将有反馈的记录优先推进到下一轮优化，提高演示时的完成度。</p>
+                </article>
+              </div>
+            </article>
           </div>
-          <div v-else class="empty-state">
-            <p>暂无待迭代的内容</p>
-            <button class="btn-ghost" @click="selectPanel('ppt')">
-              去生成课件
-            </button>
+        </section>
+
+        <section v-else-if="activePanel === 'history'" class="panel">
+          <div class="record-summary">
+            <article v-for="item in historySummary" :key="item.label" class="summary-pill">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <p>{{ item.note }}</p>
+            </article>
           </div>
-        </div>
+
+          <div class="history-toolbar">
+            <input v-model="historyQuery" type="text" placeholder="搜索课题、学科或类型" />
+            <div class="pager">
+              <button :disabled="historyPage <= 1" @click="historyPage -= 1">上一页</button>
+              <span>{{ historyPage }} / {{ totalHistoryPages }}</span>
+              <button :disabled="historyPage >= totalHistoryPages" @click="historyPage += 1">下一页</button>
+            </div>
+          </div>
+
+          <div class="record-list">
+            <article v-for="item in paginatedHistory" :key="item.id" class="record-card">
+              <div class="record-card__icon">{{ getTypeIcon(item.type) }}</div>
+              <div class="record-card__info">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.subject }} · {{ TYPE_LABELS[item.type] }} · {{ formatFeatureTime(item.createdAt) }}</span>
+              </div>
+              <em class="status-badge" :data-status="item.status">{{ STATUS_LABELS[item.status] }}</em>
+              <button class="record-card__delete" @click="handleDelete(item.id)">删除</button>
+            </article>
+
+            <div v-if="!paginatedHistory.length" class="empty-state">
+              <p>没有匹配的生成记录</p>
+            </div>
+          </div>
+        </section>
+
+        <section v-else-if="activePanel === 'iterate'" class="panel">
+          <div class="feedback-list">
+            <article v-for="item in feedbackItems" :key="item.id" class="feedback-card">
+              <div class="feedback-card__head">
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p class="feedback-card__meta">{{ item.subject }} · {{ item.typeLabel }} · {{ item.timeLabel }}</p>
+                </div>
+                <em class="status-badge" :data-status="item.status">{{ item.statusLabel }}</em>
+              </div>
+
+              <div class="feedback-card__tips">
+                <span>建议反馈方向</span>
+                <p>可以补充结构调整、讲授风格、题目难度、课堂互动方式等意见，让下一轮生成更贴合你的展示目标。</p>
+              </div>
+
+              <textarea
+                v-model="iterateFeedback[item.id]"
+                placeholder="例如：希望导入更有情境感，减少概念堆砌，增加课堂追问和学生讨论环节"
+              />
+
+              <div class="feedback-card__actions">
+                <button class="btn-primary" @click="submitFeedback(item)">提交反馈</button>
+              </div>
+            </article>
+
+            <div v-if="!feedbackItems.length" class="empty-state">
+              <p>当前没有待反馈内容</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -807,68 +1096,133 @@ watch(activePanel, refresh);
 </template>
 
 <style scoped>
-.features-page {
-  display: flex;
-  height: 100vh;
-  background: transparent;
-  overflow: hidden;
+:global(body) {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(111, 146, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 80% 0, rgba(81, 190, 255, 0.14), transparent 24%),
+    linear-gradient(180deg, #eef4ff 0%, #f6f8fc 40%, #f8fafc 100%);
 }
 
-/* Sidebar */
+.features-page {
+  --font-display: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ink: #122033;
+  --ink-soft: #445269;
+  --ink-muted: #738197;
+  --accent: #4c7dff;
+  --accent-deep: #3156d3;
+  --accent-mint: #23c3b2;
+  --accent-violet: #8b5cf6;
+  --border: rgba(128, 151, 185, 0.16);
+  --border-strong: rgba(76, 125, 255, 0.22);
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-strong: rgba(255, 255, 255, 0.92);
+  --shadow: 0 24px 60px rgba(31, 65, 134, 0.08);
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.features-page__ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(10px);
+  opacity: 0.65;
+}
+
+.ambient-orb--one {
+  width: 320px;
+  height: 320px;
+  top: -80px;
+  right: 12%;
+  background: radial-gradient(circle, rgba(76, 125, 255, 0.28), rgba(76, 125, 255, 0));
+}
+
+.ambient-orb--two {
+  width: 280px;
+  height: 280px;
+  bottom: 10%;
+  left: -60px;
+  background: radial-gradient(circle, rgba(35, 195, 178, 0.16), rgba(35, 195, 178, 0));
+}
+
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(76, 125, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(76, 125, 255, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 84%);
+}
+
 .sidebar {
-  width: 260px;
-  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  width: 292px;
+  height: 100vh;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
-  padding: 20px 14px;
-  background: rgba(255, 255, 255, 0.5);
-  border-right: 1px solid rgba(0, 87, 217, 0.08);
-  backdrop-filter: blur(12px);
-  overflow-y: auto;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 12px 0 40px rgba(76, 125, 255, 0.04);
+  z-index: 2;
 }
 
 .sidebar__head {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
-  padding: 0 4px;
+  margin-bottom: 10px;
 }
 
 .icon-btn {
-  display: flex;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
   border: 1px solid var(--border);
-  color: var(--ink-soft);
-  cursor: pointer;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--ink);
   text-decoration: none;
-  flex-shrink: 0;
-  transition: background 0.2s;
 }
 
 .icon-btn svg {
   width: 18px;
   height: 18px;
 }
-.icon-btn:hover {
-  background: #fff;
+
+.sidebar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .sidebar__brand-name {
-  display: block;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.9375rem;
+  font-weight: 800;
+  font-size: 0.98rem;
   letter-spacing: -0.02em;
 }
 
 .sidebar__brand-sub {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--ink-muted);
 }
 
@@ -877,105 +1231,108 @@ watch(activePanel, refresh);
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 14px;
-  margin-bottom: 16px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  background: rgba(255, 255, 255, 0.6);
+  padding: 12px 14px;
+  margin-bottom: 10px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s var(--ease-out);
+}
+
+.overview-btn:hover,
+.overview-btn--active {
+  color: var(--accent-deep);
+  border-color: rgba(76, 125, 255, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(237, 243, 255, 0.96));
+  box-shadow: 0 12px 28px rgba(76, 125, 255, 0.08);
 }
 
 .overview-btn svg {
   width: 18px;
   height: 18px;
-  opacity: 0.6;
-}
-
-.overview-btn:hover,
-.overview-btn--active {
-  background: rgba(0, 144, 255, 0.1);
-  border-color: rgba(0, 144, 255, 0.2);
-  color: var(--accent-deep);
 }
 
 .nav-group {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .nav-group__label {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  margin: 0 0 8px;
+  padding: 0 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  padding: 0 10px;
-  margin-bottom: 6px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  padding: 12px;
+  border: 0;
+  border-radius: 16px;
   background: transparent;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
   text-align: left;
-  transition: background 0.2s;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
 }
 
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.7);
-}
-
+.nav-item:hover,
 .nav-item--active {
-  background: rgba(0, 144, 255, 0.12);
+  transform: translateX(3px);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 14px 28px rgba(31, 65, 134, 0.06);
 }
 
 .nav-item__icon {
-  font-size: 1.125rem;
-  width: 32px;
-  height: 32px;
-  display: flex;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(233, 240, 255, 0.96));
+  color: var(--accent-deep);
+  border: 1px solid rgba(76, 125, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
   flex-shrink: 0;
 }
 
-.nav-item--active .nav-item__icon {
-  background: rgba(0, 144, 255, 0.15);
+.nav-item__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .nav-item__text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .nav-item__text strong {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.86rem;
+  font-weight: 800;
   color: var(--ink);
 }
 
 .nav-item__text small {
-  font-size: 0.6875rem;
+  font-size: 0.72rem;
   color: var(--ink-muted);
+  line-height: 1.5;
 }
 
 .sidebar__foot {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 18px;
 }
 
 .assistant-link {
@@ -983,29 +1340,24 @@ watch(activePanel, refresh);
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(76, 125, 255, 0.12), rgba(139, 92, 246, 0.1));
   color: var(--accent-deep);
-  background: rgba(0, 144, 255, 0.1);
-  border-radius: 12px;
   text-decoration: none;
-  transition: background 0.2s;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .assistant-link svg {
   width: 16px;
   height: 16px;
 }
-.assistant-link:hover {
-  background: rgba(0, 144, 255, 0.16);
-}
 
-/* Main */
 .main {
+  position: relative;
+  z-index: 1;
   flex: 1;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   padding: 24px;
 }
@@ -1014,20 +1366,34 @@ watch(activePanel, refresh);
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+
+.header-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.74rem;
+  font-weight: 800;
 }
 
 .main__header h1 {
+  margin: 10px 0 0;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.84rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .main__subtitle {
-  font-size: 0.875rem;
+  margin: 8px 0 0;
+  max-width: 760px;
   color: var(--ink-muted);
-  margin-top: 4px;
+  font-size: 0.92rem;
+  line-height: 1.75;
 }
 
 .mobile-only {
@@ -1035,306 +1401,556 @@ watch(activePanel, refresh);
 }
 
 .main__body {
-  flex: 1;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 16px 48px rgba(0, 87, 217, 0.08);
+  min-height: calc(100vh - 120px);
   padding: 28px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  overflow-y: auto;
 }
 
-/* Overview */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.stat-card {
-  padding: 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(248, 250, 252, 0.8);
-}
-
-.stat-card__value {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-}
-
-.stat-card--accent .stat-card__value {
-  background: linear-gradient(135deg, var(--accent), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stat-card__label {
-  font-size: 0.8125rem;
-  color: var(--ink-muted);
-}
-
-.overview-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.capability-card {
-  position: relative;
-  padding: 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition:
-    transform 0.3s var(--ease-out),
-    box-shadow 0.3s,
-    border-color 0.3s;
-}
-
-.capability-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 36px rgba(0, 87, 217, 0.1);
-  border-color: rgba(0, 119, 230, 0.25);
-}
-
-.capability-card__icon {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-
-.capability-card h3 {
-  font-family: var(--font-display);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.capability-card p {
-  font-size: 0.8125rem;
-  color: var(--ink-soft);
-  line-height: 1.5;
-}
-
-.capability-card__arrow {
-  position: absolute;
-  top: 18px;
-  right: 16px;
-  color: var(--ink-muted);
-  transition: transform 0.2s;
-}
-
-.capability-card:hover .capability-card__arrow {
-  transform: translateX(3px);
-  color: var(--accent);
-}
-
-.recent-block__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.recent-block__head h2 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.text-link {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.recent-list {
+.panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 22px;
 }
 
-.recent-item {
+.section-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  transition: background 0.2s;
 }
 
-.recent-item:hover {
-  background: rgba(0, 119, 230, 0.04);
+.section-head h2,
+.section-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.recent-item__icon {
-  width: 32px;
-  height: 32px;
+.section-head small {
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+}
+
+.section-tag,
+.overview-stage__badge,
+.preview-card__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.overview-stage {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+}
+
+.overview-stage__lead {
+  padding: 28px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(152, 185, 255, 0.22), transparent 30%),
+    linear-gradient(145deg, rgba(15, 24, 42, 0.96), rgba(34, 66, 149, 0.92));
+  color: #fff;
+  box-shadow: 0 26px 50px rgba(31, 65, 134, 0.18);
+}
+
+.overview-stage__lead h2 {
+  margin: 16px 0 12px;
+  max-width: 11em;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+.overview-stage__lead p {
+  margin: 0;
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.75;
+}
+
+.moment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.moment-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.moment-card span {
+  display: block;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.moment-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.moment-card p {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-card {
   display: flex;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 247, 255, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.metric-card__icon {
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: rgba(0, 119, 230, 0.08);
-  color: var(--accent);
+  border-radius: 16px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #fff;
   flex-shrink: 0;
 }
 
-.recent-item__icon svg {
-  width: 18px;
-  height: 18px;
+.metric-card[data-tone='blue'] .metric-card__icon {
+  background: linear-gradient(135deg, #4c7dff, #5a9dff);
 }
 
-.recent-item__info {
-  flex: 1;
+.metric-card[data-tone='mint'] .metric-card__icon {
+  background: linear-gradient(135deg, #23c3b2, #62d9c4);
+}
+
+.metric-card[data-tone='violet'] .metric-card__icon {
+  background: linear-gradient(135deg, #7c5cff, #9b7dff);
+}
+
+.metric-card[data-tone='amber'] .metric-card__icon {
+  background: linear-gradient(135deg, #f59e0b, #ffbf5a);
+}
+
+.metric-card__body {
+  min-width: 0;
+}
+
+.metric-card__body span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.metric-card__body strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.metric-card__body p,
+.summary-pill p {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1.22fr 0.78fr;
+  gap: 18px;
+}
+
+.insight-grid--simple {
+  grid-template-columns: 1fr 1fr;
+}
+
+.dashboard-card,
+.form-card,
+.preview-card,
+.support-card,
+.viz-card,
+.feedback-card,
+.record-card,
+.summary-pill {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(248, 251, 255, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.dashboard-card,
+.form-card,
+.support-card,
+.viz-card,
+.feedback-card {
+  padding: 22px;
+}
+
+.dashboard-card--chart {
+  background:
+    radial-gradient(circle at top right, rgba(76, 125, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 245, 255, 0.94));
+}
+
+.dashboard-card--donut,
+.dashboard-card--queue {
+  background: rgba(250, 252, 255, 0.9);
+}
+
+.line-chart-card {
+  margin-top: 18px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 230px;
+  display: block;
+}
+
+.line-chart__grid {
+  stroke: rgba(114, 135, 168, 0.12);
+  stroke-width: 1;
+}
+
+.line-chart__labels {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.line-chart__label {
+  text-align: center;
+}
+
+.line-chart__label strong {
+  display: block;
+  font-size: 0.84rem;
+  color: var(--accent-deep);
+}
+
+.line-chart__label span {
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+
+.donut-panel {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 18px;
+  margin-top: 12px;
 }
 
-.recent-item__info strong {
-  font-size: 0.875rem;
+.donut-chart {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
 }
-.recent-item__info span {
-  font-size: 0.75rem;
+
+.donut-chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+.donut-chart__track {
+  fill: none;
+  stroke: rgba(76, 125, 255, 0.08);
+  stroke-width: 18;
+}
+
+.donut-chart__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-chart__center strong {
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.donut-chart__center span {
+  font-size: 0.78rem;
   color: var(--ink-muted);
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.donut-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.donut-legend__item i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.donut-legend__item strong,
+.queue-item__info strong,
+.record-card__info strong,
+.feedback-card h3,
+.recommendation-item strong {
+  display: block;
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.donut-legend__item span,
+.queue-item__info span,
+.record-card__info span,
+.recommendation-item p,
+.feedback-card__meta,
+.viz-note,
+.support-item p,
+.upload-zone__drop p,
+.preview-highlight p {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.queue-list,
+.record-list,
+.feedback-list,
+.support-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-item,
+.record-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(76, 125, 255, 0.08);
+}
+
+.queue-item__icon,
+.record-card__icon {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(76, 125, 255, 0.14), rgba(139, 92, 246, 0.1));
+  color: var(--accent-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.queue-item__info,
+.record-card__info {
+  flex: 1;
+  min-width: 0;
 }
 
 .status-badge {
-  padding: 4px 10px;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
   border-radius: 999px;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-.status-badge[data-status="completed"] {
-  color: #059669;
-  background: rgba(5, 150, 105, 0.1);
+.status-badge[data-status='completed'] {
+  color: #0f8d73;
+  background: rgba(35, 195, 178, 0.12);
 }
 
-.status-badge[data-status="draft"] {
-  color: var(--ink-muted);
-  background: rgba(10, 15, 26, 0.06);
+.status-badge[data-status='draft'] {
+  color: #6b46c1;
+  background: rgba(139, 92, 246, 0.12);
 }
 
-.status-badge[data-status="iterating"] {
+.status-badge[data-status='iterating'] {
   color: var(--accent-deep);
-  background: rgba(0, 119, 230, 0.1);
+  background: rgba(76, 125, 255, 0.12);
 }
 
-/* Forms & panels */
-.panel-grid {
+.generator-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
-.form-card h2 {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 8px;
+  grid-template-columns: 0.94fr 1.06fr;
+  gap: 20px;
 }
 
 .form-card__desc {
-  font-size: 0.875rem;
+  margin: 10px 0 22px;
   color: var(--ink-soft);
-  margin-bottom: 24px;
+  font-size: 0.88rem;
+  line-height: 1.72;
 }
 
 .form-card label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 16px;
-  font-size: 0.8125rem;
-  font-weight: 600;
   color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .form-card input,
-.form-card select {
-  padding: 11px 14px;
+.form-card select,
+.history-toolbar input,
+.feedback-card textarea {
+  width: 100%;
+  padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.9375rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 0.92rem;
+  color: var(--ink);
   outline: none;
-  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-card input::placeholder,
+.history-toolbar input::placeholder,
+.feedback-card textarea::placeholder {
+  color: #97a4b8;
 }
 
 .form-card input:focus,
-.form-card select:focus {
-  border-color: var(--accent);
+.form-card select:focus,
+.history-toolbar input:focus,
+.feedback-card textarea:focus {
+  border-color: rgba(76, 125, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(76, 125, 255, 0.08);
 }
 
-.btn-primary {
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+}
+
+.chip-row__chip {
+  padding: 8px 12px;
+  border: 1px solid rgba(76, 125, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(76, 125, 255, 0.06);
+  color: var(--accent-deep);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary,
+.btn-secondary,
+.record-card__delete,
+.pager button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--ink);
-  border: none;
-  border-radius: 999px;
+  border: 0;
   cursor: pointer;
-  transition:
-    transform 0.25s var(--ease-spring),
-    box-shadow 0.25s;
-  text-decoration: none;
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s, background 0.2s;
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(10, 15, 26, 0.15);
+.btn-primary {
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #16233c, #4168f5);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  box-shadow: 0 16px 28px rgba(49, 86, 211, 0.18);
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover,
+.pager button:hover:not(:disabled),
+.record-card__delete:hover {
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-.btn-sm {
-  padding: 10px 18px;
-  font-size: 0.8125rem;
-}
-
-.btn-ghost {
-  padding: 10px 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--border-strong);
+.btn-secondary {
+  padding: 10px 16px;
   border-radius: 999px;
-  cursor: pointer;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .preview-card {
-  border: 1px solid var(--border);
-  border-radius: 14px;
   overflow: hidden;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(238, 245, 255, 0.95));
 }
 
 .preview-card__chrome {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 12px 16px;
-  background: rgba(248, 250, 252, 0.9);
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.82);
   color: var(--ink-muted);
+  font-size: 0.74rem;
 }
 
 .preview-card__chrome span {
@@ -1344,593 +1960,322 @@ watch(activePanel, refresh);
 }
 
 .preview-card__chrome span:nth-child(1) {
-  background: #ff6b6b;
+  background: #ff7d7d;
 }
+
 .preview-card__chrome span:nth-child(2) {
-  background: #ffd166;
+  background: #f5c55a;
 }
+
 .preview-card__chrome span:nth-child(3) {
-  background: #06d6a0;
+  background: #39cc9f;
 }
+
 .preview-card__chrome em {
   margin-left: auto;
   font-style: normal;
 }
 
-.preview-slides {
+.preview-card__body {
+  padding: 22px;
+}
+
+.preview-card__head {
   display: flex;
-  gap: 10px;
-  padding: 20px;
-  overflow-x: auto;
-}
-
-.preview-slide {
-  flex-shrink: 0;
-  width: 100px;
-  height: 70px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-
-.preview-slide.active {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px rgba(0, 119, 230, 0.15);
-  color: var(--accent-deep);
-}
-
-.preview-hint {
-  padding: 12px 16px;
-  font-size: 0.8125rem;
-  color: var(--ink-muted);
-  text-align: center;
-  border-top: 1px solid var(--border);
-}
-
-.doc-preview {
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(248, 250, 252, 0.5);
-}
-
-.doc-preview h3 {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-.doc-preview ul {
-  list-style: none;
-}
-
-.doc-preview li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 0.875rem;
-  color: var(--ink-soft);
-  border-bottom: 1px solid var(--border);
-}
-
-.doc-preview li.indent {
-  padding-left: 24px;
-}
-
-.doc-preview li span {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
-  width: 28px;
-}
-
-/* Interactive */
-.interactive-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 
-.interactive-card {
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  text-align: center;
-  transition:
-    transform 0.3s var(--ease-out),
-    box-shadow 0.3s;
-}
-
-.interactive-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 87, 217, 0.08);
-}
-
-.interactive-card span {
-  font-size: 2rem;
-}
-
-.interactive-card h3 {
-  font-size: 0.9375rem;
-  font-weight: 700;
+.preview-card__head h3 {
   margin: 10px 0 6px;
+  font-size: 1.26rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.interactive-card p {
-  font-size: 0.8125rem;
+.preview-card__head p {
+  margin: 0;
   color: var(--ink-muted);
+  font-size: 0.84rem;
 }
 
-/* Intent */
-.intent-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+.ai-badge {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-.intent-flow {
+.ai-badge i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0 rgba(76, 125, 255, 0.35);
+}
+
+.ai-badge--active i {
+  animation: pulse 1.4s infinite;
+}
+
+.preview-highlight,
+.feedback-card__tips,
+.support-item {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.preview-highlight {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid rgba(76, 125, 255, 0.08);
+}
+
+.preview-highlight strong,
+.feedback-card__tips span {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: var(--accent-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.recommendation-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.intent-step {
+.recommendation-item {
   display: flex;
-  align-items: center;
   gap: 14px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  background: rgba(0, 119, 230, 0.06);
-  border: 1px solid rgba(0, 119, 230, 0.1);
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(76, 125, 255, 0.08);
 }
 
-.intent-step__num {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
+.recommendation-item span,
+.support-item span {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-}
-
-.intent-card__content h2 {
-  font-family: var(--font-display);
-  font-size: 1.375rem;
+  border-radius: 10px;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.76rem;
   font-weight: 800;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
-.intent-card__content p {
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  color: var(--ink-soft);
-  margin-bottom: 20px;
+.support-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.check-list {
-  list-style: none;
-  margin-bottom: 24px;
+.support-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
 }
 
-.check-list li {
-  padding: 8px 0 8px 24px;
-  font-size: 0.875rem;
-  color: var(--ink-soft);
-  position: relative;
-}
-
-.check-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: #059669;
-  font-weight: 700;
-}
-
-/* Multimodal */
 .upload-zone__drop {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  border: 2px dashed rgba(0, 119, 230, 0.25);
-  border-radius: 16px;
-  background: rgba(0, 119, 230, 0.04);
+  gap: 8px;
+  padding: 48px 20px;
+  border: 1.5px dashed rgba(76, 125, 255, 0.24);
+  border-radius: 20px;
+  background: rgba(76, 125, 255, 0.04);
   cursor: pointer;
-  transition:
-    border-color 0.2s,
-    background 0.2s;
   text-align: center;
 }
 
-.upload-zone__drop:hover {
-  border-color: var(--accent);
-  background: rgba(0, 119, 230, 0.08);
+.upload-zone__drop strong {
+  font-size: 0.92rem;
 }
 
 .upload-zone__icon {
-  font-size: 2.5rem;
-  margin-bottom: 12px;
-}
-
-.upload-zone__drop strong {
-  font-size: 1rem;
-  margin-bottom: 6px;
-}
-
-.upload-zone__drop p {
-  font-size: 0.875rem;
-  color: var(--ink-muted);
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 1.6rem;
+  font-weight: 300;
 }
 
 .file-list {
-  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .file-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  background: rgba(248, 250, 252, 0.9);
-  font-size: 0.875rem;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
 }
 
 .file-item button {
+  border: 0;
   background: none;
-  border: none;
   color: var(--ink-muted);
   cursor: pointer;
-  font-size: 0.8125rem;
 }
 
-.multimodal-options h3 {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  margin: 20px 0 12px;
+.viz-card--flow {
+  background:
+    radial-gradient(circle at top right, rgba(76, 125, 255, 0.1), transparent 28%),
+    rgba(248, 251, 255, 0.82);
 }
 
-.option-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: 10px;
-  margin-bottom: 8px;
-  padding: 8px 14px;
-  font-size: 0.8125rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-/* Visualization */
-.viz-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.viz-card {
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.viz-card--wide {
-  grid-column: span 2;
-}
-
-.viz-card h3 {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-.bar-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  height: 140px;
-  padding-top: 10px;
-}
-
-.bar-chart__bar {
-  flex: 1;
-  background: linear-gradient(180deg, var(--accent), rgba(0, 119, 230, 0.2));
-  border-radius: 6px 6px 2px 2px;
-  min-height: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  animation: bar-grow 0.8s var(--ease-out) backwards;
-}
-
-.bar-chart__bar span {
-  font-size: 0.6875rem;
-  color: var(--ink-muted);
-  margin-top: 6px;
-  transform: translateY(100%);
-  padding-bottom: 4px;
-}
-
-@keyframes bar-grow {
-  from {
-    transform: scaleY(0);
-    transform-origin: bottom;
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-
-.donut-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.donut-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.875rem;
-}
-
-.donut-item__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.donut-item strong {
-  margin-left: auto;
-}
-
-.radar-placeholder svg {
+.mini-flow {
   width: 100%;
-  max-width: 200px;
-  margin: 0 auto;
+  height: 164px;
   display: block;
+  margin-top: 16px;
 }
 
-.progress-steps {
-  display: flex;
-  gap: 8px;
+.record-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
-.progress-step {
-  flex: 1;
-  text-align: center;
-  padding: 12px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+.summary-pill {
+  padding: 18px;
 }
 
-.progress-step span {
-  display: inline-flex;
-  width: 24px;
-  height: 24px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: rgba(10, 15, 26, 0.06);
-  margin-bottom: 6px;
-}
-
-.progress-step.done span {
-  background: rgba(5, 150, 105, 0.15);
-  color: #059669;
-}
-
-.progress-step.active span {
-  background: rgba(0, 119, 230, 0.15);
-  color: var(--accent);
-}
-
-.progress-step p {
-  font-size: 0.75rem;
+.summary-pill span {
+  display: block;
+  font-size: 0.76rem;
   color: var(--ink-muted);
 }
 
-/* History */
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.summary-pill strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.52rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.history-row {
+.history-toolbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 14px;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
+}
+
+.history-toolbar input {
+  max-width: 320px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pager button,
+.record-card__delete {
+  padding: 9px 14px;
   border-radius: 12px;
-  transition: background 0.2s;
+  background: rgba(76, 125, 255, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
-.history-row:hover {
-  background: rgba(0, 119, 230, 0.03);
+.pager button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.history-row__icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(0, 119, 230, 0.08);
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.history-row__icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.history-row__info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.history-row__info strong {
-  font-size: 0.9375rem;
-}
-.history-row__info span {
-  font-size: 0.75rem;
+.pager span {
   color: var(--ink-muted);
+  font-size: 0.82rem;
 }
 
-.history-row__actions {
+.feedback-card__head,
+.feedback-card__actions {
   display: flex;
-  gap: 4px;
-}
-
-.history-row__actions button {
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: var(--ink-muted);
-  transition:
-    background 0.2s,
-    color 0.2s;
-}
-
-.history-row__actions button:hover {
-  background: rgba(0, 119, 230, 0.08);
-  color: var(--accent);
-}
-
-/* Iterate */
-.iterate-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.iterate-card {
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.iterate-card__head {
-  display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
-.iterate-card__head span {
-  font-size: 1.5rem;
+.feedback-card__meta {
+  margin-top: 8px;
 }
 
-.iterate-card__head strong {
-  display: block;
-  font-size: 0.9375rem;
-}
-.iterate-card__head span + div span {
-  font-size: 0.75rem;
-  color: var(--ink-muted);
+.feedback-card__tips {
+  margin: 18px 0 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(76, 125, 255, 0.08);
 }
 
-.iterate-card__preview {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+.feedback-card textarea {
+  min-height: 112px;
+  resize: vertical;
 }
 
-.iterate-preview-block {
-  flex: 1;
-  height: 80px;
-  border-radius: 10px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 119, 230, 0.08),
-    rgba(0, 194, 212, 0.06)
-  );
-  border: 1px solid var(--border);
-}
-
-.iterate-preview-block.short {
-  flex: 0.5;
-}
-
-.iterate-card__feedback {
-  display: flex;
-  gap: 10px;
-}
-
-.iterate-card__feedback input {
-  flex: 1;
-  padding: 11px 16px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  outline: none;
-  font-size: 0.875rem;
+.feedback-card__actions {
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .empty-state {
+  padding: 56px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
   text-align: center;
-  padding: 60px 20px;
   color: var(--ink-muted);
-}
-
-.empty-state p {
-  margin-bottom: 16px;
 }
 
 .toast {
   position: fixed;
-  bottom: 32px;
   left: 50%;
+  bottom: 28px;
   transform: translateX(-50%);
   z-index: 200;
-  padding: 12px 24px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #fff;
-  background: var(--ink);
+  padding: 12px 22px;
   border-radius: 999px;
-  box-shadow: 0 12px 40px rgba(10, 15, 26, 0.2);
+  background: #16233c;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: 0 16px 32px rgba(22, 35, 60, 0.24);
 }
 
 .toast-enter-active,
 .toast-leave-active {
-  transition:
-    opacity 0.3s,
-    transform 0.3s;
+  transition: opacity 0.28s, transform 0.28s;
 }
+
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
@@ -1941,21 +2286,26 @@ watch(activePanel, refresh);
   display: none;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .stat-cards,
-  .overview-grid,
-  .interactive-grid {
-    grid-template-columns: repeat(2, 1fr);
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 125, 255, 0.35);
   }
-  .panel-grid,
-  .intent-card {
-    grid-template-columns: 1fr;
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 125, 255, 0);
   }
-  .viz-card--wide {
-    grid-column: span 1;
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 125, 255, 0);
   }
-  .viz-grid {
+}
+
+@media (max-width: 1200px) {
+  .overview-stage,
+  .insight-grid,
+  .generator-layout,
+  .record-summary,
+  .insight-grid--simple {
     grid-template-columns: 1fr;
   }
 }
@@ -1966,10 +2316,8 @@ watch(activePanel, refresh);
     top: 0;
     left: 0;
     bottom: 0;
-    z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.3s var(--ease-out);
-    box-shadow: 4px 0 24px rgba(10, 15, 26, 0.1);
   }
 
   .sidebar--open {
@@ -1980,29 +2328,46 @@ watch(activePanel, refresh);
     display: block;
     position: fixed;
     inset: 0;
-    z-index: 199;
-    background: rgba(10, 15, 26, 0.3);
+    z-index: 1;
+    background: rgba(15, 23, 42, 0.28);
   }
 
   .main {
     padding: 12px;
   }
+
   .main__body {
-    padding: 20px 16px;
-    border-radius: 16px;
+    min-height: auto;
+    padding: 18px 16px;
+    border-radius: 22px;
   }
+
   .mobile-only {
-    display: flex;
+    display: inline-flex;
   }
-  .stat-cards {
-    grid-template-columns: 1fr 1fr;
-  }
-  .overview-grid,
-  .interactive-grid {
+
+  .metric-grid,
+  .moment-grid,
+  .record-summary,
+  .line-chart__labels {
     grid-template-columns: 1fr;
   }
-  .iterate-card__feedback {
+
+  .history-toolbar,
+  .feedback-card__head,
+  .feedback-card__actions,
+  .preview-card__head {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-toolbar input {
+    max-width: none;
+  }
+
+  .record-card,
+  .queue-item {
+    flex-wrap: wrap;
   }
 }
 </style>

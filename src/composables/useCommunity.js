@@ -2,6 +2,96 @@ import { reactive } from 'vue'
 
 const STORAGE_KEY = 'zhike-community-data'
 
+const VISUAL_PRESETS = {
+  教学讨论: {
+    badge: '教研现场',
+    kicker: '课堂问题正在被拆解',
+    subtitle: '把真实课堂场景、难点与限制条件说清楚，更容易收到可执行建议。',
+    palette: ['#ecf5ff', '#d4e7ff', '#8eb8f4'],
+    scene: 'discussion',
+    chips: ['真实问题', '同行速答'],
+    shots: [
+      { label: '场景', value: '课堂导入', tone: 'blue' },
+      { label: '目标', value: '问题拆解', tone: 'cyan' },
+      { label: '产出', value: '方案共创', tone: 'slate' },
+    ],
+  },
+  课件结构: {
+    badge: '真实案例',
+    kicker: '课件骨架先搭起来',
+    subtitle: '从导入、讲授、练习到板书，把课堂节奏和知识梯度一并排清楚。',
+    palette: ['#f3f7fd', '#dfeafb', '#aec6e6'],
+    scene: 'spotlight',
+    chips: ['PPT 结构', '节奏设计'],
+    shots: [
+      { label: '导入', value: '冲突感', tone: 'blue' },
+      { label: '讲授', value: '问题链', tone: 'cyan' },
+      { label: '作业', value: '迁移练', tone: 'slate' },
+    ],
+  },
+  互动设计: {
+    badge: '课堂互动',
+    kicker: '把环节做得可参与',
+    subtitle: '适合投票、演示动画、小组协作与追问链设计的互动型内容结构。',
+    palette: ['#f5f8ff', '#dfe9fb', '#97d5f2'],
+    scene: 'interface',
+    chips: ['互动脚本', '演示动画'],
+    shots: [
+      { label: '提问', value: '先猜想', tone: 'blue' },
+      { label: '演示', value: '可交互', tone: 'cyan' },
+      { label: '反馈', value: '即点评', tone: 'green' },
+    ],
+  },
+  多模态参考: {
+    badge: '资料融合',
+    kicker: '图片和文档一起用',
+    subtitle: '适合 PDF、图片、表格和校本模板混合输入后的统一编排与风格对齐。',
+    palette: ['#f7f9fd', '#e3ebf8', '#b7cbea'],
+    scene: 'document',
+    chips: ['PDF', '图片', '模板'],
+    shots: [
+      { label: '输入', value: 'PDF / 图片', tone: 'blue' },
+      { label: '抽取', value: '知识点', tone: 'cyan' },
+      { label: '输出', value: '统一风格', tone: 'slate' },
+    ],
+  },
+  'AI 提示词': {
+    badge: '提示词库',
+    kicker: '把 AI 调教得更懂课堂',
+    subtitle: '适合沉淀追问模板、角色设定、输出格式约束和评价标准。',
+    palette: ['#f5f8ff', '#e7edff', '#b9c7ff'],
+    scene: 'prompt',
+    chips: ['Prompt', '输出约束'],
+    shots: [
+      { label: '角色', value: '教研员', tone: 'blue' },
+      { label: '格式', value: '表格化', tone: 'cyan' },
+      { label: '标准', value: '可复制', tone: 'slate' },
+    ],
+  },
+}
+
+function createVisual(tag, title, content = '') {
+  const preset = VISUAL_PRESETS[tag] || VISUAL_PRESETS.教学讨论
+  return {
+    badge: preset.badge,
+    kicker: preset.kicker,
+    headline: title,
+    subtitle: preset.subtitle || content.slice(0, 36),
+    palette: preset.palette,
+    scene: preset.scene,
+    chips: preset.chips,
+    shots: preset.shots,
+  }
+}
+
+function normalizePost(post) {
+  return {
+    ...post,
+    comments: Array.isArray(post.comments) ? post.comments : [],
+    media: post.media || createVisual(post.tag, post.title, post.content),
+  }
+}
+
 const SEED_POSTS = [
   {
     id: 'p1',
@@ -12,11 +102,11 @@ const SEED_POSTS = [
     author: '王老师',
     createdAt: Date.now() - 86400000 * 2,
     likes: 42,
-    images: [
-      'https://picsum.photos/400/300?random=1',
-      'https://picsum.photos/300/400?random=2',
-      'https://picsum.photos/400/400?random=3',
-    ],
+    media: createVisual(
+      '课件结构',
+      '历史导入案例拆解',
+      '把“认知冲突”转成课堂导入画面与问题链。'
+    ),
     comments: [
       {
         id: 'c1',
@@ -43,10 +133,11 @@ const SEED_POSTS = [
     author: '李老师',
     createdAt: Date.now() - 86400000 * 4,
     likes: 36,
-    images: [
-      'https://picsum.photos/350/500?random=4',
-      'https://picsum.photos/500/350?random=5',
-    ],
+    media: createVisual(
+      '互动设计',
+      '物理实验互动看板',
+      '把拖拽、演示和追问链拆成一张可执行的互动脚本。'
+    ),
     comments: [
       {
         id: 'c3',
@@ -66,12 +157,11 @@ const SEED_POSTS = [
     author: '张老师',
     createdAt: Date.now() - 86400000 * 6,
     likes: 58,
-    images: [
-      'https://picsum.photos/400/600?random=6',
-      'https://picsum.photos/600/400?random=7',
-      'https://picsum.photos/400/400?random=8',
-      'https://picsum.photos/300/500?random=9',
-    ],
+    media: createVisual(
+      '多模态参考',
+      '统一排版风格预览',
+      '同一份教案素材在 PPT 与 Word 中保持一致的版式语言。'
+    ),
     comments: [],
   },
 ]
@@ -79,12 +169,20 @@ const SEED_POSTS = [
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return {
+        posts: (parsed.posts || []).map(normalizePost),
+        likedIds: parsed.likedIds || [],
+        favoriteIds: parsed.favoriteIds || [],
+        likedCommentIds: parsed.likedCommentIds || [],
+      }
+    }
   } catch {
     /* ignore */
   }
   return {
-    posts: structuredClone(SEED_POSTS),
+    posts: structuredClone(SEED_POSTS).map(normalizePost),
     likedIds: [],
     favoriteIds: [],
     likedCommentIds: [],
@@ -202,6 +300,7 @@ export function useCommunity() {
       createdAt: Date.now(),
       likes: 0,
       comments: [],
+      media: createVisual(tag || '教学讨论', title.trim(), content.trim()),
     }
     state.posts.unshift(post)
     persist()
