@@ -3,6 +3,7 @@ import MainHome from '../components/MainHome.vue'
 import CommunityView from '../views/CommunityView.vue'
 import AssistantView from '../views/AssistantView.vue'
 import LessonsView from '../views/LessonsView.vue'
+import ProfileView from '../views/ProfileView.vue'
 
 import FeaturesView from '../views/FeaturesView.vue'
 import AboutView from '../views/AboutView.vue'
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/assistant', name: 'assistant', component: AssistantView },
     { path: '/lessons', name: 'lessons', component: LessonsView },
     { path: '/community', name: 'community', component: CommunityView },
+    { path: '/profile', name: 'profile', component: ProfileView },
     { path: '/about', name: 'about', component: AboutView },
   ],
   scrollBehavior(to) {

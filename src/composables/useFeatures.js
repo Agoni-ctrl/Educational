@@ -142,11 +142,30 @@ export function formatFeatureTime(ts) {
 }
 
 export function getTypeIcon(type) {
+  // 使用SVG图标，更美观且有设计感
   const icons = {
-    ppt: 'PPT',
-    doc: 'DOC',
-    interactive: 'QUIZ',
-    animation: 'ANI',
+    ppt: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M8 9v6M8 9l2.5 3M8 15l2.5-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
+      <circle cx="15" cy="14" r="1.5" fill="currentColor"/>
+    </svg>`,
+    doc: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M14 2l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`,
+    interactive: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M8 10h2M8 14h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="15" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M17 12l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`,
+    animation: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+    </svg>`,
   }
-  return icons[type] || 'GEN'
+  return icons[type] || icons.ppt
 }

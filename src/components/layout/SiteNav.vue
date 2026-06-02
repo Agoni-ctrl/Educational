@@ -1,121 +1,139 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
-import { navItems } from '../../config/nav.js'
+import { computed, ref, onMounted, onUnmounted } from "vue";
+import { RouterLink, useRoute } from "vue-router";
+import { navItems, userNavItems } from "../../config/nav.js";
 
-const route = useRoute()
-const menuOpen = ref(false)
-const navSolid = ref(false)
-const loginOpen = ref(false)
-const userMenuOpen = ref(false)
-const user = ref(null)
-const loginError = ref('')
-const captchaCode = ref('')
+// 根据登录状态获取导航项
+const currentNavItems = computed(() => {
+  return user.value ? userNavItems : navItems;
+});
+
+const route = useRoute();
+const menuOpen = ref(false);
+const navSolid = ref(false);
+const loginOpen = ref(false);
+const userMenuOpen = ref(false);
+const user = ref(null);
+const loginError = ref("");
+const captchaCode = ref("");
 const loginForm = ref({
-  account: 'admin',
-  password: '123456',
-  captcha: '',
-})
+  account: "admin",
+  password: "123456",
+  captcha: "",
+});
 
 const navIcons = {
-  home: ['M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1h-3.2v-4.6H7.7V17H4.5a1 1 0 0 1-1-1V9.2z'],
-  grid: ['M4 4h5v5H4V4zm7 0h5v5h-5V4zM4 11h5v5H4v-5zm7 0h5v5h-5v-5z'],
-  spark: ['M10 3l1.3 4 4 1.3-4 1.4-1.3 4-1.3-4-4-1.4 4-1.3L10 3z'],
-  chat: ['M4 5.5A2.5 2.5 0 0 1 6.5 3h7A2.5 2.5 0 0 1 16 5.5v4A2.5 2.5 0 0 1 13.5 12H9l-4 3v-3.2A2.5 2.5 0 0 1 4 9.5v-4z'],
-  book: ['M5 4.5A2.5 2.5 0 0 1 7.5 2H16v14H7.5A2.5 2.5 0 0 0 5 18V4.5zM5 4.5A2.5 2.5 0 0 0 2.5 2H2v14h.5A2.5 2.5 0 0 1 5 18'],
-  users: ['M7.2 9.2a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4zM2.8 16.5a4.4 4.4 0 0 1 8.8 0M13.2 8.8a2.2 2.2 0 1 0 0-4.4M12.7 12.4a3.6 3.6 0 0 1 4.5 3.5'],
-  info: ['M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM10 9v4M10 6.7h.01'],
-}
+  home: [
+    "M3.5 9.2 10 4l6.5 5.2V16a1 1 0 0 1-1 1h-3.2v-4.6H7.7V17H4.5a1 1 0 0 1-1-1V9.2z",
+  ],
+  grid: ["M4 4h5v5H4V4zm7 0h5v5h-5V4zM4 11h5v5H4v-5zm7 0h5v5h-5v-5z"],
+  spark: ["M10 3l1.3 4 4 1.3-4 1.4-1.3 4-1.3-4-4-1.4 4-1.3L10 3z"],
+  chat: [
+    "M4 5.5A2.5 2.5 0 0 1 6.5 3h7A2.5 2.5 0 0 1 16 5.5v4A2.5 2.5 0 0 1 13.5 12H9l-4 3v-3.2A2.5 2.5 0 0 1 4 9.5v-4z",
+  ],
+  book: [
+    "M5 4.5A2.5 2.5 0 0 1 7.5 2H16v14H7.5A2.5 2.5 0 0 0 5 18V4.5zM5 4.5A2.5 2.5 0 0 0 2.5 2H2v14h.5A2.5 2.5 0 0 1 5 18",
+  ],
+  users: [
+    "M7.2 9.2a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4zM2.8 16.5a4.4 4.4 0 0 1 8.8 0M13.2 8.8a2.2 2.2 0 1 0 0-4.4M12.7 12.4a3.6 3.6 0 0 1 4.5 3.5",
+  ],
+  info: ["M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM10 9v4M10 6.7h.01"],
+  user: ["M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 17a7 7 0 1 1 14 0"],
+};
 
-const captchaDisplay = computed(() => captchaCode.value.split(''))
+const captchaDisplay = computed(() => captchaCode.value.split(""));
 
 function onScroll() {
-  navSolid.value = window.scrollY > 32
+  navSolid.value = window.scrollY > 32;
 }
 
 function toggleMenu() {
-  menuOpen.value = !menuOpen.value
+  menuOpen.value = !menuOpen.value;
 }
 
 function closeMenu() {
-  menuOpen.value = false
+  menuOpen.value = false;
 }
 
 function isActive(to) {
-  if (to === '/') return route.path === '/'
-  return route.path.startsWith(to)
+  if (to === "/") return route.path === "/";
+  return route.path.startsWith(to);
 }
 
 function generateCaptcha() {
-  const pool = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  captchaCode.value = Array.from({ length: 4 }, () => pool[Math.floor(Math.random() * pool.length)]).join('')
-  loginForm.value.captcha = ''
+  const pool = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  captchaCode.value = Array.from(
+    { length: 4 },
+    () => pool[Math.floor(Math.random() * pool.length)],
+  ).join("");
+  loginForm.value.captcha = "";
 }
 
 function openLogin() {
-  closeMenu()
-  userMenuOpen.value = false
-  loginError.value = ''
-  generateCaptcha()
-  loginOpen.value = true
+  closeMenu();
+  userMenuOpen.value = false;
+  loginError.value = "";
+  generateCaptcha();
+  loginOpen.value = true;
 }
 
 function closeLogin() {
-  loginOpen.value = false
-  loginError.value = ''
+  loginOpen.value = false;
+  loginError.value = "";
 }
 
 function submitLogin() {
-  const accountOk = loginForm.value.account.trim() === 'admin'
-  const passwordOk = loginForm.value.password === '123456'
-  const captchaOk = loginForm.value.captcha.trim().toUpperCase() === captchaCode.value
+  const accountOk = loginForm.value.account.trim() === "admin";
+  const passwordOk = loginForm.value.password === "123456";
+  const captchaOk =
+    loginForm.value.captcha.trim().toUpperCase() === captchaCode.value;
 
   if (!accountOk || !passwordOk) {
-    loginError.value = '账号或密码不正确'
-    return
+    loginError.value = "账号或密码不正确";
+    return;
   }
 
   if (!captchaOk) {
-    loginError.value = '验证码不正确'
-    generateCaptcha()
-    return
+    loginError.value = "验证码不正确";
+    generateCaptcha();
+    return;
   }
 
-  user.value = { account: 'admin' }
-  localStorage.setItem('zhike-user', JSON.stringify(user.value))
-  loginOpen.value = false
-  loginError.value = ''
+  user.value = { account: "admin" };
+  localStorage.setItem("zhike-user", JSON.stringify(user.value));
+  loginOpen.value = false;
+  loginError.value = "";
 }
 
 function toggleUserMenu() {
-  userMenuOpen.value = !userMenuOpen.value
+  userMenuOpen.value = !userMenuOpen.value;
 }
 
 function logout() {
-  user.value = null
-  userMenuOpen.value = false
-  localStorage.removeItem('zhike-user')
+  user.value = null;
+  userMenuOpen.value = false;
+  localStorage.removeItem("zhike-user");
 }
 
 function loadUser() {
   try {
-    const raw = localStorage.getItem('zhike-user')
-    if (raw) user.value = JSON.parse(raw)
+    const raw = localStorage.getItem("zhike-user");
+    if (raw) user.value = JSON.parse(raw);
   } catch {
-    user.value = null
+    user.value = null;
   }
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll, { passive: true })
-  onScroll()
-  loadUser()
-  generateCaptcha()
-})
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  loadUser();
+  generateCaptcha();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-})
+  window.removeEventListener("scroll", onScroll);
+});
 </script>
 
 <template>
@@ -125,7 +143,10 @@ onUnmounted(() => {
         <span class="brand__mark" aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <rect width="28" height="28" rx="7" fill="url(#navBrandGrad)" />
-            <path d="M7 18L11 10H13L17 18H15L14.2 16.2H9.8L9 18H7ZM10.4 14.6H13.6L12 10.8L10.4 14.6Z" fill="white" />
+            <path
+              d="M7 18L11 10H13L17 18H15L14.2 16.2H9.8L9 18H7ZM10.4 14.6H13.6L12 10.8L10.4 14.6Z"
+              fill="white"
+            />
             <path d="M19 10H21V18H19V10Z" fill="white" opacity="0.7" />
             <defs>
               <linearGradient id="navBrandGrad" x1="0" y1="0" x2="28" y2="28">
@@ -140,14 +161,19 @@ onUnmounted(() => {
 
       <nav class="nav__links" :class="{ 'nav__links--open': menuOpen }">
         <RouterLink
-          v-for="item in navItems"
+          v-for="item in currentNavItems"
           :key="item.to"
           :to="item.to"
           class="nav__link"
           :class="{ 'nav__link--active': isActive(item.to) }"
           @click="closeMenu"
         >
-          <svg class="nav__link-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <svg
+            class="nav__link-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+          >
             <path
               v-for="path in navIcons[item.icon]"
               :key="path"
@@ -165,7 +191,12 @@ onUnmounted(() => {
       <div class="nav__actions">
         <button v-if="!user" class="co-create-btn" @click="openLogin">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            <path
+              d="M10 4v12M4 10h12"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
           </svg>
           开始共创
         </button>
@@ -179,8 +210,19 @@ onUnmounted(() => {
               </svg>
             </span>
             <span>{{ user.account }}</span>
-            <svg class="user-chip__chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <svg
+              class="user-chip__chevron"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 6l4 4 4-4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
 
@@ -188,13 +230,29 @@ onUnmounted(() => {
             <div v-if="userMenuOpen" class="user-menu">
               <button class="user-menu__item" type="button">
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M4 5h12v10H4V5zm3 3h3M7 11h6M13 8h1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M4 5h12v10H4V5zm3 3h3M7 11h6M13 8h1"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
                 身份管理
               </button>
-              <button class="user-menu__item user-menu__item--danger" type="button" @click="logout">
+              <button
+                class="user-menu__item user-menu__item--danger"
+                type="button"
+                @click="logout"
+              >
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M8 5H5v10h3M11 7l3 3-3 3M14 10H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M8 5H5v10h3M11 7l3 3-3 3M14 10H8"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
                 安全退出
               </button>
@@ -216,9 +274,19 @@ onUnmounted(() => {
     <Transition name="login">
       <div v-if="loginOpen" class="login-layer" @click.self="closeLogin">
         <form class="login-card" @submit.prevent="submitLogin">
-          <button class="login-card__close" type="button" aria-label="关闭登录弹窗" @click="closeLogin">
+          <button
+            class="login-card__close"
+            type="button"
+            aria-label="关闭登录弹窗"
+            @click="closeLogin"
+          >
             <svg viewBox="0 0 20 20" fill="none">
-              <path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              <path
+                d="M6 6l8 8M14 6l-8 8"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
 
@@ -237,20 +305,42 @@ onUnmounted(() => {
 
           <label class="login-field">
             <span>账号</span>
-            <input v-model="loginForm.account" type="text" autocomplete="username" />
+            <input
+              v-model="loginForm.account"
+              type="text"
+              autocomplete="username"
+            />
           </label>
 
           <label class="login-field">
             <span>密码</span>
-            <input v-model="loginForm.password" type="password" autocomplete="current-password" />
+            <input
+              v-model="loginForm.password"
+              type="password"
+              autocomplete="current-password"
+            />
           </label>
 
           <label class="login-field">
             <span>验证码</span>
             <div class="captcha-row">
-              <input v-model="loginForm.captcha" type="text" maxlength="4" placeholder="输入验证码" />
-              <button class="captcha-code" type="button" title="刷新验证码" @click="generateCaptcha">
-                <span v-for="(char, index) in captchaDisplay" :key="`${char}-${index}`">{{ char }}</span>
+              <input
+                v-model="loginForm.captcha"
+                type="text"
+                maxlength="4"
+                placeholder="输入验证码"
+              />
+              <button
+                class="captcha-code"
+                type="button"
+                title="刷新验证码"
+                @click="generateCaptcha"
+              >
+                <span
+                  v-for="(char, index) in captchaDisplay"
+                  :key="`${char}-${index}`"
+                  >{{ char }}</span
+                >
               </button>
             </div>
           </label>
@@ -271,7 +361,10 @@ onUnmounted(() => {
   right: 0;
   z-index: 100;
   padding: 18px 0;
-  transition: background 0.35s var(--ease-out), box-shadow 0.35s, padding 0.35s;
+  transition:
+    background 0.35s var(--ease-out),
+    box-shadow 0.35s,
+    padding 0.35s;
 }
 
 .nav--solid {
@@ -322,7 +415,9 @@ onUnmounted(() => {
   color: var(--ink-soft);
   border-radius: 10px;
   text-decoration: none;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .nav__link-icon {
@@ -364,7 +459,10 @@ onUnmounted(() => {
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.22s var(--ease-spring), box-shadow 0.22s, background 0.22s;
+  transition:
+    transform 0.22s var(--ease-spring),
+    box-shadow 0.22s,
+    background 0.22s;
 }
 
 .co-create-btn {
@@ -492,7 +590,7 @@ onUnmounted(() => {
 
 .nav__toggle span::before,
 .nav__toggle span::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   width: 100%;
@@ -501,11 +599,21 @@ onUnmounted(() => {
   transition: transform 0.25s var(--ease-out);
 }
 
-.nav__toggle span::before { top: -6px; }
-.nav__toggle span::after { top: 6px; }
-.nav__toggle span.open { background: transparent; }
-.nav__toggle span.open::before { transform: translateY(6px) rotate(45deg); }
-.nav__toggle span.open::after { transform: translateY(-6px) rotate(-45deg); }
+.nav__toggle span::before {
+  top: -6px;
+}
+.nav__toggle span::after {
+  top: 6px;
+}
+.nav__toggle span.open {
+  background: transparent;
+}
+.nav__toggle span.open::before {
+  transform: translateY(6px) rotate(45deg);
+}
+.nav__toggle span.open::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
 
 .login-layer {
   position: fixed;
@@ -655,7 +763,9 @@ onUnmounted(() => {
   font-size: 0.95rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.22s var(--ease-spring), box-shadow 0.22s;
+  transition:
+    transform 0.22s var(--ease-spring),
+    box-shadow 0.22s;
 }
 
 .login-submit:hover {
@@ -667,7 +777,9 @@ onUnmounted(() => {
 .login-leave-active,
 .user-menu-enter-active,
 .user-menu-leave-active {
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
 }
 
 .login-enter-from,
@@ -713,7 +825,10 @@ onUnmounted(() => {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px);
-    transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+    transition:
+      opacity 0.3s,
+      transform 0.3s,
+      visibility 0.3s;
   }
 
   .nav__links--open {
@@ -732,7 +847,9 @@ onUnmounted(() => {
     display: inline;
   }
 
-  .nav__toggle { display: flex; }
+  .nav__toggle {
+    display: flex;
+  }
   .co-create-btn {
     padding: 0 14px;
   }
