@@ -170,7 +170,7 @@ function handleCommentLike(commentId) {
           <span class="avatar">{{ post.author.charAt(0) }}</span>
           <span>
             <strong>{{ post.author }}</strong>
-            <small>正在参与智课 Agent 教研共创</small>
+            <small>正在参与知启灵枢 教研共创</small>
           </span>
         </div>
 

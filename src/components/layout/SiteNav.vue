@@ -3,17 +3,17 @@ import { computed, ref, onMounted, onUnmounted } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { navItems, userNavItems } from "../../config/nav.js";
 
-// 根据登录状态获取导航项
-const currentNavItems = computed(() => {
-  return user.value ? userNavItems : navItems;
-});
-
 const route = useRoute();
 const menuOpen = ref(false);
 const navSolid = ref(false);
 const loginOpen = ref(false);
 const userMenuOpen = ref(false);
 const user = ref(null);
+
+// 根据登录状态获取导航项
+const currentNavItems = computed(() => {
+  return user.value ? userNavItems : navItems;
+});
 const loginError = ref("");
 const captchaCode = ref("");
 const loginForm = ref({

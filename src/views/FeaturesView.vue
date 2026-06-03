@@ -28,6 +28,7 @@ const historyQuery = ref("");
 const historyPage = ref(1);
 const iterateFeedback = ref({});
 const expandedRecord = ref(null);
+const selectedHistoryType = ref("all"); // 'all' | 'ppt' | 'doc' | 'interactive'
 
 // 意见反馈筛选条件
 const feedbackFilters = ref({
@@ -64,6 +65,9 @@ const pptForm = ref({
   topic: "",
   duration: "45分钟",
   style: "实验探究型",
+  teachingGoals: "",
+  keyPoints: "",
+  referenceFile: null,
 });
 
 const docForm = ref({
@@ -71,6 +75,9 @@ const docForm = ref({
   topic: "",
   format: "标准教案",
   style: "实验探究型",
+  teachingGoals: "",
+  keyPoints: "",
+  referenceFile: null,
 });
 
 const questionForm = ref({
@@ -83,59 +90,59 @@ const questionForm = ref({
 
 const navGroups = [
   {
-    label: "创作生成",
+    label: "✨ 内容生成",
     items: [
       {
         id: "ppt",
-        label: "课件生成",
+        label: "课件制作",
         icon: "ppt",
-        desc: "实时生成课件结构与预览",
+        desc: "AI 生成可视化课件，支持投屏讲授",
       },
       {
         id: "doc",
-        label: "教案生成",
+        label: "教案编写",
         icon: "doc",
-        desc: "同步输出教学脚本与流程",
+        desc: "生成完整教学设计，含流程与脚本",
       },
       {
         id: "interactive",
-        label: "教学题生成",
+        label: "课堂练习",
         icon: "interactive",
-        desc: "按场景生成课堂题组设计",
+        desc: "智能生成分层训练题与课堂检测",
       },
     ],
   },
   {
-    label: "教学上下文",
+    label: "🎯 教学实施",
     items: [
       {
-        id: "intent",
-        label: "教学意图",
-        icon: "intent",
-        desc: "先明确目标，再进入生成流程",
+        id: "classroom",
+        label: "课堂互动",
+        icon: "classroom",
+        desc: "实时互动工具，提升学生参与度",
       },
       {
-        id: "multimodal",
-        label: "参考资料",
-        icon: "multimodal",
-        desc: "上传 PDF、Word、图片作为素材",
+        id: "feedback",
+        label: "学情反馈",
+        icon: "feedback",
+        desc: "收集学生反馈，调整教学策略",
       },
     ],
   },
   {
-    label: "管理与优化",
+    label: "📝 复盘优化",
     items: [
       {
         id: "history",
-        label: "生成记录",
+        label: "教学档案",
         icon: "history",
-        desc: "按时间与类型回看生成历史",
+        desc: "查看历史生成记录，支持复用与迭代",
       },
       {
         id: "iterate",
-        label: "意见反馈",
+        label: "教学反思",
         icon: "iterate",
-        desc: "沉淀修改建议并继续优化",
+        desc: "记录教学心得，持续优化内容质量",
       },
     ],
   },
@@ -143,13 +150,13 @@ const navGroups = [
 
 const panelTitles = {
   overview: "核心功能概览",
-  ppt: "课件生成",
-  doc: "教案生成",
-  interactive: "教学题生成",
-  intent: "教学意图",
-  multimodal: "参考资料",
-  history: "生成记录",
-  iterate: "意见反馈",
+  ppt: "课件制作",
+  doc: "教案编写",
+  interactive: "课堂练习",
+  classroom: "课堂互动",
+  feedback: "学情反馈",
+  history: "教学档案",
+  iterate: "教学反思",
 };
 
 const featureIcons = {
@@ -165,7 +172,11 @@ const featureIcons = {
     "M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM10 10h.01",
   ],
   multimodal: ["M4.5 15.5h11", "M6 9.5 10 5l4 4.5M10 5v8.5"],
-  visualize: ["M4 14h2V8H4v6zm5 0h2V5H9v9zm5 0h2v-4h-2v4z", "M3.5 16.5h13"],
+  classroom: ["M4 6.5h12v8H4v-8z", "M8 9.5h4M8 12.5h4", "M15 8.5l3-2v6l-3-2"],
+  feedback: [
+    "M10 3.5a7 7 0 0 1 7 7c0 3-2 5-4 6l-3 2-3-2c-2-1-4-3-4-6a7 7 0 0 1 7-7z",
+    "M10 8.5v3M10 13.5h.01",
+  ],
   history: ["M10 4.5v5l3 1.5", "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"],
   iterate: [
     "M15.5 7.5A5.5 5.5 0 0 0 6 5l-1.5 1.5M4.5 3.5v3h3",
@@ -569,15 +580,33 @@ const historySummary = computed(() => [
   },
 ]);
 
-const filteredHistory = computed(() => {
-  const keyword = historyQuery.value.trim().toLowerCase();
-  if (!keyword) return history.value;
+// 类型映射：卡片标签到数据类型
+const TYPE_MAP = {
+  全部记录: "all",
+  课件: "ppt",
+  教案: "doc",
+  教学题: "interactive",
+};
 
-  return history.value.filter((item) =>
-    [item.title, item.subject, TYPE_LABELS[item.type]]
-      .filter(Boolean)
-      .some((text) => text.toLowerCase().includes(keyword)),
-  );
+const filteredHistory = computed(() => {
+  let result = history.value;
+
+  // 按类型筛选
+  if (selectedHistoryType.value !== "all") {
+    result = result.filter((item) => item.type === selectedHistoryType.value);
+  }
+
+  // 按关键词搜索
+  const keyword = historyQuery.value.trim().toLowerCase();
+  if (keyword) {
+    result = result.filter((item) =>
+      [item.title, item.subject, TYPE_LABELS[item.type]]
+        .filter(Boolean)
+        .some((text) => text.toLowerCase().includes(keyword)),
+    );
+  }
+
+  return result;
 });
 
 const pageSize = 4;
@@ -726,6 +755,61 @@ function simulateGenerate(type, title, subject, pages = 0) {
   }, 1000);
 }
 
+// 课件文件上传处理
+const pptFileInput = ref(null);
+
+function triggerPptFileUpload() {
+  pptFileInput.value?.click();
+}
+
+function handlePptFileChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/vnd.ms-powerpoint",
+      "application/pdf",
+    ];
+    if (
+      !validTypes.includes(file.type) &&
+      !file.name.match(/\.(ppt|pptx|pdf)$/i)
+    ) {
+      showToast("请上传 PPT 或 PDF 格式的文件");
+      return;
+    }
+    pptForm.value.referenceFile = file;
+    showToast(`已上传参考课件：${file.name}`);
+  }
+}
+
+function handlePptFileDrop(event) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/vnd.ms-powerpoint",
+      "application/pdf",
+    ];
+    if (
+      !validTypes.includes(file.type) &&
+      !file.name.match(/\.(ppt|pptx|pdf)$/i)
+    ) {
+      showToast("请上传 PPT 或 PDF 格式的文件");
+      return;
+    }
+    pptForm.value.referenceFile = file;
+    showToast(`已上传参考课件：${file.name}`);
+  }
+}
+
+function removePptFile() {
+  pptForm.value.referenceFile = null;
+  if (pptFileInput.value) {
+    pptFileInput.value.value = "";
+  }
+}
+
 function handlePptGenerate() {
   if (!pptForm.value.topic.trim()) return showToast("请先填写课题名称");
   simulateGenerate(
@@ -734,6 +818,61 @@ function handlePptGenerate() {
     pptForm.value.subject || "未分类",
     pptRecommendation.value.length * 2,
   );
+}
+
+// 教案文件上传处理
+const docFileInput = ref(null);
+
+function triggerDocFileUpload() {
+  docFileInput.value?.click();
+}
+
+function handleDocFileChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const validTypes = [
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/pdf",
+    ];
+    if (
+      !validTypes.includes(file.type) &&
+      !file.name.match(/\.(doc|docx|pdf)$/i)
+    ) {
+      showToast("请上传 DOC 或 PDF 格式的文件");
+      return;
+    }
+    docForm.value.referenceFile = file;
+    showToast(`已上传参考教案：${file.name}`);
+  }
+}
+
+function handleDocFileDrop(event) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    const validTypes = [
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/pdf",
+    ];
+    if (
+      !validTypes.includes(file.type) &&
+      !file.name.match(/\.(doc|docx|pdf)$/i)
+    ) {
+      showToast("请上传 DOC 或 PDF 格式的文件");
+      return;
+    }
+    docForm.value.referenceFile = file;
+    showToast(`已上传参考教案：${file.name}`);
+  }
+}
+
+function removeDocFile() {
+  docForm.value.referenceFile = null;
+  if (docFileInput.value) {
+    docFileInput.value.value = "";
+  }
 }
 
 function handleDocGenerate() {
@@ -784,6 +923,13 @@ function handleDelete(id) {
 // 记录卡片展开/收起
 function toggleRecordExpand(id) {
   expandedRecord.value = expandedRecord.value === id ? null : id;
+}
+
+// 按类型筛选记录
+function filterHistoryByType(typeLabel) {
+  const type = TYPE_MAP[typeLabel] || "all";
+  selectedHistoryType.value = type;
+  historyPage.value = 1; // 重置到第一页
 }
 
 // 获取记录预览文本
@@ -996,7 +1142,7 @@ watch(totalHistoryPages, (value) => {
           </svg>
         </button>
         <div>
-          <span class="header-chip">参赛项目 · 多模态 AI 互动式教学</span>
+          <span class="header-chip">知启灵枢 · 多模态 AI 互动式教学</span>
           <h1>{{ panelTitles[activePanel] }}</h1>
           <p class="main__subtitle">
             把教学意图、课件生成、教案输出、教学题设计和反馈优化，串成一条真正可视化的
@@ -1660,6 +1806,61 @@ watch(totalHistoryPages, (value) => {
                 </select>
               </label>
 
+              <!-- 教学目标 -->
+              <label class="form-section-title">🎯 教学目标与重难点</label>
+              <label>
+                教学目标
+                <textarea
+                  v-model="pptForm.teachingGoals"
+                  rows="2"
+                  placeholder="例如：理解牛顿第二定律，掌握F=ma的应用..."
+                ></textarea>
+              </label>
+
+              <label>
+                重点与难点
+                <textarea
+                  v-model="pptForm.keyPoints"
+                  rows="2"
+                  placeholder="例如：重点是力的合成，难点是加速度方向判断..."
+                ></textarea>
+              </label>
+
+              <!-- 参考课件上传 -->
+              <label class="form-section-title">📎 参考课件（可选）</label>
+              <div
+                class="file-upload-area"
+                @click="triggerPptFileUpload"
+                @drop="handlePptFileDrop"
+                @dragover.prevent
+              >
+                <input
+                  ref="pptFileInput"
+                  type="file"
+                  accept=".ppt,.pptx,.pdf"
+                  style="display: none"
+                  @change="handlePptFileChange"
+                />
+                <div v-if="!pptForm.referenceFile" class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>点击或拖拽上传参考课件</p>
+                  <small>支持 PPT、PPTX、PDF 格式</small>
+                </div>
+                <div v-else class="uploaded-file">
+                  <span class="file-icon">📄</span>
+                  <span class="file-name">{{
+                    pptForm.referenceFile.name
+                  }}</span>
+                  <button
+                    type="button"
+                    class="remove-file"
+                    @click.stop="removePptFile"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
               <div class="chip-row">
                 <button type="button" class="chip-row__chip">情境导入</button>
                 <button type="button" class="chip-row__chip">板书提示</button>
@@ -1770,6 +1971,61 @@ watch(totalHistoryPages, (value) => {
                   <option>翻转课堂型</option>
                 </select>
               </label>
+
+              <!-- 教学目标 -->
+              <label class="form-section-title">🎯 教学目标与重难点</label>
+              <label>
+                教学目标
+                <textarea
+                  v-model="docForm.teachingGoals"
+                  rows="2"
+                  placeholder="例如：知识与技能：理解概念；过程与方法：培养探究能力；情感态度：激发学习兴趣..."
+                ></textarea>
+              </label>
+
+              <label>
+                重点与难点
+                <textarea
+                  v-model="docForm.keyPoints"
+                  rows="2"
+                  placeholder="例如：重点是概念理解与应用，难点是实际问题的分析与解决..."
+                ></textarea>
+              </label>
+
+              <!-- 参考教案上传 -->
+              <label class="form-section-title">📎 参考教案（可选）</label>
+              <div
+                class="file-upload-area"
+                @click="triggerDocFileUpload"
+                @drop="handleDocFileDrop"
+                @dragover.prevent
+              >
+                <input
+                  ref="docFileInput"
+                  type="file"
+                  accept=".doc,.docx,.pdf"
+                  style="display: none"
+                  @change="handleDocFileChange"
+                />
+                <div v-if="!docForm.referenceFile" class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>点击或拖拽上传参考教案</p>
+                  <small>支持 DOC、DOCX、PDF 格式</small>
+                </div>
+                <div v-else class="uploaded-file">
+                  <span class="file-icon">📄</span>
+                  <span class="file-name">{{
+                    docForm.referenceFile.name
+                  }}</span>
+                  <button
+                    type="button"
+                    class="remove-file"
+                    @click.stop="removeDocFile"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
 
               <div class="chip-row">
                 <button type="button" class="chip-row__chip">学情分析</button>
@@ -1956,60 +2212,6 @@ watch(totalHistoryPages, (value) => {
           </div>
         </section>
 
-        <section v-else-if="activePanel === 'intent'" class="panel">
-          <article class="support-card">
-            <div class="section-head">
-              <div>
-                <span class="section-tag">前置信息层</span>
-                <h2>教学意图</h2>
-              </div>
-            </div>
-            <p class="form-card__desc">
-              这一块不再像独立工具，而是服务于上面的所有生成流程，帮助系统先理解课堂目标和学生状态。
-            </p>
-
-            <div class="support-list">
-              <article
-                v-for="(item, index) in intentSupport"
-                :key="item"
-                class="support-item"
-              >
-                <span>0{{ index + 1 }}</span>
-                <p>{{ item }}</p>
-              </article>
-            </div>
-          </article>
-        </section>
-
-        <section v-else-if="activePanel === 'multimodal'" class="panel">
-          <article class="support-card">
-            <div class="section-head">
-              <div>
-                <span class="section-tag">多模态输入</span>
-                <h2>参考资料</h2>
-              </div>
-            </div>
-
-            <label class="upload-zone__drop">
-              <input type="file" multiple hidden @change="onFileChange" />
-              <span class="upload-zone__icon">+</span>
-              <strong>上传 PDF、Word、图片作为生成参考</strong>
-              <p>支持把教辅资料、课堂截图、课标片段一起作为生成上下文。</p>
-            </label>
-
-            <div v-if="uploadFiles.length" class="file-list">
-              <div
-                v-for="(file, index) in uploadFiles"
-                :key="`${file.name}-${index}`"
-                class="file-item"
-              >
-                <span>{{ file.name }}</span>
-                <button @click="removeFile(index)">移除</button>
-              </div>
-            </div>
-          </article>
-        </section>
-
         <section v-else-if="activePanel === 'visualize'" class="panel">
           <div class="insight-grid insight-grid--simple">
             <article class="viz-card viz-card--flow">
@@ -2078,6 +2280,43 @@ watch(totalHistoryPages, (value) => {
           </div>
         </section>
 
+        <!-- 课堂互动面板 -->
+        <section v-else-if="activePanel === 'classroom'" class="panel">
+          <div class="placeholder-panel">
+            <div class="placeholder-icon">🎯</div>
+            <h2>课堂互动</h2>
+            <p>实时互动工具正在开发中，将支持：</p>
+            <ul class="feature-list">
+              <li>🗳️ 课堂投票与问卷</li>
+              <li>❓ 随堂问答与抢答</li>
+              <li>📊 实时答题数据统计</li>
+              <li>💬 学生弹幕与提问</li>
+            </ul>
+            <div class="placeholder-tip">
+              <span>💡</span>
+              提示：先生成课件和练习题，课堂互动功能将自动关联您的教学内容
+            </div>
+          </div>
+        </section>
+
+        <!-- 学情反馈面板 -->
+        <section v-else-if="activePanel === 'feedback'" class="panel">
+          <div class="placeholder-panel">
+            <div class="placeholder-icon">📊</div>
+            <h2>学情反馈</h2>
+            <p>学情分析功能正在开发中，将支持：</p>
+            <ul class="feature-list">
+              <li>📈 学生答题正确率分析</li>
+              <li>⏱️ 知识点掌握时长统计</li>
+              <li>🎯 易错点智能识别</li>
+              <li>📋 个性化学习建议生成</li>
+            </ul>
+            <div class="placeholder-tip">
+              <span>💡</span> 提示：使用课堂练习功能后，系统将自动收集学情数据
+            </div>
+          </div>
+        </section>
+
         <section v-else-if="activePanel === 'history'" class="panel">
           <!-- 统计概览卡片 -->
           <div class="record-summary">
@@ -2085,7 +2324,9 @@ watch(totalHistoryPages, (value) => {
               v-for="item in historySummary"
               :key="item.label"
               class="summary-card"
+              :class="{ active: selectedHistoryType === TYPE_MAP[item.label] }"
               :style="{ '--card-color': item.color }"
+              @click="filterHistoryByType(item.label)"
             >
               <div class="summary-card__icon">{{ item.icon }}</div>
               <div class="summary-card__content">
@@ -2094,7 +2335,35 @@ watch(totalHistoryPages, (value) => {
                 <p class="summary-note">{{ item.note }}</p>
               </div>
               <div class="summary-card__decorator"></div>
+              <div
+                v-if="selectedHistoryType === TYPE_MAP[item.label]"
+                class="selected-indicator"
+              >
+                ✓
+              </div>
             </article>
+          </div>
+
+          <!-- 筛选状态提示 -->
+          <div v-if="selectedHistoryType !== 'all'" class="filter-status-bar">
+            <span class="filter-info">
+              正在查看：<strong>{{
+                selectedHistoryType === "ppt"
+                  ? "课件"
+                  : selectedHistoryType === "doc"
+                    ? "教案"
+                    : "教学题"
+              }}</strong>
+              <span class="filter-count"
+                >（{{ filteredHistory.length }} 条记录）</span
+              >
+            </span>
+            <button
+              class="clear-filter-btn"
+              @click="filterHistoryByType('全部记录')"
+            >
+              <span>✕</span> 清除筛选
+            </button>
           </div>
 
           <div class="history-toolbar">
@@ -3556,6 +3825,93 @@ watch(totalHistoryPages, (value) => {
   border-radius: 10px;
 }
 
+/* 占位面板样式 */
+.placeholder-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 48px;
+  text-align: center;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 20px;
+  border: 2px dashed #cbd5e1;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.placeholder-panel h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.placeholder-panel > p {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 480px;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.feature-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.placeholder-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  color: #1e40af;
+  max-width: 480px;
+}
+
+.placeholder-tip span {
+  font-size: 1.2rem;
+}
+
 /* 课件列表 */
 .day-items-section {
   margin-bottom: 16px;
@@ -4279,6 +4635,118 @@ watch(totalHistoryPages, (value) => {
   margin: 4px 0 18px;
 }
 
+/* 表单分节标题 */
+.form-section-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 文件上传区域 */
+.file-upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  margin-bottom: 16px;
+}
+
+.file-upload-area:hover {
+  border-color: #4c7dff;
+  background: #f0f4ff;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-icon {
+  font-size: 2rem;
+}
+
+.upload-placeholder p {
+  font-size: 0.9rem;
+  color: #334155;
+  margin: 0;
+}
+
+.upload-placeholder small {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.file-icon {
+  font-size: 1.5rem;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #334155;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-file {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  color: #64748b;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-file:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* textarea 样式 */
+.form-card textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 60px;
+  transition: all 0.2s ease;
+}
+
+.form-card textarea:focus {
+  outline: none;
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.1);
+}
+
 .chip-row__chip {
   padding: 8px 12px;
   border: 1px solid rgba(76, 125, 255, 0.1);
@@ -4596,6 +5064,40 @@ watch(totalHistoryPages, (value) => {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(76, 125, 255, 0.12);
   border-color: rgba(76, 125, 255, 0.2);
+  cursor: pointer;
+}
+
+/* 选中状态 */
+.summary-card.active {
+  border: 2px solid var(--card-color, #4c7dff);
+  box-shadow: 0 8px 24px rgba(76, 125, 255, 0.15);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(240, 245, 255, 0.95) 100%
+  );
+}
+
+.summary-card.active .summary-card__decorator {
+  opacity: 0.2;
+}
+
+/* 选中指示器 */
+.selected-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-color, #4c7dff);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .summary-card__icon {
@@ -4686,6 +5188,57 @@ watch(totalHistoryPages, (value) => {
     rgba(99, 102, 241, 0.15),
     rgba(139, 92, 246, 0.1)
   );
+}
+
+/* 筛选状态栏 */
+.filter-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
+  border: 1px solid rgba(76, 125, 255, 0.15);
+  border-radius: 12px;
+}
+
+.filter-info {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.filter-info strong {
+  color: var(--accent-deep);
+  font-weight: 600;
+}
+
+.filter-count {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+.clear-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(76, 125, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: var(--accent-deep);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(76, 125, 255, 0.2);
+}
+
+.clear-filter-btn span {
+  font-size: 0.75rem;
 }
 
 .history-toolbar {
