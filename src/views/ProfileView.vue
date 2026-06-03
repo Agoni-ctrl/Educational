@@ -198,6 +198,35 @@ const menuItems = [
 const usageTimeRange = ref("week"); // 'week' | 'year'
 const hoveredDataPoint = ref(null);
 const selectedDate = ref(null);
+const selectedType = ref("all"); // 'all' | 'ppt' | 'doc' | 'interactive'
+
+// 图表颜色配置
+const CHART_COLORS = {
+  all: {
+    primary: "#667eea",
+    secondary: "#764ba2",
+    gradient: ["rgba(102, 126, 234, 0.3)", "rgba(102, 126, 234, 0.05)"],
+    shadow: "rgba(102, 126, 234, 0.4)",
+  },
+  ppt: {
+    primary: "#4c7dff",
+    secondary: "#6b8cff",
+    gradient: ["rgba(76, 125, 255, 0.3)", "rgba(76, 125, 255, 0.05)"],
+    shadow: "rgba(76, 125, 255, 0.4)",
+  },
+  doc: {
+    primary: "#23c3b2",
+    secondary: "#4dd9c9",
+    gradient: ["rgba(35, 195, 178, 0.3)", "rgba(35, 195, 178, 0.05)"],
+    shadow: "rgba(35, 195, 178, 0.4)",
+  },
+  interactive: {
+    primary: "#f97316",
+    secondary: "#fb923c",
+    gradient: ["rgba(249, 115, 22, 0.3)", "rgba(249, 115, 22, 0.05)"],
+    shadow: "rgba(249, 115, 22, 0.4)",
+  },
+};
 
 // 社区收藏功能
 const community = useCommunity();
@@ -217,54 +246,382 @@ function goToCommunityPost(postId) {
   window.location.href = `/community?post=${postId}`;
 }
 
-// 模拟使用数据
+// 模拟使用数据 - 丰富的教育场景数据
 const usageData = ref({
   week: {
     labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
-    data: [3, 5, 2, 8, 4, 6, 7],
-    files: {
-      周一: ["数学课件.pptx", "语文教案.docx", "英语单词表.xlsx"],
-      周二: [
-        "物理实验.pptx",
-        "化学方程式.docx",
-        "生物图解.pptx",
-        "历史年表.xlsx",
-        "地理地图.pptx",
-      ],
-      周三: ["作文模板.docx", "阅读理解.docx"],
-      周四: [
-        "期末复习.pptx",
-        "模拟试卷.docx",
-        "成绩统计.xlsx",
-        "家长会.pptx",
-        "课程表.xlsx",
-        "教学计划.docx",
-        "学生名单.xlsx",
-        "活动方案.pptx",
-      ],
-      周五: [
-        "班会课件.pptx",
-        "安全教育.docx",
-        "心理健康.pptx",
-        "体育锻炼.xlsx",
-      ],
-      周六: [
-        "周末作业.docx",
-        "阅读材料.pptx",
-        "练习题.xlsx",
-        "答案解析.docx",
-        "补充资料.pptx",
-        "复习提纲.docx",
-      ],
-      周日: [
-        "下周计划.pptx",
-        "备课笔记.docx",
-        "教学反思.xlsx",
-        "学生评价.docx",
-        "家长信.docx",
-        "活动照片.pptx",
-        "总结报告.docx",
-      ],
+    data: [5, 8, 3, 12, 6, 9, 7],
+    details: {
+      周一: {
+        total: 5,
+        ppt: 2,
+        doc: 2,
+        interactive: 1,
+        subjects: ["数学", "语文"],
+        peakHour: "14:00",
+        files: [
+          {
+            name: "二次函数图像.pptx",
+            type: "ppt",
+            subject: "数学",
+            time: "09:30",
+          },
+          {
+            name: "古诗词鉴赏.docx",
+            type: "doc",
+            subject: "语文",
+            time: "10:15",
+          },
+          {
+            name: "英语语法练习.xlsx",
+            type: "interactive",
+            subject: "英语",
+            time: "14:00",
+          },
+          {
+            name: "力学基础.pptx",
+            type: "ppt",
+            subject: "物理",
+            time: "16:20",
+          },
+          {
+            name: "实验报告模板.docx",
+            type: "doc",
+            subject: "化学",
+            time: "17:45",
+          },
+        ],
+      },
+      周二: {
+        total: 8,
+        ppt: 4,
+        doc: 3,
+        interactive: 1,
+        subjects: ["物理", "化学", "生物"],
+        peakHour: "10:00",
+        files: [
+          {
+            name: "牛顿定律.pptx",
+            type: "ppt",
+            subject: "物理",
+            time: "08:30",
+          },
+          {
+            name: "化学方程式.pptx",
+            type: "ppt",
+            subject: "化学",
+            time: "09:15",
+          },
+          {
+            name: "细胞结构.pptx",
+            type: "ppt",
+            subject: "生物",
+            time: "10:00",
+          },
+          {
+            name: "电路分析.pptx",
+            type: "ppt",
+            subject: "物理",
+            time: "11:20",
+          },
+          {
+            name: "有机化学教案.docx",
+            type: "doc",
+            subject: "化学",
+            time: "14:30",
+          },
+          {
+            name: "生物实验指导.docx",
+            type: "doc",
+            subject: "生物",
+            time: "15:45",
+          },
+          {
+            name: "物理习题集.docx",
+            type: "doc",
+            subject: "物理",
+            time: "16:50",
+          },
+          {
+            name: "元素周期表测试.xlsx",
+            type: "interactive",
+            subject: "化学",
+            time: "17:30",
+          },
+        ],
+      },
+      周三: {
+        total: 3,
+        ppt: 1,
+        doc: 1,
+        interactive: 1,
+        subjects: ["历史"],
+        peakHour: "15:00",
+        files: [
+          {
+            name: "辛亥革命.pptx",
+            type: "ppt",
+            subject: "历史",
+            time: "10:00",
+          },
+          {
+            name: "近代史教案.docx",
+            type: "doc",
+            subject: "历史",
+            time: "14:20",
+          },
+          {
+            name: "历史知识问答.xlsx",
+            type: "interactive",
+            subject: "历史",
+            time: "15:00",
+          },
+        ],
+      },
+      周四: {
+        total: 12,
+        ppt: 5,
+        doc: 4,
+        interactive: 3,
+        subjects: ["数学", "英语", "地理"],
+        peakHour: "09:30",
+        files: [
+          {
+            name: "三角函数.pptx",
+            type: "ppt",
+            subject: "数学",
+            time: "08:00",
+          },
+          {
+            name: "阅读理解技巧.pptx",
+            type: "ppt",
+            subject: "英语",
+            time: "08:45",
+          },
+          {
+            name: "世界地理.pptx",
+            type: "ppt",
+            subject: "地理",
+            time: "09:30",
+          },
+          {
+            name: "数列求和.pptx",
+            type: "ppt",
+            subject: "数学",
+            time: "10:15",
+          },
+          {
+            name: "写作指导.pptx",
+            type: "ppt",
+            subject: "英语",
+            time: "11:00",
+          },
+          {
+            name: "数学教案.docx",
+            type: "doc",
+            subject: "数学",
+            time: "13:30",
+          },
+          {
+            name: "英语教案.docx",
+            type: "doc",
+            subject: "英语",
+            time: "14:20",
+          },
+          {
+            name: "地理教案.docx",
+            type: "doc",
+            subject: "地理",
+            time: "15:10",
+          },
+          {
+            name: "期末复习计划.docx",
+            type: "doc",
+            subject: "数学",
+            time: "16:00",
+          },
+          {
+            name: "数学练习题.xlsx",
+            type: "interactive",
+            subject: "数学",
+            time: "17:30",
+          },
+          {
+            name: "英语单词测试.xlsx",
+            type: "interactive",
+            subject: "英语",
+            time: "18:15",
+          },
+          {
+            name: "地理知识竞赛.xlsx",
+            type: "interactive",
+            subject: "地理",
+            time: "19:00",
+          },
+        ],
+      },
+      周五: {
+        total: 6,
+        ppt: 3,
+        doc: 2,
+        interactive: 1,
+        subjects: ["政治", "音乐", "美术"],
+        peakHour: "14:30",
+        files: [
+          {
+            name: "公民权利.pptx",
+            type: "ppt",
+            subject: "政治",
+            time: "09:00",
+          },
+          {
+            name: "音乐欣赏.pptx",
+            type: "ppt",
+            subject: "音乐",
+            time: "10:30",
+          },
+          {
+            name: "色彩理论.pptx",
+            type: "ppt",
+            subject: "美术",
+            time: "14:30",
+          },
+          {
+            name: "政治教案.docx",
+            type: "doc",
+            subject: "政治",
+            time: "15:45",
+          },
+          {
+            name: "艺术活动方案.docx",
+            type: "doc",
+            subject: "美术",
+            time: "16:30",
+          },
+          {
+            name: "音乐理论测试.xlsx",
+            type: "interactive",
+            subject: "音乐",
+            time: "17:15",
+          },
+        ],
+      },
+      周六: {
+        total: 9,
+        ppt: 3,
+        doc: 4,
+        interactive: 2,
+        subjects: ["全科复习"],
+        peakHour: "10:00",
+        files: [
+          {
+            name: "周末作业-数学.pptx",
+            type: "ppt",
+            subject: "数学",
+            time: "09:00",
+          },
+          {
+            name: "周末作业-语文.pptx",
+            type: "ppt",
+            subject: "语文",
+            time: "09:45",
+          },
+          {
+            name: "周末作业-英语.pptx",
+            type: "ppt",
+            subject: "英语",
+            time: "10:30",
+          },
+          {
+            name: "复习提纲-物理.docx",
+            type: "doc",
+            subject: "物理",
+            time: "11:15",
+          },
+          {
+            name: "复习提纲-化学.docx",
+            type: "doc",
+            subject: "化学",
+            time: "14:00",
+          },
+          {
+            name: "复习提纲-生物.docx",
+            type: "doc",
+            subject: "生物",
+            time: "15:30",
+          },
+          {
+            name: "错题整理.docx",
+            type: "doc",
+            subject: "数学",
+            time: "16:45",
+          },
+          {
+            name: "周末测试-数学.xlsx",
+            type: "interactive",
+            subject: "数学",
+            time: "17:30",
+          },
+          {
+            name: "周末测试-英语.xlsx",
+            type: "interactive",
+            subject: "英语",
+            time: "18:15",
+          },
+        ],
+      },
+      周日: {
+        total: 7,
+        ppt: 2,
+        doc: 3,
+        interactive: 2,
+        subjects: ["备课", "总结"],
+        peakHour: "15:00",
+        files: [
+          {
+            name: "下周教学计划.pptx",
+            type: "ppt",
+            subject: "综合",
+            time: "10:00",
+          },
+          {
+            name: "课程安排.pptx",
+            type: "ppt",
+            subject: "综合",
+            time: "11:30",
+          },
+          {
+            name: "教学反思.docx",
+            type: "doc",
+            subject: "综合",
+            time: "14:00",
+          },
+          {
+            name: "学生评价表.docx",
+            type: "doc",
+            subject: "综合",
+            time: "15:00",
+          },
+          {
+            name: "家长会通知.docx",
+            type: "doc",
+            subject: "综合",
+            time: "16:30",
+          },
+          {
+            name: "学习进度统计.xlsx",
+            type: "interactive",
+            subject: "综合",
+            time: "17:45",
+          },
+          {
+            name: "成绩分析.xlsx",
+            type: "interactive",
+            subject: "综合",
+            time: "18:30",
+          },
+        ],
+      },
     },
   },
   year: {
@@ -283,7 +640,104 @@ const usageData = ref({
       "12月",
     ],
     data: [45, 38, 52, 41, 48, 55, 42, 39, 46, 50, 44, 58],
-    files: {},
+    details: {
+      "1月": {
+        total: 45,
+        ppt: 20,
+        doc: 15,
+        interactive: 10,
+        subjects: ["期末复习"],
+        peakHour: "全天",
+      },
+      "2月": {
+        total: 38,
+        ppt: 15,
+        doc: 12,
+        interactive: 11,
+        subjects: ["寒假作业"],
+        peakHour: "上午",
+      },
+      "3月": {
+        total: 52,
+        ppt: 25,
+        doc: 18,
+        interactive: 9,
+        subjects: ["新学期"],
+        peakHour: "下午",
+      },
+      "4月": {
+        total: 41,
+        ppt: 18,
+        doc: 14,
+        interactive: 9,
+        subjects: ["期中准备"],
+        peakHour: "晚上",
+      },
+      "5月": {
+        total: 48,
+        ppt: 22,
+        doc: 16,
+        interactive: 10,
+        subjects: ["期中复习"],
+        peakHour: "下午",
+      },
+      "6月": {
+        total: 55,
+        ppt: 28,
+        doc: 17,
+        interactive: 10,
+        subjects: ["期末考试"],
+        peakHour: "全天",
+      },
+      "7月": {
+        total: 42,
+        ppt: 16,
+        doc: 15,
+        interactive: 11,
+        subjects: ["暑假作业"],
+        peakHour: "上午",
+      },
+      "8月": {
+        total: 39,
+        ppt: 15,
+        doc: 14,
+        interactive: 10,
+        subjects: ["暑期备课"],
+        peakHour: "下午",
+      },
+      "9月": {
+        total: 46,
+        ppt: 21,
+        doc: 16,
+        interactive: 9,
+        subjects: ["开学季"],
+        peakHour: "晚上",
+      },
+      "10月": {
+        total: 50,
+        ppt: 24,
+        doc: 17,
+        interactive: 9,
+        subjects: ["国庆活动"],
+        peakHour: "全天",
+      },
+      "11月": {
+        total: 44,
+        ppt: 19,
+        doc: 15,
+        interactive: 10,
+        subjects: ["期中考试"],
+        peakHour: "下午",
+      },
+      "12月": {
+        total: 58,
+        ppt: 30,
+        doc: 18,
+        interactive: 10,
+        subjects: ["年终总结"],
+        peakHour: "全天",
+      },
+    },
   },
 });
 
@@ -316,6 +770,8 @@ const prefixes = [
   "记录",
 ];
 
+// 初始化年度文件数据
+usageData.value.year.files = {};
 months.forEach((month, index) => {
   const count = usageData.value.year.data[index];
   usageData.value.year.files[month] = Array.from({ length: count }, (_, j) => {
@@ -326,10 +782,25 @@ months.forEach((month, index) => {
   });
 });
 
-// 计算折线图路径
+// 计算折线图路径 - 根据选中类型动态更新
 const chartPath = computed(() => {
-  const data = usageData.value[usageTimeRange.value].data;
-  const max = Math.max(...data);
+  const currentData = usageData.value[usageTimeRange.value];
+  const labels = currentData.labels;
+  const details = currentData.details;
+
+  // 根据选中类型获取数据
+  let data;
+  if (selectedType.value === "all") {
+    data = currentData.data;
+  } else {
+    // 从details中提取对应类型的数据
+    data = labels.map((label) => {
+      const dayData = details[label];
+      return dayData ? dayData[selectedType.value] || 0 : 0;
+    });
+  }
+
+  const max = Math.max(...data, 1) || 1;
   const width = 700;
   const height = 200;
   const padding = 40;
@@ -342,7 +813,14 @@ const chartPath = computed(() => {
     return { x, y, value, index };
   });
 
-  if (points.length === 0) return "";
+  if (points.length === 0) {
+    return {
+      path: "",
+      points: [],
+      max: 0,
+      colors: CHART_COLORS[selectedType.value],
+    };
+  }
 
   // 生成平滑曲线
   let path = `M ${points[0].x} ${points[0].y}`;
@@ -356,13 +834,19 @@ const chartPath = computed(() => {
     path += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${curr.x} ${curr.y}`;
   }
 
-  return { path, points, max };
+  return { path, points, max, colors: CHART_COLORS[selectedType.value] };
 });
 
 // 切换时间范围
 function switchTimeRange(range) {
   usageTimeRange.value = range;
   selectedDate.value = null;
+  selectedType.value = "all";
+}
+
+// 切换类型筛选
+function filterByType(type) {
+  selectedType.value = type;
 }
 
 // 处理数据点悬停
@@ -380,6 +864,77 @@ function handlePointClick(point) {
   const labels = usageData.value[usageTimeRange.value].labels;
   selectedDate.value = labels[point.index];
 }
+
+// 获取创作高峰时段
+function getPeakHour() {
+  const details = usageData.value[usageTimeRange.value].details;
+  const hourCount = {};
+
+  Object.values(details).forEach((day) => {
+    if (day.files) {
+      day.files.forEach((file) => {
+        const hour = file.time.split(":")[0];
+        hourCount[hour] = (hourCount[hour] || 0) + 1;
+      });
+    }
+  });
+
+  const peakHour = Object.entries(hourCount).sort((a, b) => b[1] - a[1])[0];
+  return peakHour ? `${peakHour[0]}:00` : "14:00";
+}
+
+// 获取类型数量
+function getTypeCount(type) {
+  const details = usageData.value[usageTimeRange.value].details;
+  return Object.values(details).reduce((sum, day) => sum + (day[type] || 0), 0);
+}
+
+// 获取类型百分比
+function getTypePercentage(type) {
+  const total =
+    getTypeCount("ppt") + getTypeCount("doc") + getTypeCount("interactive");
+  if (total === 0) return 0;
+  return Math.round((getTypeCount(type) / total) * 100);
+}
+
+// 获取效率等级样式
+function getEfficiencyClass(value) {
+  const max = Math.max(...usageData.value[usageTimeRange.value].data);
+  const ratio = value / max;
+  if (ratio >= 0.8) return "efficiency-high";
+  if (ratio >= 0.5) return "efficiency-medium";
+  return "efficiency-low";
+}
+
+// 获取效率等级标签
+function getEfficiencyLabel(value) {
+  const max = Math.max(...usageData.value[usageTimeRange.value].data);
+  const ratio = value / max;
+  if (ratio >= 0.8) return "高效日";
+  if (ratio >= 0.5) return "正常";
+  return "轻松日";
+}
+
+// 获取日期详情
+function getDayDetail(index) {
+  const labels = usageData.value[usageTimeRange.value].labels;
+  const label = labels[index];
+  return usageData.value[usageTimeRange.value].details[label];
+}
+
+// 获取选中日期的详情
+function getSelectedDateDetail() {
+  if (!selectedDate.value) return null;
+  return usageData.value[usageTimeRange.value].details[selectedDate.value];
+}
+
+// 获取筛选后的文件列表
+const filteredFiles = computed(() => {
+  const detail = getSelectedDateDetail();
+  if (!detail || !detail.files) return [];
+  if (selectedType.value === "all") return detail.files;
+  return detail.files.filter((file) => file.type === selectedType.value);
+});
 
 // 计算属性：检测内容中的链接
 const parsedContent = computed(() => {
@@ -758,13 +1313,28 @@ function saveProfile() {
         <!-- 使用记录 -->
         <div v-if="activeMenu === 'usage'" class="content-panel">
           <div class="usage-header">
-            <h2 class="panel-title">使用记录</h2>
+            <div class="usage-title-group">
+              <h2 class="panel-title">使用记录</h2>
+              <p class="panel-subtitle">追踪您的创作历程与教学效率</p>
+            </div>
             <div class="time-range-switch">
               <button
                 class="range-btn"
                 :class="{ 'range-btn--active': usageTimeRange === 'week' }"
                 @click="switchTimeRange('week')"
               >
+                <svg viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M4 4h12v12H4V4z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M4 8h12M8 4v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                </svg>
                 近一周
               </button>
               <button
@@ -772,287 +1342,603 @@ function saveProfile() {
                 :class="{ 'range-btn--active': usageTimeRange === 'year' }"
                 @click="switchTimeRange('year')"
               >
+                <svg viewBox="0 0 20 20" fill="none">
+                  <circle
+                    cx="10"
+                    cy="10"
+                    r="7"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M10 5v5l3 3"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
                 近一年
               </button>
             </div>
           </div>
 
-          <!-- 统计概览 -->
+          <!-- 统计概览 - 更丰富的维度 -->
           <div class="usage-stats">
-            <div class="stat-card">
-              <div class="stat-value">
-                {{ usageData[usageTimeRange].data.reduce((a, b) => a + b, 0) }}
+            <div class="stat-card stat-card--primary">
+              <div class="stat-icon">📊</div>
+              <div class="stat-info">
+                <div class="stat-value">
+                  {{
+                    usageData[usageTimeRange].data.reduce((a, b) => a + b, 0)
+                  }}
+                </div>
+                <div class="stat-label">创作总数</div>
               </div>
-              <div class="stat-label">创建文件总数</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value">
-                {{ Math.max(...usageData[usageTimeRange].data) }}
+            <div class="stat-card stat-card--success">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-info">
+                <div class="stat-value">
+                  {{ Math.max(...usageData[usageTimeRange].data) }}
+                </div>
+                <div class="stat-label">单日最高</div>
               </div>
-              <div class="stat-label">单日最高创建</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value">
-                {{
-                  (
-                    usageData[usageTimeRange].data.reduce((a, b) => a + b, 0) /
-                    usageData[usageTimeRange].data.length
-                  ).toFixed(1)
-                }}
+            <div class="stat-card stat-card--info">
+              <div class="stat-icon">📈</div>
+              <div class="stat-info">
+                <div class="stat-value">
+                  {{
+                    (
+                      usageData[usageTimeRange].data.reduce(
+                        (a, b) => a + b,
+                        0,
+                      ) / usageData[usageTimeRange].data.length
+                    ).toFixed(1)
+                  }}
+                </div>
+                <div class="stat-label">日均创作</div>
               </div>
-              <div class="stat-label">日均创建</div>
             </div>
-          </div>
-
-          <!-- 折线图 -->
-          <div class="chart-container">
-            <svg
-              class="chart-svg"
-              viewBox="0 0 700 250"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <!-- 网格线 -->
-              <g class="grid-lines">
-                <line
-                  x1="40"
-                  y1="40"
-                  x2="660"
-                  y2="40"
-                  stroke="#e2e8f0"
-                  stroke-width="1"
-                  stroke-dasharray="4"
-                />
-                <line
-                  x1="40"
-                  y1="90"
-                  x2="660"
-                  y2="90"
-                  stroke="#e2e8f0"
-                  stroke-width="1"
-                  stroke-dasharray="4"
-                />
-                <line
-                  x1="40"
-                  y1="140"
-                  x2="660"
-                  y2="140"
-                  stroke="#e2e8f0"
-                  stroke-width="1"
-                  stroke-dasharray="4"
-                />
-                <line
-                  x1="40"
-                  y1="190"
-                  x2="660"
-                  y2="190"
-                  stroke="#e2e8f0"
-                  stroke-width="1"
-                  stroke-dasharray="4"
-                />
-              </g>
-
-              <!-- Y轴标签 -->
-              <g class="y-labels">
-                <text
-                  x="30"
-                  y="45"
-                  text-anchor="end"
-                  fill="#94a3b8"
-                  font-size="12"
-                >
-                  {{ chartPath.max }}
-                </text>
-                <text
-                  x="30"
-                  y="95"
-                  text-anchor="end"
-                  fill="#94a3b8"
-                  font-size="12"
-                >
-                  {{ Math.round(chartPath.max * 0.75) }}
-                </text>
-                <text
-                  x="30"
-                  y="145"
-                  text-anchor="end"
-                  fill="#94a3b8"
-                  font-size="12"
-                >
-                  {{ Math.round(chartPath.max * 0.5) }}
-                </text>
-                <text
-                  x="30"
-                  y="195"
-                  text-anchor="end"
-                  fill="#94a3b8"
-                  font-size="12"
-                >
-                  {{ Math.round(chartPath.max * 0.25) }}
-                </text>
-                <text
-                  x="30"
-                  y="220"
-                  text-anchor="end"
-                  fill="#94a3b8"
-                  font-size="12"
-                >
-                  0
-                </text>
-              </g>
-
-              <!-- 折线 -->
-              <path
-                v-if="chartPath.path"
-                class="chart-line"
-                :d="chartPath.path"
-                fill="none"
-                stroke="url(#lineGradient)"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <!-- 渐变填充区域 -->
-              <path
-                v-if="chartPath.path"
-                class="chart-area"
-                :d="
-                  chartPath.path +
-                  ` L ${chartPath.points[chartPath.points.length - 1].x} 210 L ${chartPath.points[0].x} 210 Z`
-                "
-                fill="url(#areaGradient)"
-                opacity="0.3"
-              />
-
-              <!-- 数据点 -->
-              <g class="data-points">
-                <circle
-                  v-for="point in chartPath.points"
-                  :key="point.index"
-                  class="data-point"
-                  :cx="point.x"
-                  :cy="point.y"
-                  r="6"
-                  fill="white"
-                  stroke="#0090ff"
-                  stroke-width="2"
-                  @mouseenter="handlePointHover(point)"
-                  @mouseleave="handlePointLeave"
-                  @click="handlePointClick(point)"
-                />
-              </g>
-
-              <!-- X轴标签 -->
-              <g class="x-labels">
-                <text
-                  v-for="(label, index) in usageData[usageTimeRange].labels"
-                  :key="index"
-                  :x="chartPath.points[index]?.x || 0"
-                  y="235"
-                  text-anchor="middle"
-                  fill="#64748b"
-                  font-size="11"
-                >
-                  {{ label }}
-                </text>
-              </g>
-
-              <!-- 渐变定义 -->
-              <defs>
-                <linearGradient
-                  id="lineGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stop-color="#0090ff" />
-                  <stop offset="100%" stop-color="#00c6ff" />
-                </linearGradient>
-                <linearGradient
-                  id="areaGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="0%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stop-color="#0090ff" stop-opacity="0.4" />
-                  <stop
-                    offset="100%"
-                    stop-color="#0090ff"
-                    stop-opacity="0.05"
-                  />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <!-- 悬停提示 -->
-            <div
-              v-if="hoveredDataPoint"
-              class="chart-tooltip"
-              :style="{
-                left: hoveredDataPoint.x + 'px',
-                top: hoveredDataPoint.y - 60 + 'px',
-              }"
-            >
-              <div class="tooltip-date">
-                {{ usageData[usageTimeRange].labels[hoveredDataPoint.index] }}
-              </div>
-              <div class="tooltip-value">
-                创建 {{ hoveredDataPoint.value }} 个文件
-              </div>
-              <div class="tooltip-files">
-                {{
-                  usageData[usageTimeRange].files[
-                    usageData[usageTimeRange].labels[hoveredDataPoint.index]
-                  ]
-                    ?.slice(0, 3)
-                    .join(", ") || ""
-                }}
-                <span
-                  v-if="
-                    (usageData[usageTimeRange].files[
-                      usageData[usageTimeRange].labels[hoveredDataPoint.index]
-                    ]?.length || 0) > 3
-                  "
-                  >...</span
-                >
+            <div class="stat-card stat-card--warning">
+              <div class="stat-icon">⏰</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ getPeakHour() }}</div>
+                <div class="stat-label">创作高峰</div>
               </div>
             </div>
           </div>
 
-          <!-- 选中日期详情 -->
-          <div v-if="selectedDate" class="date-detail">
-            <div class="detail-header">
-              <h3>{{ selectedDate }} 创建的文件</h3>
-              <button class="close-detail" @click="selectedDate = null">
-                ✕
-              </button>
-            </div>
-            <div class="file-list">
+          <!-- 类型分布 -->
+          <div class="type-distribution">
+            <h4 class="section-title">
+              创作类型分布
+              <span v-if="selectedType !== 'all'" class="filter-tag">
+                已筛选:
+                {{
+                  selectedType === "ppt"
+                    ? "课件"
+                    : selectedType === "doc"
+                      ? "教案"
+                      : "教学题"
+                }}
+                <button class="clear-filter" @click="filterByType('all')">
+                  ✕
+                </button>
+              </span>
+            </h4>
+            <div class="type-bars">
+              <!-- 全部 -->
               <div
-                v-for="(file, index) in usageData[usageTimeRange].files[
-                  selectedDate
-                ]"
-                :key="index"
-                class="file-item"
+                class="type-bar-item"
+                :class="{ active: selectedType === 'all' }"
+                @click="filterByType('all')"
               >
-                <svg class="file-icon" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 2h10l6 6v14a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"
-                    fill="#f0f5ff"
-                    stroke="#4472c4"
-                    stroke-width="1.5"
+                <div class="type-label">
+                  <span class="type-dot all"></span>
+                  <span>全部</span>
+                </div>
+                <div class="type-progress">
+                  <div class="progress-bg">
+                    <div
+                      class="progress-fill all"
+                      :style="{ width: '100%' }"
+                    ></div>
+                  </div>
+                  <span class="progress-value"
+                    >{{
+                      getTypeCount("ppt") +
+                      getTypeCount("doc") +
+                      getTypeCount("interactive")
+                    }}个</span
+                  >
+                </div>
+              </div>
+              <!-- 课件 -->
+              <div
+                class="type-bar-item"
+                :class="{ active: selectedType === 'ppt' }"
+                @click="filterByType('ppt')"
+              >
+                <div class="type-label">
+                  <span class="type-dot ppt"></span>
+                  <span>课件 PPT</span>
+                </div>
+                <div class="type-progress">
+                  <div class="progress-bg">
+                    <div
+                      class="progress-fill ppt"
+                      :style="{ width: getTypePercentage('ppt') + '%' }"
+                    ></div>
+                  </div>
+                  <span class="progress-value"
+                    >{{ getTypeCount("ppt") }}个</span
+                  >
+                </div>
+              </div>
+              <!-- 教案 -->
+              <div
+                class="type-bar-item"
+                :class="{ active: selectedType === 'doc' }"
+                @click="filterByType('doc')"
+              >
+                <div class="type-label">
+                  <span class="type-dot doc"></span>
+                  <span>教案文档</span>
+                </div>
+                <div class="type-progress">
+                  <div class="progress-bg">
+                    <div
+                      class="progress-fill doc"
+                      :style="{ width: getTypePercentage('doc') + '%' }"
+                    ></div>
+                  </div>
+                  <span class="progress-value"
+                    >{{ getTypeCount("doc") }}个</span
+                  >
+                </div>
+              </div>
+              <!-- 教学题 -->
+              <div
+                class="type-bar-item"
+                :class="{ active: selectedType === 'interactive' }"
+                @click="filterByType('interactive')"
+              >
+                <div class="type-label">
+                  <span class="type-dot interactive"></span>
+                  <span>教学题</span>
+                </div>
+                <div class="type-progress">
+                  <div class="progress-bg">
+                    <div
+                      class="progress-fill interactive"
+                      :style="{ width: getTypePercentage('interactive') + '%' }"
+                    ></div>
+                  </div>
+                  <span class="progress-value"
+                    >{{ getTypeCount("interactive") }}个</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 美化折线图 -->
+          <div class="chart-section">
+            <div class="chart-header">
+              <h4 class="section-title">
+                创作趋势
+                <span v-if="selectedType !== 'all'" class="chart-filter-tag">
+                  {{
+                    selectedType === "ppt"
+                      ? "课件"
+                      : selectedType === "doc"
+                        ? "教案"
+                        : "教学题"
+                  }}
+                </span>
+              </h4>
+              <div class="chart-legend">
+                <span class="legend-item">
+                  <span
+                    class="legend-dot"
+                    :style="{
+                      background: `linear-gradient(135deg, ${chartPath.colors.primary} 0%, ${chartPath.colors.secondary} 100%)`,
+                    }"
+                  ></span>
+                  {{
+                    selectedType === "all"
+                      ? "创作数量"
+                      : selectedType === "ppt"
+                        ? "课件数量"
+                        : selectedType === "doc"
+                          ? "教案数量"
+                          : "教学题数量"
+                  }}
+                </span>
+              </div>
+            </div>
+            <div class="chart-container">
+              <svg
+                class="chart-svg"
+                viewBox="0 0 700 280"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <!-- 背景网格 - 更柔和 -->
+                <g class="grid-lines">
+                  <line
+                    x1="50"
+                    y1="50"
+                    x2="650"
+                    y2="50"
+                    stroke="#f1f5f9"
+                    stroke-width="1"
                   />
+                  <line
+                    x1="50"
+                    y1="100"
+                    x2="650"
+                    y2="100"
+                    stroke="#f1f5f9"
+                    stroke-width="1"
+                  />
+                  <line
+                    x1="50"
+                    y1="150"
+                    x2="650"
+                    y2="150"
+                    stroke="#f1f5f9"
+                    stroke-width="1"
+                  />
+                  <line
+                    x1="50"
+                    y1="200"
+                    x2="650"
+                    y2="200"
+                    stroke="#f1f5f9"
+                    stroke-width="1"
+                  />
+                </g>
+
+                <!-- Y轴标签 -->
+                <g class="y-labels">
+                  <text
+                    x="35"
+                    y="55"
+                    text-anchor="end"
+                    fill="#94a3b8"
+                    font-size="11"
+                    font-weight="500"
+                  >
+                    {{ chartPath.max }}
+                  </text>
+                  <text
+                    x="35"
+                    y="105"
+                    text-anchor="end"
+                    fill="#94a3b8"
+                    font-size="11"
+                    font-weight="500"
+                  >
+                    {{ Math.round(chartPath.max * 0.75) }}
+                  </text>
+                  <text
+                    x="35"
+                    y="155"
+                    text-anchor="end"
+                    fill="#94a3b8"
+                    font-size="11"
+                    font-weight="500"
+                  >
+                    {{ Math.round(chartPath.max * 0.5) }}
+                  </text>
+                  <text
+                    x="35"
+                    y="205"
+                    text-anchor="end"
+                    fill="#94a3b8"
+                    font-size="11"
+                    font-weight="500"
+                  >
+                    {{ Math.round(chartPath.max * 0.25) }}
+                  </text>
+                  <text
+                    x="35"
+                    y="230"
+                    text-anchor="end"
+                    fill="#94a3b8"
+                    font-size="11"
+                    font-weight="500"
+                  >
+                    0
+                  </text>
+                </g>
+
+                <!-- 渐变填充区域 - 根据类型动态变化 -->
+                <defs>
+                  <linearGradient
+                    id="lineGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" :stop-color="chartPath.colors.primary" />
+                    <stop
+                      offset="100%"
+                      :stop-color="chartPath.colors.secondary"
+                    />
+                  </linearGradient>
+                  <linearGradient
+                    id="areaGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    <stop
+                      offset="0%"
+                      :stop-color="chartPath.colors.primary"
+                      stop-opacity="0.5"
+                    />
+                    <stop
+                      offset="50%"
+                      :stop-color="chartPath.colors.secondary"
+                      stop-opacity="0.2"
+                    />
+                    <stop
+                      offset="100%"
+                      :stop-color="chartPath.colors.secondary"
+                      stop-opacity="0.02"
+                    />
+                  </linearGradient>
+                  <filter
+                    id="glow"
+                    x="-50%"
+                    y="-50%"
+                    width="200%"
+                    height="200%"
+                  >
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+
+                <!-- 面积填充 -->
+                <path
+                  v-if="chartPath.path"
+                  class="chart-area"
+                  :d="
+                    chartPath.path +
+                    ` L ${chartPath.points[chartPath.points.length - 1].x} 230 L ${chartPath.points[0].x} 230 Z`
+                  "
+                  fill="url(#areaGradient)"
+                />
+
+                <!-- 折线 - 带发光效果 -->
+                <path
+                  v-if="chartPath.path"
+                  class="chart-line"
+                  :d="chartPath.path"
+                  fill="none"
+                  stroke="url(#lineGradient)"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :style="{
+                    filter: `drop-shadow(0 2px 8px ${chartPath.colors.shadow})`,
+                  }"
+                />
+
+                <!-- 数据点 - 实心圆点 -->
+                <g class="data-points">
+                  <circle
+                    v-for="point in chartPath.points"
+                    :key="point.index"
+                    class="data-point"
+                    :cx="point.x"
+                    :cy="point.y"
+                    r="6"
+                    fill="url(#lineGradient)"
+                    :style="{
+                      filter: `drop-shadow(0 2px 4px ${chartPath.colors.shadow})`,
+                    }"
+                    @mouseenter="handlePointHover(point)"
+                    @mouseleave="handlePointLeave"
+                    @click="handlePointClick(point)"
+                  />
+                </g>
+
+                <!-- X轴标签 -->
+                <g class="x-labels">
+                  <text
+                    v-for="(label, index) in usageData[usageTimeRange].labels"
+                    :key="index"
+                    :x="chartPath.points[index]?.x || 0"
+                    y="255"
+                    text-anchor="middle"
+                    fill="#64748b"
+                    font-size="12"
+                    font-weight="500"
+                  >
+                    {{ label }}
+                  </text>
+                </g>
+              </svg>
+
+              <!-- 精美悬停提示 -->
+              <div
+                v-if="hoveredDataPoint"
+                class="chart-tooltip chart-tooltip--enhanced"
+                :style="{
+                  left: hoveredDataPoint.x + 'px',
+                  top: hoveredDataPoint.y - 80 + 'px',
+                }"
+              >
+                <div class="tooltip-header">
+                  <span class="tooltip-date">{{
+                    usageData[usageTimeRange].labels[hoveredDataPoint.index]
+                  }}</span>
+                  <span
+                    class="tooltip-badge"
+                    :class="getEfficiencyClass(hoveredDataPoint.value)"
+                    >{{ getEfficiencyLabel(hoveredDataPoint.value) }}</span
+                  >
+                </div>
+                <div class="tooltip-body">
+                  <div class="tooltip-value">
+                    {{ hoveredDataPoint.value }} <small>个课件</small>
+                  </div>
+                  <div
+                    class="tooltip-detail"
+                    v-if="getDayDetail(hoveredDataPoint.index)"
+                  >
+                    <span class="detail-item"
+                      >📚
+                      {{
+                        getDayDetail(hoveredDataPoint.index).subjects.join("、")
+                      }}</span
+                    >
+                    <span class="detail-item"
+                      >⏰ 高峰
+                      {{ getDayDetail(hoveredDataPoint.index).peakHour }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 选中日期详情 - 更丰富的展示 -->
+          <div v-if="selectedDate" class="date-detail date-detail--enhanced">
+            <div class="detail-header">
+              <div class="detail-title-group">
+                <h3>{{ selectedDate }} 创作详情</h3>
+                <span class="detail-summary" v-if="getSelectedDateDetail()">
+                  共 {{ getSelectedDateDetail()?.total }} 个 ·
+                  {{ getSelectedDateDetail()?.subjects?.join("、") }}
+                </span>
+              </div>
+              <button class="close-detail" @click="selectedDate = null">
+                <svg viewBox="0 0 20 20" fill="none">
                   <path
-                    d="M14 2v6h6"
-                    stroke="#4472c4"
-                    stroke-width="1.5"
+                    d="M5 5l10 10M15 5L5 15"
+                    stroke="currentColor"
+                    stroke-width="2"
                     stroke-linecap="round"
-                    stroke-linejoin="round"
                   />
                 </svg>
-                <span class="file-name">{{ file }}</span>
+              </button>
+            </div>
+
+            <!-- 类型统计 -->
+            <div class="detail-stats" v-if="getSelectedDateDetail()">
+              <div class="detail-stat-item">
+                <span class="stat-dot ppt"></span>
+                <span class="stat-label">课件</span>
+                <span class="stat-num">{{
+                  getSelectedDateDetail()?.ppt || 0
+                }}</span>
+              </div>
+              <div class="detail-stat-item">
+                <span class="stat-dot doc"></span>
+                <span class="stat-label">教案</span>
+                <span class="stat-num">{{
+                  getSelectedDateDetail()?.doc || 0
+                }}</span>
+              </div>
+              <div class="detail-stat-item">
+                <span class="stat-dot interactive"></span>
+                <span class="stat-label">教学题</span>
+                <span class="stat-num">{{
+                  getSelectedDateDetail()?.interactive || 0
+                }}</span>
+              </div>
+            </div>
+
+            <!-- 文件列表 -->
+            <div class="file-list file-list--enhanced">
+              <div
+                v-for="(file, index) in filteredFiles"
+                :key="index"
+                class="file-item"
+                :class="file.type"
+              >
+                <div class="file-icon" :class="file.type">
+                  <svg
+                    v-if="file.type === 'ppt'"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="16"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                    <path d="M8 9v6l4-3-4-3z" fill="currentColor" />
+                  </svg>
+                  <svg
+                    v-else-if="file.type === 'doc'"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                    <path
+                      d="M14 2v6h6M8 13h8"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="4"
+                      y="6"
+                      width="16"
+                      height="12"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                    <path
+                      d="M8 10h2M8 14h2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                </div>
+                <div class="file-info">
+                  <span class="file-name">{{ file.name }}</span>
+                  <div class="file-meta">
+                    <span class="file-subject">{{ file.subject }}</span>
+                    <span class="file-time">{{ file.time }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 创作建议 -->
+          <div class="usage-tips">
+            <div class="tip-card">
+              <div class="tip-icon">💡</div>
+              <div class="tip-content">
+                <h4>创作建议</h4>
+                <p>
+                  根据您的使用记录，{{
+                    usageTimeRange === "week" ? "周四" : "12月"
+                  }}是您的创作高峰期。建议提前规划好备课内容，充分利用高效时段。
+                </p>
               </div>
             </div>
           </div>
@@ -1988,16 +2874,6 @@ function saveProfile() {
   filter: drop-shadow(0 2px 4px rgba(0, 144, 255, 0.3));
 }
 
-.data-point {
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.data-point:hover {
-  r: 8;
-  stroke-width: 3;
-}
-
 .chart-tooltip {
   position: absolute;
   background: white;
@@ -2618,5 +3494,867 @@ function saveProfile() {
 .meta-item svg {
   width: 16px;
   height: 16px;
+}
+
+/* 使用记录样式增强 */
+.usage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.usage-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.time-range-switch {
+  display: flex;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.range-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.range-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.range-btn:hover {
+  color: #0f172a;
+}
+
+.range-btn--active {
+  background: white;
+  color: #0090ff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 统计卡片增强 */
+.usage-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card--primary {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7b8ff 100%);
+  color: #4c1d95;
+}
+
+.stat-card--success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+}
+
+.stat-card--info {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+}
+
+.stat-card--warning {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  color: #9d174d;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-card--primary .stat-value {
+  color: #4c1d95;
+}
+
+.stat-card--success .stat-value {
+  color: #065f46;
+}
+
+.stat-card--info .stat-value {
+  color: #1e40af;
+}
+
+.stat-card--warning .stat-value {
+  color: #9d174d;
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+/* 类型分布 */
+.type-distribution {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 20px;
+}
+
+.clear-filter {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filter:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.type-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.type-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.type-bar-item:hover {
+  background: #f1f5f9;
+}
+
+.type-bar-item.active {
+  background: white;
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.type-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.type-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.type-dot.all {
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+}
+
+.type-dot.ppt {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.type-dot.doc {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.type-dot.interactive {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.type-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bg {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.progress-fill.all {
+  background: linear-gradient(90deg, #64748b 0%, #94a3b8 100%);
+}
+
+.progress-fill.ppt {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.progress-fill.doc {
+  background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+}
+
+.progress-fill.interactive {
+  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+}
+
+.progress-value {
+  min-width: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: right;
+}
+
+/* 图表区域 */
+.chart-section {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chart-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  margin-left: 12px;
+  background: v-bind("chartPath.colors.primary");
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.chart-container {
+  position: relative;
+  background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
+  border-radius: 16px;
+  padding: 20px;
+  overflow: visible;
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-line {
+  filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.4));
+}
+
+.data-point {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.4));
+}
+
+.data-point:hover {
+  r: 8;
+  filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.6));
+}
+
+/* 增强悬停提示 */
+.chart-tooltip--enhanced {
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
+  border: 1px solid #f1f5f9;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tooltip-date {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.tooltip-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.efficiency-high {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+.efficiency-medium {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.efficiency-low {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+}
+
+.tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tooltip-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.tooltip-value small {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.tooltip-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 日期详情面板 */
+.date-detail {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.detail-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-detail {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 10px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-detail:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: rotate(90deg);
+}
+
+/* 文件列表 */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  transform: translateX(4px);
+}
+
+.file-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.file-icon.ppt {
+  background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+}
+
+.file-icon.doc {
+  background: linear-gradient(135deg, #11998e20 0%, #38ef7d20 100%);
+}
+
+.file-icon.interactive {
+  background: linear-gradient(135deg, #fa709a20 0%, #fee14020 100%);
+}
+
+.file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.file-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.file-time {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 创作建议卡片 */
+.suggestion-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  margin-top: 24px;
+}
+
+.suggestion-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.suggestion-card p {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* 日期详情增强样式 */
+.date-detail--enhanced {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-summary {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.detail-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.detail-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stat-dot.ppt {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-dot.doc {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.stat-dot.interactive {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.detail-stat-item .stat-label {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.detail-stat-item .stat-num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-left: 4px;
+}
+
+.file-list--enhanced {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-list--enhanced .file-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.file-list--enhanced .file-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateX(6px);
+}
+
+.file-list--enhanced .file-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-list--enhanced .file-icon.ppt {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  color: #667eea;
+}
+
+.file-list--enhanced .file-icon.doc {
+  background: linear-gradient(135deg, #11998e15 0%, #38ef7d15 100%);
+  color: #11998e;
+}
+
+.file-list--enhanced .file-icon.interactive {
+  background: linear-gradient(135deg, #fa709a15 0%, #fee14015 100%);
+  color: #fa709a;
+}
+
+.file-list--enhanced .file-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.file-list--enhanced .file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-list--enhanced .file-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.file-list--enhanced .file-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+
+.file-subject {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  background: #f1f5f9;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.file-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* 创作建议卡片 */
+.usage-tips {
+  margin-top: 24px;
+}
+
+.tip-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+  border: 1px solid #667eea20;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+  border-color: #667eea40;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+}
+
+.tip-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.tip-content h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.tip-content p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* 响应式优化 */
+@media (max-width: 1024px) {
+  .usage-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .detail-stats {
+    flex-wrap: wrap;
+  }
+
+  .detail-stat-item {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 640px) {
+  .usage-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .usage-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tip-card {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>
