@@ -1,41 +1,41 @@
 <script setup>
-import { RouterLink } from 'vue-router'
-import SiteNav from '../components/layout/SiteNav.vue'
+import { RouterLink } from "vue-router";
+import SiteNav from "../components/layout/SiteNav.vue";
 
 const capabilities = [
   {
-    icon: '💬',
-    title: '理解意图',
-    desc: '通过语音或文字多轮对话，主动询问并确认教学目标、核心知识点、讲授逻辑、重难点与互动设计。',
+    icon: "💬",
+    title: "理解意图",
+    desc: "通过语音或文字多轮对话，主动询问并确认教学目标、核心知识点、讲授逻辑、重难点与互动设计。",
   },
   {
-    icon: '📎',
-    title: '融合多模态参考',
-    desc: '支持 PDF 教案、Word 文档、参考视频与图片，提取知识结构、案例与排版风格并融入生成。',
+    icon: "📎",
+    title: "融合多模态参考",
+    desc: "支持 PDF 教案、Word 文档、参考视频与图片，提取知识结构、案例与排版风格并融入生成。",
   },
   {
-    icon: '✨',
-    title: '生成课件初稿',
-    desc: '输出结构完整的 PPT 演示文稿、Word 教案，以及知识点动画创意、互动小游戏等多模态内容。',
+    icon: "✨",
+    title: "生成课件初稿",
+    desc: "输出结构完整的 PPT 演示文稿、Word 教案，以及知识点动画创意、互动小游戏等多模态内容。",
   },
   {
-    icon: '🔄',
-    title: '支持迭代优化',
-    desc: '形成「互动 → 生成 → 反馈 → 再生成」闭环，支持预览修改与下载后自行编辑细节。',
+    icon: "🔄",
+    title: "支持迭代优化",
+    desc: "形成「互动 → 生成 → 反馈 → 再生成」闭环，支持预览修改与下载后自行编辑细节。",
   },
-]
+];
 
 const values = [
-  { title: '以教师为中心', desc: '不是替代教师，而是放大教学设计师的专业能力' },
-  { title: '闭环而非碎片', desc: '从意图理解到课件生成，一个平台完成全流程' },
-  { title: '深度而非浅层', desc: '多轮对话把握复杂教学思路，而非单次简单指令' },
-]
+  { title: "以教师为中心", desc: "不是替代教师，而是放大教学设计师的专业能力" },
+  { title: "闭环而非碎片", desc: "从意图理解到课件生成，一个平台完成全流程" },
+  { title: "深度而非浅层", desc: "多轮对话把握复杂教学思路，而非单次简单指令" },
+];
 
 const team = [
-  { name: '产品设计', role: '教学场景调研 · 交互设计' },
-  { name: 'AI 工程', role: '大语言模型 · 多模态解析' },
-  { name: '前端开发', role: 'Vue3 · 智能体界面' },
-]
+  { name: "产品设计", role: "教学场景调研 · 交互设计" },
+  { name: "AI 工程", role: "大语言模型 · 多模态解析" },
+  { name: "前端开发", role: "Vue3 · 智能体界面" },
+];
 </script>
 
 <template>
@@ -50,7 +50,7 @@ const team = [
     <main>
       <section class="hero">
         <p class="eyebrow">About Us</p>
-        <h1>关于智课 Agent</h1>
+        <h1>关于知启灵枢</h1>
         <p class="hero__lead">
           多模态 AI 互动式教学智能体——以教师教学思路为核心，
           构建具备深度互动与多模态解析生成能力的课件共创系统。
@@ -62,19 +62,21 @@ const team = [
           <div class="block__content">
             <h2>项目背景</h2>
             <p>
-              随着教育信息化 2.0 行动的深入推进，人工智能技术正成为重塑教学模式的核心驱动力。
+              随着教育信息化 2.0
+              行动的深入推进，人工智能技术正成为重塑教学模式的核心驱动力。
               当前，虽然 AI 辅助教学工具层出不穷，但多数工具功能单一、操作割裂，
               未能形成以教师教学思路为核心的闭环工作流。
             </p>
             <p>
               教师在使用这些工具时，仍需耗费大量时间在课件的内容组织、格式调整、资源搜寻等重复性劳动上，
-              而非专注于教学逻辑与创意的构思。生成式 AI 和多模态理解技术的成熟，为破解这一困境提供了可能。
+              而非专注于教学逻辑与创意的构思。生成式 AI
+              和多模态理解技术的成熟，为破解这一困境提供了可能。
             </p>
           </div>
           <div class="block__aside">
             <div class="quote-card">
               <p>「让教师回归教学设计师」</p>
-              <span>— 智课 Agent 使命</span>
+              <span>— 知启灵枢 使命</span>
             </div>
           </div>
         </div>
@@ -85,11 +87,15 @@ const team = [
         <div class="problem-grid">
           <article class="problem-card">
             <h3>功能碎片化</h3>
-            <p>教学设计、PPT 制作、讲义撰写需多个工具，流程割裂，切换成本高。</p>
+            <p>
+              教学设计、PPT 制作、讲义撰写需多个工具，流程割裂，切换成本高。
+            </p>
           </article>
           <article class="problem-card">
             <h3>意图理解浅层化</h3>
-            <p>只能执行单次简单指令，无法把握教师复杂的教学思路与个性化要求。</p>
+            <p>
+              只能执行单次简单指令，无法把握教师复杂的教学思路与个性化要求。
+            </p>
           </article>
           <article class="problem-card">
             <h3>重复性劳动</h3>
@@ -101,7 +107,11 @@ const team = [
       <section class="block">
         <h2 class="block__title">四大核心能力</h2>
         <div class="cap-grid">
-          <article v-for="cap in capabilities" :key="cap.title" class="cap-card">
+          <article
+            v-for="cap in capabilities"
+            :key="cap.title"
+            class="cap-card"
+          >
             <span class="cap-card__icon">{{ cap.icon }}</span>
             <h3>{{ cap.title }}</h3>
             <p>{{ cap.desc }}</p>
@@ -142,8 +152,12 @@ const team = [
         <h2>准备好开始课件共创了吗？</h2>
         <p>从 AI 助手对话开始，体验以教学思路驱动的智能生成流程。</p>
         <div class="cta__actions">
-          <RouterLink to="/assistant" class="btn btn--dark">开始共创</RouterLink>
-          <RouterLink to="/features" class="btn btn--ghost">探索核心功能</RouterLink>
+          <RouterLink to="/assistant" class="btn btn--dark"
+            >开始共创</RouterLink
+          >
+          <RouterLink to="/features" class="btn btn--ghost"
+            >探索核心功能</RouterLink
+          >
         </div>
       </section>
     </main>
@@ -151,7 +165,7 @@ const team = [
     <footer class="footer">
       <div class="footer__inner">
         <div class="footer__brand">
-          <strong>智课 Agent</strong>
+          <strong>知启灵枢</strong>
           <p>多模态 AI 互动式教学智能体</p>
         </div>
         <div class="footer__links">
@@ -159,7 +173,9 @@ const team = [
           <RouterLink to="/assistant">AI 助手</RouterLink>
           <RouterLink to="/community">社区</RouterLink>
         </div>
-        <p class="footer__copy">© {{ new Date().getFullYear() }} 智课 Agent · 保留所有权利</p>
+        <p class="footer__copy">
+          © {{ new Date().getFullYear() }} 知启灵枢 · 保留所有权利
+        </p>
       </div>
     </footer>
   </div>
@@ -191,7 +207,11 @@ const team = [
   height: 480px;
   top: -10%;
   right: -5%;
-  background: radial-gradient(circle, rgba(0, 144, 255, 0.18) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(0, 144, 255, 0.18) 0%,
+    transparent 70%
+  );
 }
 
 .bg__orb--2 {
@@ -199,7 +219,11 @@ const team = [
   height: 400px;
   bottom: 10%;
   left: -8%;
-  background: radial-gradient(circle, rgba(0, 194, 212, 0.14) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(0, 194, 212, 0.14) 0%,
+    transparent 70%
+  );
 }
 
 main {
@@ -321,7 +345,9 @@ main {
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
-  transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s;
 }
 
 .problem-card:hover,
@@ -380,7 +406,11 @@ main {
   text-align: center;
   border-radius: var(--radius-lg);
   border: 1px solid rgba(0, 119, 230, 0.15);
-  background: linear-gradient(135deg, rgba(0, 119, 230, 0.06) 0%, rgba(0, 194, 212, 0.04) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 119, 230, 0.06) 0%,
+    rgba(0, 194, 212, 0.04) 100%
+  );
 }
 
 .competition-card__badge {
@@ -444,7 +474,9 @@ main {
   font-weight: 600;
   border-radius: 999px;
   text-decoration: none;
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.25s;
+  transition:
+    transform 0.25s var(--ease-spring),
+    box-shadow 0.25s;
 }
 
 .btn--dark {
@@ -522,11 +554,27 @@ main {
 }
 
 @media (max-width: 768px) {
-  .block__grid { grid-template-columns: 1fr; }
-  .problem-grid, .values-row, .team-grid { grid-template-columns: 1fr; }
-  .cap-grid { grid-template-columns: 1fr; }
-  .footer__links { margin-left: 0; width: 100%; }
-  .cta__actions { flex-direction: column; }
-  .cta__actions .btn { width: 100%; justify-content: center; }
+  .block__grid {
+    grid-template-columns: 1fr;
+  }
+  .problem-grid,
+  .values-row,
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+  .cap-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer__links {
+    margin-left: 0;
+    width: 100%;
+  }
+  .cta__actions {
+    flex-direction: column;
+  }
+  .cta__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
