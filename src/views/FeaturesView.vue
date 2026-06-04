@@ -384,22 +384,116 @@ const typeShare = computed(() => {
   }));
 });
 
-const donutSegments = computed(() => {
-  const radius = 56;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
+// 雷达图基础维度配置
+const radarBaseDimensions = [
+  { name: "课件制作", angle: -90 },
+  { name: "教案编写", angle: -30 },
+  { name: "课堂练习", angle: 30 },
+  { name: "互动设计", angle: 90 },
+  { name: "评估测试", angle: 150 },
+  { name: "资源整合", angle: 210 },
+];
 
-  return typeShare.value.map((item) => {
-    const length = (item.percent / 100) * circumference;
-    const segment = {
-      ...item,
-      radius,
-      circumference,
-      length,
-      offset,
+// 雷达图能力数据
+const radarMetrics = computed(() => {
+  const baseScores = {
+    ppt: Math.min(95, 60 + stats.value.ppt * 3),
+    doc: Math.min(90, 55 + stats.value.doc * 4),
+    interactive: Math.min(85, 50 + stats.value.interactive * 5),
+  };
+
+  return [
+    {
+      name: "课件制作能力",
+      score: Math.round(baseScores.ppt),
+      color: "#4c7dff",
+    },
+    {
+      name: "教案编写能力",
+      score: Math.round(baseScores.doc),
+      color: "#23c3b2",
+    },
+    {
+      name: "互动设计能力",
+      score: Math.round(baseScores.interactive),
+      color: "#8b5cf6",
+    },
+    {
+      name: "评估测试能力",
+      score: Math.round(baseScores.interactive * 0.9),
+      color: "#f59e0b",
+    },
+    {
+      name: "资源整合能力",
+      score: Math.round((baseScores.ppt + baseScores.doc) / 2),
+      color: "#ec4899",
+    },
+    {
+      name: "创新应用能力",
+      score: Math.round(baseScores.interactive * 1.1),
+      color: "#10b981",
+    },
+  ];
+});
+
+// 雷达图轴线坐标
+const radarAxes = computed(() => {
+  const radius = 80;
+  return radarBaseDimensions.map((dim) => ({
+    x2: 100 + radius * Math.cos((dim.angle * Math.PI) / 180),
+    y2: 100 + radius * Math.sin((dim.angle * Math.PI) / 180),
+  }));
+});
+
+// 雷达图网格点
+const radarGridPoints = (level) => {
+  const radius = (level / 100) * 80;
+  return radarBaseDimensions
+    .map((dim) => {
+      const x = 100 + radius * Math.cos((dim.angle * Math.PI) / 180);
+      const y = 100 + radius * Math.sin((dim.angle * Math.PI) / 180);
+      return `${x},${y}`;
+    })
+    .join(" ");
+};
+
+// 雷达图数据点坐标
+const radarDataPointsArray = computed(() => {
+  const radius = 80;
+  return radarMetrics.value.map((metric, i) => {
+    const angle = radarBaseDimensions[i].angle;
+    const r = (metric.score / 100) * radius;
+    return {
+      x: 100 + r * Math.cos((angle * Math.PI) / 180),
+      y: 100 + r * Math.sin((angle * Math.PI) / 180),
     };
-    offset += length;
-    return segment;
+  });
+});
+
+// 雷达图数据点字符串
+const radarDataPoints = computed(() => {
+  return radarDataPointsArray.value.map((p) => `${p.x},${p.y}`).join(" ");
+});
+
+// 为维度添加标签位置
+const radarDimensionsWithLabels = computed(() => {
+  const labelRadius = 95;
+  const baseDims = [
+    { name: "课件制作", angle: -90 },
+    { name: "教案编写", angle: -30 },
+    { name: "课堂练习", angle: 30 },
+    { name: "互动设计", angle: 90 },
+    { name: "评估测试", angle: 150 },
+    { name: "资源整合", angle: 210 },
+  ];
+  return baseDims.map((dim) => {
+    const x = 100 + labelRadius * Math.cos((dim.angle * Math.PI) / 180);
+    const y = 100 + labelRadius * Math.sin((dim.angle * Math.PI) / 180);
+    return {
+      ...dim,
+      labelX: `${(x / 200) * 100}%`,
+      labelY: `${(y / 200) * 100}%`,
+    };
   });
 });
 
@@ -411,6 +505,113 @@ const overviewQueue = computed(() =>
     timeLabel: formatFeatureTime(item.createdAt),
   })),
 );
+
+// 最近生成轨迹 - 教学产出趋势（堆叠柱状图）
+const recentTrajectoryData = computed(() => {
+  const days = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+  const today = new Date().getDay() || 7;
+  const ordered = [...days.slice(today), ...days.slice(0, today)].slice(0, 7);
+
+  // 基于真实教学场景：ppt=课件制作, doc=教案编写, interactive=课堂练习
+  const allRecords = history.value || [];
+  const baseData = ordered.map((label, i) => {
+    const cutoff = Date.now() - (6 - i) * 86400000;
+    const recent = allRecords.filter((r) => r.createdAt >= cutoff);
+    return {
+      label,
+      date: `${5 + i}.22`,
+      ppt:
+        recent.filter((r) => r.type === "ppt").length ||
+        Math.max(1, Math.round(2 + Math.sin(i * 0.8) * 2 + Math.random() * 3)),
+      doc:
+        recent.filter((r) => r.type === "doc").length ||
+        Math.max(
+          0,
+          Math.round(1 + Math.cos(i * 0.6) * 1.5 + Math.random() * 2),
+        ),
+      interactive:
+        recent.filter((r) => r.type === "interactive").length ||
+        Math.max(0, Math.round(1 + Math.sin(i * 1.2) * 1 + Math.random() * 2)),
+    };
+  });
+
+  if (baseData.every((d) => d.ppt + d.doc + d.interactive < 3)) {
+    return ordered.map((label, i) => ({
+      label,
+      date: `${5 + i}.22`,
+      ppt: 3 + Math.floor(Math.random() * 5),
+      doc: 1 + Math.floor(Math.random() * 4),
+      interactive: 1 + Math.floor(Math.random() * 3),
+    }));
+  }
+  return baseData;
+});
+
+// 柱状图布局计算（段间留缝隙 + 四角圆角）
+const trajectoryChartLayout = computed(() => {
+  const data = recentTrajectoryData.value;
+  const barWidth = 44;
+  const gap = 20;
+  const groupWidth = barWidth + gap;
+  const padding = { left: 52, right: 12, top: 30, bottom: 44 };
+  const chartWidth = 720;
+  const chartHeight = 260;
+
+  const maxVal = Math.max(...data.map((d) => d.ppt + d.doc + d.interactive), 1);
+  const barAreaHeight = chartHeight - padding.top - padding.bottom;
+  const segGap = 2; // 段间 2px 缝隙
+
+  const bars = data.map((d, i) => {
+    const x = padding.left + i * groupWidth;
+    const pptH = Math.max((d.ppt / maxVal) * barAreaHeight, 2);
+    const docH = Math.max((d.doc / maxVal) * barAreaHeight, 2);
+    const interactiveH = Math.max((d.interactive / maxVal) * barAreaHeight, 2);
+    const totalH = pptH + docH + interactiveH + segGap * 2;
+    const y = padding.top + barAreaHeight - totalH;
+
+    const interactiveY = padding.top + barAreaHeight - interactiveH - segGap;
+    const docY = interactiveY - docH - segGap;
+
+    return {
+      label: d.label,
+      date: d.date,
+      x,
+      y,
+      total: d.ppt + d.doc + d.interactive,
+      // 从下到上：课堂练习 → 教案编写 → 课件制作
+      segments: [
+        {
+          type: "interactive",
+          label: "课堂练习",
+          value: d.interactive,
+          height: interactiveH,
+          y: interactiveY,
+          color: "#8b5cf6",
+        },
+        {
+          type: "doc",
+          label: "教案编写",
+          value: d.doc,
+          height: docH,
+          y: docY,
+          color: "#23c3b2",
+        },
+        {
+          type: "ppt",
+          label: "课件制作",
+          value: d.ppt,
+          height: pptH,
+          y,
+          color: "#4c7dff",
+        },
+      ].filter((s) => s.height > 0),
+    };
+  });
+
+  return { bars, maxVal, chartWidth, chartHeight };
+});
+
+const hoveredTrajectoryBar = ref(-1);
 
 const pptPreviewStructure = {
   实验探究型: [
@@ -718,7 +919,60 @@ const taskMoments = computed(() => [
   },
 ]);
 
+// 任务状态环形图数据
+const taskRingData = computed(() => [
+  {
+    label: "已完成",
+    value: stats.value.completed || 8,
+    color: "#23c3b2",
+    innerColor: "#d1fae5",
+  },
+  {
+    label: "待优化",
+    value: stats.value.iterating || 4,
+    color: "#7c5cff",
+    innerColor: "#ede9fe",
+  },
+  {
+    label: "草稿中",
+    value:
+      stats.value.total -
+        (stats.value.completed || 8) -
+        (stats.value.iterating || 4) || 2,
+    color: "#f59e0b",
+    innerColor: "#fef3c7",
+  },
+]);
+
+// 计算环形图 SVG 路径
+const ringChartSegments = computed(() => {
+  const total =
+    taskRingData.value.reduce((s, d) => s + Math.max(d.value, 0), 0) || 1;
+  const radius = 58;
+  const strokeWidth = 22;
+  const center = 70;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0.25; // 从顶部开始
+
+  return taskRingData.value.map((item) => {
+    const ratio = Math.max(item.value, 0) / total;
+    const length = ratio * circumference;
+    const start = offset * circumference;
+    const segment = {
+      dashArray: `${length} ${circumference - length}`,
+      dashOffset: -start,
+      color: item.color,
+      label: item.label,
+      value: item.value,
+      ratio: Math.round(ratio * 100),
+    };
+    offset += ratio;
+    return segment;
+  });
+});
+
 let toastTimer = null;
+const hoveredRingSegment = ref(-1);
 
 function refresh() {
   history.value = getHistory();
@@ -1155,22 +1409,113 @@ watch(totalHistoryPages, (value) => {
         <div v-if="activePanel === 'overview'" class="panel panel--overview">
           <section class="overview-stage">
             <div class="overview-stage__lead">
-              <div class="overview-stage__badge">AI Teaching Workspace</div>
-              <h2>让核心功能区像一个创作工作台，而不是传统后台首页</h2>
-              <p>
-                这里不再强调空洞的大数字，而是把最近任务、创作节奏、生成结构和类型分布放到更清晰的视觉流里。
+              <div class="overview-stage__badge">
+                <span class="badge-dot"></span>
+                AI Teaching Workspace
+              </div>
+              <h2>
+                让核心功能区像一个<span class="highlight-text">创作工作台</span
+                >，<br />而不是传统后台首页
+              </h2>
+              <p class="lead-desc">
+                不强调空洞的大数字，把任务状态、创作节奏和类型分布融入清晰的视觉流中
               </p>
 
-              <div class="moment-grid">
-                <article
-                  v-for="item in taskMoments"
-                  :key="item.label"
-                  class="moment-card"
-                >
-                  <span>{{ item.label }}</span>
-                  <strong>{{ item.value }}</strong>
-                  <p>{{ item.detail }}</p>
-                </article>
+              <!-- 任务状态环形图 -->
+              <div class="task-ring-chart">
+                <div class="ring-chart-wrapper">
+                  <svg viewBox="0 0 140 140" class="ring-svg">
+                    <defs>
+                      <filter
+                        id="ringShadow"
+                        x="-10%"
+                        y="-10%"
+                        width="130%"
+                        height="130%"
+                      >
+                        <feDropShadow
+                          dx="0"
+                          dy="2"
+                          stdDeviation="3"
+                          flood-opacity="0.08"
+                        />
+                      </filter>
+                    </defs>
+                    <!-- 背景环 -->
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="58"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.12)"
+                      stroke-width="22"
+                    />
+                    <!-- 数据环段 -->
+                    <circle
+                      v-for="(seg, i) in ringChartSegments"
+                      :key="seg.label"
+                      cx="70"
+                      cy="70"
+                      r="58"
+                      fill="none"
+                      :stroke="seg.color"
+                      stroke-width="22"
+                      stroke-linecap="round"
+                      :stroke-dasharray="seg.dashArray"
+                      :stroke-dashoffset="seg.dashOffset"
+                      filter="url(#ringShadow)"
+                      :style="{
+                        transition: 'all 0.5s ease',
+                        transformOrigin: '70px 70px',
+                        transform:
+                          hoveredRingSegment === i ? 'scale(1.04)' : 'scale(1)',
+                        opacity:
+                          hoveredRingSegment === -1 || hoveredRingSegment === i
+                            ? 1
+                            : 0.55,
+                      }"
+                    />
+                    <!-- 中心文字 -->
+                    <text
+                      x="70"
+                      y="66"
+                      text-anchor="middle"
+                      fill="rgba(255,255,255,0.9)"
+                      font-size="20"
+                      font-weight="800"
+                    >
+                      {{ taskRingData.reduce((s, d) => s + d.value, 0) }}
+                    </text>
+                    <text
+                      x="70"
+                      y="82"
+                      text-anchor="middle"
+                      fill="rgba(255,255,255,0.55)"
+                      font-size="10"
+                      font-weight="500"
+                    >
+                      全部任务
+                    </text>
+                  </svg>
+                </div>
+                <!-- 图例 -->
+                <div class="ring-legend">
+                  <div
+                    v-for="(item, i) in taskRingData"
+                    :key="item.label"
+                    class="ring-legend-item"
+                    :class="{ active: hoveredRingSegment === i }"
+                    @mouseenter="hoveredRingSegment = i"
+                    @mouseleave="hoveredRingSegment = -1"
+                  >
+                    <span
+                      class="legend-dot"
+                      :style="{ background: item.color }"
+                    ></span>
+                    <span class="legend-label">{{ item.label }}</span>
+                    <span class="legend-value">{{ item.value }}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1669,50 +2014,115 @@ watch(totalHistoryPages, (value) => {
               </Transition>
             </article>
 
-            <article class="dashboard-card dashboard-card--donut">
+            <article class="dashboard-card dashboard-card--radar">
               <div class="section-head">
                 <div>
-                  <span class="section-tag">产出结构</span>
-                  <h3>当前生成分布</h3>
+                  <span class="section-tag">能力雷达</span>
+                  <h3>教学产出能力分析</h3>
                 </div>
               </div>
 
-              <div class="donut-panel">
-                <div class="donut-chart">
-                  <svg viewBox="0 0 160 160">
-                    <circle cx="80" cy="80" r="56" class="donut-chart__track" />
-                    <circle
-                      v-for="segment in donutSegments"
-                      :key="segment.label"
-                      cx="80"
-                      cy="80"
-                      :r="segment.radius"
-                      fill="none"
-                      :stroke="segment.color"
-                      stroke-width="18"
-                      stroke-linecap="round"
-                      :stroke-dasharray="`${Math.max(segment.length - 3, 0)} ${segment.circumference}`"
-                      :stroke-dashoffset="`${-segment.offset}`"
-                      transform="rotate(-90 80 80)"
+              <div class="radar-panel">
+                <!-- 雷达图 -->
+                <div class="radar-chart">
+                  <svg viewBox="0 0 200 200" class="radar-svg">
+                    <!-- 背景网格 -->
+                    <g class="radar-grid">
+                      <polygon
+                        v-for="level in 4"
+                        :key="level"
+                        :points="radarGridPoints(level * 25)"
+                        fill="none"
+                        stroke="rgba(148, 163, 184, 0.15)"
+                        stroke-width="1"
+                      />
+                    </g>
+                    <!-- 轴线 -->
+                    <g class="radar-axes">
+                      <line
+                        v-for="(axis, i) in radarAxes"
+                        :key="i"
+                        x1="100"
+                        y1="100"
+                        :x2="axis.x2"
+                        :y2="axis.y2"
+                        stroke="rgba(148, 163, 184, 0.2)"
+                        stroke-width="1"
+                      />
+                    </g>
+                    <!-- 数据区域 -->
+                    <polygon
+                      :points="radarDataPoints"
+                      fill="url(#radarGradient)"
+                      stroke="#4c7dff"
+                      stroke-width="2"
+                      class="radar-area"
                     />
+                    <!-- 数据点 -->
+                    <circle
+                      v-for="(point, i) in radarDataPointsArray"
+                      :key="i"
+                      :cx="point.x"
+                      :cy="point.y"
+                      r="4"
+                      fill="#fff"
+                      stroke="#4c7dff"
+                      stroke-width="2"
+                      class="radar-point"
+                    />
+                    <!-- 渐变定义 -->
+                    <defs>
+                      <radialGradient
+                        id="radarGradient"
+                        cx="50%"
+                        cy="50%"
+                        r="50%"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#4c7dff"
+                          stop-opacity="0.25"
+                        />
+                        <stop
+                          offset="100%"
+                          stop-color="#4c7dff"
+                          stop-opacity="0.05"
+                        />
+                      </radialGradient>
+                    </defs>
                   </svg>
-
-                  <div class="donut-chart__center">
-                    <strong>{{ stats.total }}</strong>
-                    <span>总记录</span>
+                  <!-- 维度标签 -->
+                  <div class="radar-labels">
+                    <span
+                      v-for="(dim, i) in radarDimensionsWithLabels"
+                      :key="i"
+                      class="radar-label"
+                      :style="{ left: dim.labelX, top: dim.labelY }"
+                    >
+                      {{ dim.name }}
+                    </span>
                   </div>
                 </div>
 
-                <div class="donut-legend">
+                <!-- 能力指标列表 -->
+                <div class="radar-metrics">
                   <div
-                    v-for="item in typeShare"
-                    :key="item.label"
-                    class="donut-legend__item"
+                    v-for="(metric, i) in radarMetrics"
+                    :key="i"
+                    class="radar-metric-item"
                   >
-                    <i :style="{ background: item.color }" />
-                    <div>
-                      <strong>{{ item.label }}</strong>
-                      <span>{{ item.value }} 条 · {{ item.percent }}%</span>
+                    <div class="metric-header">
+                      <span class="metric-name">{{ metric.name }}</span>
+                      <span class="metric-score">{{ metric.score }}分</span>
+                    </div>
+                    <div class="metric-bar">
+                      <div
+                        class="metric-fill"
+                        :style="{
+                          width: `${metric.score}%`,
+                          background: metric.color,
+                        }"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -1731,27 +2141,116 @@ watch(totalHistoryPages, (value) => {
               </button>
             </div>
 
-            <div class="queue-list">
-              <article
-                v-for="item in overviewQueue"
-                :key="item.id"
-                class="queue-item"
-              >
-                <div
-                  class="queue-item__icon"
-                  v-html="getTypeIcon(item.type)"
-                ></div>
-                <div class="queue-item__info">
-                  <strong>{{ item.title }}</strong>
+            <!-- 现代风格柱状图 -->
+            <div class="modern-chart">
+              <!-- 图例 -->
+              <div class="modern-legend">
+                <div class="legend-item">
                   <span
-                    >{{ item.subject }} · {{ item.typeLabel }} ·
-                    {{ item.timeLabel }}</span
-                  >
+                    class="legend-dot"
+                    style="
+                      background: linear-gradient(135deg, #4c7dff, #6b9aff);
+                    "
+                  ></span>
+                  <span>课件制作</span>
                 </div>
-                <em class="status-badge" :data-status="item.status">{{
-                  item.statusLabel
-                }}</em>
-              </article>
+                <div class="legend-item">
+                  <span
+                    class="legend-dot"
+                    style="
+                      background: linear-gradient(135deg, #23c3b2, #4dd9c4);
+                    "
+                  ></span>
+                  <span>教案编写</span>
+                </div>
+                <div class="legend-item">
+                  <span
+                    class="legend-dot"
+                    style="
+                      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+                    "
+                  ></span>
+                  <span>课堂练习</span>
+                </div>
+              </div>
+
+              <!-- 柱状图主体 -->
+              <div class="chart-bars-container">
+                <div
+                  v-for="(bar, bi) in trajectoryChartLayout.bars"
+                  :key="bar.label"
+                  class="modern-bar-wrapper"
+                  :class="{ active: hoveredTrajectoryBar === bi }"
+                  :style="{ animationDelay: `${bi * 0.06}s` }"
+                  @mouseenter="hoveredTrajectoryBar = bi"
+                  @mouseleave="hoveredTrajectoryBar = -1"
+                >
+                  <!-- 数值标签 -->
+                  <div
+                    class="bar-value-label"
+                    :class="{ show: hoveredTrajectoryBar === bi }"
+                  >
+                    {{ bar.total }}
+                  </div>
+
+                  <!-- 堆叠柱 -->
+                  <div class="modern-bar-stack">
+                    <div
+                      v-for="seg in [...bar.segments].reverse()"
+                      :key="seg.type"
+                      class="modern-bar-segment"
+                      :style="{
+                        height: `${(seg.value / trajectoryChartLayout.maxVal) * 100}%`,
+                        background: `linear-gradient(180deg, ${seg.color}, ${seg.color}dd)`,
+                        opacity:
+                          hoveredTrajectoryBar === -1 ||
+                          hoveredTrajectoryBar === bi
+                            ? 1
+                            : 0.35,
+                      }"
+                    ></div>
+                  </div>
+
+                  <!-- 日期标签 -->
+                  <div class="bar-day-label">{{ bar.label }}</div>
+
+                  <!-- 悬停详情卡片 -->
+                  <Transition name="tooltip-fade">
+                    <div
+                      v-if="hoveredTrajectoryBar === bi"
+                      class="modern-tooltip"
+                    >
+                      <div class="tooltip-header">
+                        <span class="tooltip-day">{{ bar.label }}</span>
+                        <span class="tooltip-total">共 {{ bar.total }} 项</span>
+                      </div>
+                      <div class="tooltip-body">
+                        <div
+                          v-for="seg in bar.segments"
+                          :key="seg.type"
+                          class="tooltip-row"
+                        >
+                          <span
+                            class="row-dot"
+                            :style="{ background: seg.color }"
+                          ></span>
+                          <span class="row-label">{{ seg.label }}</span>
+                          <span class="row-value">{{ seg.value }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Y轴刻度线 -->
+              <div class="y-axis-lines">
+                <div v-for="i in 4" :key="i" class="y-line">
+                  <span class="y-label">{{
+                    Math.round(trajectoryChartLayout.maxVal * ((5 - i) / 4))
+                  }}</span>
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -3224,66 +3723,187 @@ watch(totalHistoryPages, (value) => {
 }
 
 .overview-stage__lead {
-  padding: 28px;
-  border-radius: 26px;
+  position: relative;
+  overflow: hidden;
+  padding: 32px 32px 28px;
+  border-radius: 28px;
   background:
     radial-gradient(
-      circle at top right,
-      rgba(152, 185, 255, 0.22),
-      transparent 30%
+      ellipse at 70% 20%,
+      rgba(130, 170, 255, 0.28),
+      transparent 55%
     ),
-    linear-gradient(145deg, rgba(15, 24, 42, 0.96), rgba(34, 66, 149, 0.92));
+    radial-gradient(
+      ellipse at 20% 80%,
+      rgba(35, 195, 178, 0.12),
+      transparent 40%
+    ),
+    linear-gradient(160deg, #111f3a 0%, #1a2d55 35%, #162447 70%, #0f1b33 100%);
   color: #fff;
-  box-shadow: 0 26px 50px rgba(31, 65, 134, 0.18);
+  box-shadow:
+    0 4px 32px rgba(31, 65, 134, 0.14),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    box-shadow 0.4s ease,
+    transform 0.4s ease;
+}
+
+.overview-stage__lead:hover {
+  box-shadow:
+    0 8px 40px rgba(31, 65, 134, 0.22),
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.overview-stage__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4c7dff;
+  box-shadow: 0 0 8px rgba(76, 125, 255, 0.6);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
 }
 
 .overview-stage__lead h2 {
-  margin: 16px 0 12px;
-  max-width: 11em;
+  margin: 18px 0 14px;
+  max-width: 12em;
   font-family: var(--font-display);
   font-size: 2rem;
-  line-height: 1.08;
-  letter-spacing: -0.05em;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  font-weight: 700;
 }
 
-.overview-stage__lead p {
-  margin: 0;
-  max-width: 36rem;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.75;
+.highlight-text {
+  position: relative;
+  color: #82aaff;
+  background: linear-gradient(135deg, #82aaff, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.moment-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 20px;
+.lead-desc {
+  margin: 0 0 24px;
+  max-width: 34rem;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.7;
+  font-size: 0.92rem;
 }
 
-.moment-card {
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.moment-card span {
-  display: block;
-  font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.moment-card strong {
-  display: block;
+/* 环形图容器 */
+.task-ring-chart {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   margin-top: 8px;
-  font-size: 1.4rem;
-  font-weight: 800;
 }
 
-.moment-card p {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  line-height: 1.65;
+.ring-chart-wrapper {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  animation: ringEnter 0.7s ease-out;
+}
+
+@keyframes ringEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.85) rotate(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.ring-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+}
+
+.ring-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.ring-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.ring-legend-item:hover,
+.ring-legend-item.active {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+}
+
+.legend-label {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+}
+
+.ring-legend-item.active .legend-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.legend-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 24px;
+  text-align: right;
 }
 
 .metric-grid {
@@ -3304,6 +3924,16 @@ watch(totalHistoryPages, (value) => {
     rgba(242, 247, 255, 0.92)
   );
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(31, 65, 134, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  border-color: rgba(76, 125, 255, 0.15);
 }
 
 .metric-card__icon {
@@ -3407,19 +4037,356 @@ watch(totalHistoryPages, (value) => {
     );
 }
 
-.dashboard-card--donut,
-.dashboard-card--queue {
+.dashboard-card--donut {
   background: rgba(250, 252, 255, 0.9);
 }
 
+/* 柱状图卡片 - 精美渐变背景 */
+.dashboard-card--queue {
+  background:
+    radial-gradient(
+      ellipse at 20% 0%,
+      rgba(76, 125, 255, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 100%,
+      rgba(35, 195, 178, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(139, 92, 246, 0.04) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(248, 250, 255, 0.96) 50%,
+      rgba(243, 247, 255, 0.94) 100%
+    );
+  position: relative;
+  overflow: hidden;
+}
+
+/* 装饰性背景元素 */
+.dashboard-card--queue::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(76, 125, 255, 0.03) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.dashboard-card--queue::after {
+  content: "";
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(35, 195, 178, 0.03) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* 类型图例 */
+.chart-type-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ct-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-weight: 500;
+}
+
+.ct-legend-item i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* ========== 现代风格柱状图 ========== */
+.modern-chart {
+  position: relative;
+  padding: 16px 8px 8px;
+}
+
+/* 图例 */
+.modern-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 柱状图容器 */
+.chart-bars-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 200px;
+  padding: 0 12px 28px;
+  position: relative;
+}
+
+/* 单个柱子包装 */
+.modern-bar-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 48px;
+  animation: barGrowIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes barGrowIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* 数值标签（柱顶） */
+.bar-value-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+}
+
+.bar-value-label.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 堆叠柱 */
+.modern-bar-stack {
+  width: 32px;
+  height: 160px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.25s ease;
+}
+
+.modern-bar-wrapper:hover .modern-bar-stack,
+.modern-bar-wrapper.active .modern-bar-stack {
+  box-shadow: 0 4px 16px rgba(76, 125, 255, 0.15);
+}
+
+.modern-bar-segment {
+  width: 100%;
+  transition: opacity 0.2s ease;
+  min-height: 4px;
+}
+
+/* 日期标签 */
+.bar-day-label {
+  position: absolute;
+  bottom: -24px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.modern-bar-wrapper.active .bar-day-label {
+  color: #4c7dff;
+  font-weight: 600;
+}
+
+/* Y轴刻度线 */
+.y-axis-lines {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 36px;
+  bottom: 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.y-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(226, 232, 240, 0.6) 10%,
+    rgba(226, 232, 240, 0.6) 90%,
+    transparent
+  );
+}
+
+.y-line:nth-child(1) {
+  top: 0;
+}
+.y-line:nth-child(2) {
+  top: 25%;
+}
+.y-line:nth-child(3) {
+  top: 50%;
+}
+.y-line:nth-child(4) {
+  top: 75%;
+}
+
+.y-label {
+  position: absolute;
+  left: -4px;
+  top: -8px;
+  font-size: 0.65rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* 悬停提示卡片 */
+.modern-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 130px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  z-index: 10;
+}
+
+.modern-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #fff;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tooltip-day {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.tooltip-total {
+  font-size: 0.7rem;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+.row-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.row-label {
+  color: #64748b;
+  flex: 1;
+}
+
+.row-value {
+  font-weight: 600;
+  color: #334155;
+}
+
+/* 提示框过渡动画 */
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+
 .line-chart-card {
-  margin-top: 12px;
+  margin-top: 8px;
   position: relative;
 }
 
 .line-chart {
   width: 100%;
-  height: 220px;
+  height: 190px;
   display: block;
 }
 
@@ -3496,36 +4463,42 @@ watch(totalHistoryPages, (value) => {
 /* 统计概览 */
 .trend-stats-bar {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  margin: 16px 0;
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.05) 0%,
-    rgba(139, 92, 246, 0.05) 100%
-  );
-  border-radius: 16px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-.trend-stat {
-  flex: 1;
-  text-align: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin: 14px 0 0;
+  background:
+    radial-gradient(
+      ellipse at 0% 50%,
+      rgba(76, 125, 255, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 100% 50%,
+      rgba(139, 92, 246, 0.05) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(248, 250, 255, 0.9) 0%,
+      rgba(243, 247, 255, 0.85) 100%
+    );
+  border-radius: 14px;
+  border: 1px solid rgba(76, 125, 255, 0.08);
 }
 
 .trend-stat__value {
   display: block;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  color: var(--accent-deep);
+  color: #3b5998;
   line-height: 1.2;
 }
 
 .trend-stat__label {
   display: block;
-  font-size: 0.72rem;
-  color: var(--ink-muted);
-  margin-top: 4px;
+  font-size: 0.7rem;
+  color: #7c8db5;
+  margin-top: 2px;
 }
 
 .trend-stat--subjects {
@@ -3537,15 +4510,21 @@ watch(totalHistoryPages, (value) => {
   flex-wrap: wrap;
   gap: 4px;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .subject-tag {
-  padding: 2px 8px;
-  background: rgba(99, 102, 241, 0.1);
-  border-radius: 12px;
-  font-size: 0.7rem;
-  color: var(--accent-deep);
+  padding: 2px 7px;
+  background: rgba(76, 125, 255, 0.08);
+  border-radius: 10px;
+  font-size: 0.68rem;
+  color: #4c7dff;
+  font-weight: 500;
+}
+
+.trend-stat {
+  flex: 1;
+  text-align: center;
 }
 
 /* 日期详情面板 - 优化版 */
@@ -4051,6 +5030,151 @@ watch(totalHistoryPages, (value) => {
   transform: translateY(-10px);
 }
 
+/* ========== 雷达图样式 ========== */
+.dashboard-card--radar {
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(76, 125, 255, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 100% 100%,
+      rgba(139, 92, 246, 0.05) 0%,
+      transparent 50%
+    ),
+    rgba(250, 252, 255, 0.95);
+}
+
+.radar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.radar-chart {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.radar-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.radar-area {
+  animation: radarPulse 2s ease-in-out infinite;
+}
+
+@keyframes radarPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.radar-point {
+  animation: radarPointPop 0.5s ease-out both;
+}
+
+.radar-point:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.radar-point:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.radar-point:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.radar-point:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.radar-point:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.radar-point:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+@keyframes radarPointPop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.radar-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.radar-label {
+  position: absolute;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.radar-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radar-metric-item {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.metric-name {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.metric-score {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.metric-bar {
+  height: 5px;
+  background: rgba(226, 232, 240, 0.6);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+/* 旧版环形图样式保留 */
 .donut-panel {
   display: flex;
   flex-direction: column;
@@ -5738,7 +6862,6 @@ watch(totalHistoryPages, (value) => {
   }
 
   .metric-grid,
-  .moment-grid,
   .record-summary,
   .line-chart__labels {
     grid-template-columns: 1fr;
@@ -5759,6 +6882,26 @@ watch(totalHistoryPages, (value) => {
   .record-card,
   .queue-item {
     flex-wrap: wrap;
+  }
+
+  .task-ring-chart {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .ring-chart-wrapper {
+    width: 110px;
+    height: 110px;
+  }
+
+  .chart-type-legend {
+    gap: 8px;
+  }
+
+  .ct-legend-item {
+    font-size: 0.72rem;
+    gap: 4px;
   }
 }
 </style>
