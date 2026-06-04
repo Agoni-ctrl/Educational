@@ -2175,80 +2175,84 @@ watch(totalHistoryPages, (value) => {
               </div>
 
               <!-- 柱状图主体 -->
-              <div class="chart-bars-container">
-                <div
-                  v-for="(bar, bi) in trajectoryChartLayout.bars"
-                  :key="bar.label"
-                  class="modern-bar-wrapper"
-                  :class="{ active: hoveredTrajectoryBar === bi }"
-                  :style="{ animationDelay: `${bi * 0.06}s` }"
-                  @mouseenter="hoveredTrajectoryBar = bi"
-                  @mouseleave="hoveredTrajectoryBar = -1"
-                >
-                  <!-- 数值标签 -->
+              <div class="chart-area">
+                <div class="chart-bars-container">
                   <div
-                    class="bar-value-label"
-                    :class="{ show: hoveredTrajectoryBar === bi }"
+                    v-for="(bar, bi) in trajectoryChartLayout.bars"
+                    :key="bar.label"
+                    class="modern-bar-wrapper"
+                    :class="{ active: hoveredTrajectoryBar === bi }"
+                    :style="{ animationDelay: `${bi * 0.06}s` }"
+                    @mouseenter="hoveredTrajectoryBar = bi"
+                    @mouseleave="hoveredTrajectoryBar = -1"
                   >
-                    {{ bar.total }}
-                  </div>
-
-                  <!-- 堆叠柱 -->
-                  <div class="modern-bar-stack">
+                    <!-- 数值标签 -->
                     <div
-                      v-for="seg in [...bar.segments].reverse()"
-                      :key="seg.type"
-                      class="modern-bar-segment"
-                      :style="{
-                        height: `${(seg.value / trajectoryChartLayout.maxVal) * 100}%`,
-                        background: `linear-gradient(180deg, ${seg.color}, ${seg.color}dd)`,
-                        opacity:
-                          hoveredTrajectoryBar === -1 ||
-                          hoveredTrajectoryBar === bi
-                            ? 1
-                            : 0.35,
-                      }"
-                    ></div>
-                  </div>
-
-                  <!-- 日期标签 -->
-                  <div class="bar-day-label">{{ bar.label }}</div>
-
-                  <!-- 悬停详情卡片 -->
-                  <Transition name="tooltip-fade">
-                    <div
-                      v-if="hoveredTrajectoryBar === bi"
-                      class="modern-tooltip"
+                      class="bar-value-label"
+                      :class="{ show: hoveredTrajectoryBar === bi }"
                     >
-                      <div class="tooltip-header">
-                        <span class="tooltip-day">{{ bar.label }}</span>
-                        <span class="tooltip-total">共 {{ bar.total }} 项</span>
-                      </div>
-                      <div class="tooltip-body">
-                        <div
-                          v-for="seg in bar.segments"
-                          :key="seg.type"
-                          class="tooltip-row"
-                        >
-                          <span
-                            class="row-dot"
-                            :style="{ background: seg.color }"
-                          ></span>
-                          <span class="row-label">{{ seg.label }}</span>
-                          <span class="row-value">{{ seg.value }}</span>
+                      {{ bar.total }}
+                    </div>
+
+                    <!-- 堆叠柱 -->
+                    <div class="modern-bar-stack">
+                      <div
+                        v-for="seg in [...bar.segments].reverse()"
+                        :key="seg.type"
+                        class="modern-bar-segment"
+                        :style="{
+                          height: `${(seg.value / trajectoryChartLayout.maxVal) * 100}%`,
+                          background: `linear-gradient(180deg, ${seg.color}, ${seg.color}dd)`,
+                          opacity:
+                            hoveredTrajectoryBar === -1 ||
+                            hoveredTrajectoryBar === bi
+                              ? 1
+                              : 0.35,
+                        }"
+                      ></div>
+                    </div>
+
+                    <!-- 日期标签 -->
+                    <div class="bar-day-label">{{ bar.label }}</div>
+
+                    <!-- 悬停详情卡片 -->
+                    <Transition name="tooltip-fade">
+                      <div
+                        v-if="hoveredTrajectoryBar === bi"
+                        class="modern-tooltip"
+                      >
+                        <div class="tooltip-header">
+                          <span class="tooltip-day">{{ bar.label }}</span>
+                          <span class="tooltip-total"
+                            >共 {{ bar.total }} 项</span
+                          >
+                        </div>
+                        <div class="tooltip-body">
+                          <div
+                            v-for="seg in bar.segments"
+                            :key="seg.type"
+                            class="tooltip-row"
+                          >
+                            <span
+                              class="row-dot"
+                              :style="{ background: seg.color }"
+                            ></span>
+                            <span class="row-label">{{ seg.label }}</span>
+                            <span class="row-value">{{ seg.value }}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Transition>
+                    </Transition>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Y轴刻度线 -->
-              <div class="y-axis-lines">
-                <div v-for="i in 4" :key="i" class="y-line">
-                  <span class="y-label">{{
-                    Math.round(trajectoryChartLayout.maxVal * ((5 - i) / 4))
-                  }}</span>
+                <!-- Y轴刻度线 -->
+                <div class="y-axis-lines">
+                  <div v-for="i in 4" :key="i" class="y-line">
+                    <span class="y-label">{{
+                      Math.round(trajectoryChartLayout.maxVal * ((5 - i) / 4))
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4126,17 +4130,19 @@ watch(totalHistoryPages, (value) => {
 /* ========== 现代风格柱状图 ========== */
 .modern-chart {
   position: relative;
-  padding: 16px 8px 8px;
+  padding: 8px 4px 4px;
 }
 
 /* 图例 */
 .modern-legend {
   display: flex;
   justify-content: center;
-  gap: 24px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  gap: 28px;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.35);
 }
 
 .legend-item {
@@ -4153,6 +4159,35 @@ watch(totalHistoryPages, (value) => {
   height: 10px;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 图表绘制区域 - 带柔和背景 */
+.chart-area {
+  position: relative;
+  background:
+    radial-gradient(
+      ellipse at 50% 100%,
+      rgba(76, 125, 255, 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 30% 0%,
+      rgba(35, 195, 178, 0.03) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 70% 0%,
+      rgba(139, 92, 246, 0.03) 0%,
+      transparent 40%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(248, 250, 255, 0.6) 0%,
+      rgba(240, 245, 255, 0.7) 100%
+    );
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.4);
+  padding: 8px 4px 4px;
 }
 
 /* 柱状图容器 */
@@ -4246,8 +4281,8 @@ watch(totalHistoryPages, (value) => {
   position: absolute;
   left: 0;
   right: 0;
-  top: 36px;
-  bottom: 28px;
+  top: 16px;
+  bottom: 32px;
   pointer-events: none;
   z-index: 0;
 }
