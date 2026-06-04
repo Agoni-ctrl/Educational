@@ -37,3 +37,8 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# 防止其他项目混入
+.agents/
+.codex/
+chat-bubble-component/
