@@ -1447,7 +1447,7 @@ watch(totalHistoryPages, (value) => {
                       cy="70"
                       r="58"
                       fill="none"
-                      stroke="rgba(255,255,255,0.12)"
+                      stroke="rgba(148,163,184,0.15)"
                       stroke-width="22"
                     />
                     <!-- 数据环段 -->
@@ -1480,7 +1480,7 @@ watch(totalHistoryPages, (value) => {
                       x="70"
                       y="66"
                       text-anchor="middle"
-                      fill="rgba(255,255,255,0.9)"
+                      fill="#334155"
                       font-size="20"
                       font-weight="800"
                     >
@@ -1490,7 +1490,7 @@ watch(totalHistoryPages, (value) => {
                       x="70"
                       y="82"
                       text-anchor="middle"
-                      fill="rgba(255,255,255,0.55)"
+                      fill="#94a3b8"
                       font-size="10"
                       font-weight="500"
                     >
@@ -3733,22 +3733,27 @@ watch(totalHistoryPages, (value) => {
   border-radius: 28px;
   background:
     radial-gradient(
-      ellipse at 70% 20%,
-      rgba(130, 170, 255, 0.28),
-      transparent 55%
+      ellipse at 80% 0%,
+      rgba(76, 125, 255, 0.12) 0%,
+      transparent 50%
     ),
     radial-gradient(
-      ellipse at 20% 80%,
-      rgba(35, 195, 178, 0.12),
+      ellipse at 0% 100%,
+      rgba(35, 195, 178, 0.08) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 100% 100%,
+      rgba(139, 92, 246, 0.06) 0%,
       transparent 40%
     ),
-    linear-gradient(160deg, #111f3a 0%, #1a2d55 35%, #162447 70%, #0f1b33 100%);
-  color: #fff;
+    linear-gradient(160deg, #f8faff 0%, #f0f4ff 35%, #f5f8ff 70%, #fafbfe 100%);
+  color: #1e293b;
   box-shadow:
-    0 4px 32px rgba(31, 65, 134, 0.14),
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+    0 4px 24px rgba(76, 125, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(76, 125, 255, 0.12);
   transition:
     box-shadow 0.4s ease,
     transform 0.4s ease;
@@ -3766,24 +3771,27 @@ watch(totalHistoryPages, (value) => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    135deg,
+    rgba(76, 125, 255, 0.1),
+    rgba(139, 92, 246, 0.08)
+  );
+  border: 1px solid rgba(76, 125, 255, 0.2);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(6px);
+  color: #4c7dff;
 }
 
 .badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #4c7dff;
-  box-shadow: 0 0 8px rgba(76, 125, 255, 0.6);
+  background: linear-gradient(135deg, #4c7dff, #6b9aff);
+  box-shadow: 0 0 10px rgba(76, 125, 255, 0.4);
   animation: badgePulse 2s ease-in-out infinite;
 }
 
@@ -3811,8 +3819,7 @@ watch(totalHistoryPages, (value) => {
 
 .highlight-text {
   position: relative;
-  color: #82aaff;
-  background: linear-gradient(135deg, #82aaff, #a78bfa);
+  background: linear-gradient(135deg, #4c7dff, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -3821,7 +3828,7 @@ watch(totalHistoryPages, (value) => {
 .lead-desc {
   margin: 0 0 24px;
   max-width: 34rem;
-  color: rgba(255, 255, 255, 0.68);
+  color: #64748b;
   line-height: 1.7;
   font-size: 0.92rem;
 }
@@ -3880,8 +3887,8 @@ watch(totalHistoryPages, (value) => {
 
 .ring-legend-item:hover,
 .ring-legend-item.active {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(76, 125, 255, 0.06);
+  border-color: rgba(76, 125, 255, 0.15);
 }
 
 .legend-dot {
@@ -3889,23 +3896,23 @@ watch(totalHistoryPages, (value) => {
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 6px rgba(76, 125, 255, 0.2);
 }
 
 .legend-label {
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #64748b;
   flex: 1;
 }
 
 .ring-legend-item.active .legend-label {
-  color: rgba(255, 255, 255, 0.95);
+  color: #334155;
 }
 
 .legend-value {
   font-size: 0.88rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: #334155;
   min-width: 24px;
   text-align: right;
 }
