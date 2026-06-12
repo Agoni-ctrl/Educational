@@ -1,7 +1,16 @@
 <script setup>
-import { ref, reactive, computed } from "vue";
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  watch,
+} from "vue";
 import { RouterLink } from "vue-router";
 import { useCommunity, formatTime } from "../composables/useCommunity.js";
+import * as echarts from "echarts";
 
 // 用户信息
 const userInfo = reactive({
@@ -244,6 +253,525 @@ function removeFavorite(postId) {
 // 跳转到社区详情
 function goToCommunityPost(postId) {
   window.location.href = `/community?post=${postId}`;
+}
+
+// ==================== 作品生成轨迹堆叠柱状图 ====================
+const workChartRef = ref(null);
+const workChartInstance = ref(null);
+const selectedTimeRange = ref("week"); // 'week' | 'month'
+
+// ==================== 创作趋势面积图 ====================
+const trendChartRef = ref(null);
+const trendChartInstance = ref(null);
+
+// ==================== 创作类型分布环形图 ====================
+const typeChartRef = ref(null);
+const typeChartInstance = ref(null);
+
+// 作品生成数据
+const workGenerationData = ref({
+  week: {
+    dates: ["周三", "周四", "周五", "周六", "周日", "周一", "周二"],
+    series: [
+      { name: "课件制作", data: [4, 3, 5, 5, 2, 1, 4], color: "#3b82f6" },
+      { name: "教案编写", data: [3, 3, 2, 2, 0, 1, 1], color: "#10b981" },
+      { name: "课堂练习", data: [2, 2, 3, 1, 1, 1, 2], color: "#8b5cf6" },
+    ],
+  },
+  month: {
+    dates: ["第1周", "第2周", "第3周", "第4周"],
+    series: [
+      { name: "课件制作", data: [18, 22, 15, 20], color: "#3b82f6" },
+      { name: "教案编写", data: [12, 15, 10, 14], color: "#10b981" },
+      { name: "课堂练习", data: [8, 12, 9, 11], color: "#8b5cf6" },
+    ],
+  },
+});
+
+// 生成图表配置
+function generateWorkChartOption(timeRange) {
+  const data = workGenerationData.value[timeRange];
+
+  return {
+    title: {
+      text: "最近生成与优化轨迹",
+      left: "2%",
+      top: "2%",
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: "#1e293b",
+      },
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        let total = 0;
+        let html = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${params[0].axisValue}</div>`;
+        params.forEach((item) => {
+          total += item.value;
+          html += `
+            <div style="display: flex; align-items: center; margin: 6px 0;">
+              <span style="display: inline-block; width: 10px; height: 10px; 
+                background: ${item.color}; border-radius: 50%; margin-right: 8px;"></span>
+              <span style="flex: 1;">${item.seriesName}</span>
+              <span style="font-weight: 600; margin-left: 12px;">${item.value} 个</span>
+            </div>
+          `;
+        });
+        html += `<div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px;">
+          <span style="color: #64748b;">总计：</span>
+          <span style="font-weight: 700; color: #3b82f6; font-size: 16px;">${total} 个</span>
+        </div>`;
+        return html;
+      },
+    },
+    legend: {
+      data: ["课件制作", "教案编写", "课堂练习"],
+      right: "4%",
+      top: "3%",
+      itemGap: 20,
+      itemWidth: 12,
+      itemHeight: 12,
+      textStyle: { fontSize: 12, color: "#475569" },
+      icon: "circle",
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "10%",
+      top: "18%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: data.dates,
+      axisLine: { lineStyle: { color: "#e2e8f0" } },
+      axisTick: { show: false },
+      axisLabel: { color: "#64748b", fontSize: 12, margin: 12 },
+    },
+    yAxis: {
+      type: "value",
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#94a3b8", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#f1f5f9", type: "dashed" } },
+    },
+    series: data.series.map((item, index) => ({
+      name: item.name,
+      type: "bar",
+      data: item.data,
+      barWidth: "20%",
+      barGap: "20%",
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: item.color },
+          { offset: 1, color: item.color + "cc" },
+        ]),
+        borderRadius: [6, 6, 0, 0],
+      },
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowColor: item.color + "80",
+        },
+      },
+    })),
+    animationDuration: 800,
+    animationEasing: "elasticOut",
+  };
+}
+
+// 初始化作品生成图表
+function initWorkChart() {
+  console.log("初始化图表, ref:", workChartRef.value);
+  if (!workChartRef.value) {
+    console.warn("图表容器未找到，延迟重试");
+    setTimeout(initWorkChart, 100);
+    return;
+  }
+
+  try {
+    if (workChartInstance.value) {
+      workChartInstance.value.dispose();
+      workChartInstance.value = null;
+    }
+
+    // 确保容器有尺寸
+    const container = workChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn("容器尺寸为0，延迟重试");
+      setTimeout(initWorkChart, 200);
+      return;
+    }
+
+    workChartInstance.value = echarts.init(container);
+    const option = generateWorkChartOption(selectedTimeRange.value);
+    workChartInstance.value.setOption(option);
+    console.log("图表初始化成功");
+
+    // 点击事件 - 下钻查看详情
+    workChartInstance.value.on("click", function (params) {
+      const date = params.name;
+      const type = params.seriesName;
+      console.log("点击了:", date, type);
+    });
+  } catch (error) {
+    console.error("图表初始化失败:", error);
+  }
+}
+
+// 切换作品图表时间范围
+function switchWorkTimeRange(range) {
+  selectedTimeRange.value = range;
+  if (workChartInstance.value) {
+    const option = generateWorkChartOption(range);
+    workChartInstance.value.setOption(option, true);
+  }
+}
+
+// 监听窗口大小变化
+function handleResize() {
+  if (workChartInstance.value) {
+    workChartInstance.value.resize();
+  }
+  if (trendChartInstance.value) {
+    trendChartInstance.value.resize();
+  }
+  if (typeChartInstance.value) {
+    typeChartInstance.value.resize();
+  }
+}
+
+// 生成创作趋势图表配置
+function generateTrendChartOption() {
+  const data = usageData.value[usageTimeRange.value];
+  const colors = CHART_COLORS[selectedType.value];
+
+  return {
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        const index = params[0].dataIndex;
+        const label = data.labels[index];
+        const value = params[0].value;
+        const detail = data.details[label];
+
+        let html = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${label}</div>`;
+        html += `<div style="display: flex; align-items: center; margin: 6px 0;">`;
+        html += `<span style="display: inline-block; width: 10px; height: 10px; background: ${params[0].color}; border-radius: 50%; margin-right: 8px;"></span>`;
+        html += `<span>创作数量: <strong>${value}</strong></span>`;
+        html += `</div>`;
+
+        if (detail) {
+          html += `<div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px; font-size: 12px; color: #64748b;">`;
+          html += `<div>📚 ${detail.subjects.join("、")}</div>`;
+          html += `<div>⏰ 高峰 ${detail.peakHour}</div>`;
+          html += `</div>`;
+        }
+        return html;
+      },
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "3%",
+      top: "10%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: data.labels,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#64748b", fontSize: 12 },
+    },
+    yAxis: {
+      type: "value",
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#94a3b8", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#f1f5f9", type: "dashed" } },
+    },
+    series: [
+      {
+        name: "创作数量",
+        type: "line",
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 8,
+        sampling: "average",
+        itemStyle: {
+          color: colors.primary,
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+        lineStyle: {
+          width: 3,
+          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: colors.primary },
+            { offset: 1, color: colors.secondary },
+          ]),
+          shadowColor: colors.shadow,
+          shadowBlur: 10,
+          shadowOffsetY: 5,
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: colors.primary + "80" },
+            { offset: 0.5, color: colors.secondary + "40" },
+            { offset: 1, color: colors.secondary + "05" },
+          ]),
+        },
+        data: data.data,
+        emphasis: {
+          focus: "series",
+          itemStyle: {
+            shadowBlur: 15,
+            shadowColor: colors.shadow,
+          },
+        },
+      },
+    ],
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+  };
+}
+
+// 初始化创作趋势图表
+function initTrendChart() {
+  console.log("初始化创作趋势图表, ref:", trendChartRef.value);
+  if (!trendChartRef.value) {
+    setTimeout(initTrendChart, 100);
+    return;
+  }
+
+  try {
+    if (trendChartInstance.value) {
+      trendChartInstance.value.dispose();
+      trendChartInstance.value = null;
+    }
+
+    const container = trendChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("创作趋势容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initTrendChart, 200);
+      return;
+    }
+
+    trendChartInstance.value = echarts.init(container);
+    const option = generateTrendChartOption();
+    trendChartInstance.value.setOption(option);
+    console.log("创作趋势图表初始化成功");
+
+    // 点击事件
+    trendChartInstance.value.on("click", function (params) {
+      const index = params.dataIndex;
+      const label = usageData.value[usageTimeRange.value].labels[index];
+      selectedDate.value = label;
+      console.log("点击了日期:", label);
+    });
+  } catch (error) {
+    console.error("创作趋势图表初始化失败:", error);
+  }
+}
+
+// 更新创作趋势图表
+function updateTrendChart() {
+  if (trendChartInstance.value) {
+    const option = generateTrendChartOption();
+    trendChartInstance.value.setOption(option, true);
+  }
+}
+
+// 生成创作类型分布图表配置
+function generateTypeChartOption() {
+  const pptCount = getTypeCount("ppt");
+  const docCount = getTypeCount("doc");
+  const interactiveCount = getTypeCount("interactive");
+  const total = pptCount + docCount + interactiveCount;
+
+  const data = [
+    { value: pptCount, name: "课件 PPT", itemStyle: { color: "#8b5cf6" } },
+    { value: docCount, name: "教案文档", itemStyle: { color: "#10b981" } },
+    {
+      value: interactiveCount,
+      name: "教学题",
+      itemStyle: { color: "#f59e0b" },
+    },
+  ];
+
+  return {
+    tooltip: {
+      trigger: "item",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        const percent =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `<div style="font-weight: 600; margin-bottom: 4px;">${params.name}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="display: inline-block; width: 10px; height: 10px; background: ${params.color}; border-radius: 50%;"></span>
+                  <span>${params.value} 个 (${percent}%)</span>
+                </div>`;
+      },
+    },
+    legend: {
+      orient: "vertical",
+      right: "5%",
+      top: "center",
+      itemGap: 16,
+      itemWidth: 12,
+      itemHeight: 12,
+      textStyle: {
+        fontSize: 13,
+        color: "#475569",
+      },
+      icon: "circle",
+      formatter: function (name) {
+        const item = data.find((d) => d.name === name);
+        const count = item ? item.value : 0;
+        return `${name}  ${count}个`;
+      },
+    },
+    series: [
+      {
+        name: "创作类型",
+        type: "pie",
+        radius: ["45%", "70%"],
+        center: ["35%", "50%"],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 8,
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+        label: {
+          show: false,
+          position: "center",
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: "bold",
+            color: "#1e293b",
+            formatter: function (params) {
+              return `{name|${params.name}}\n{value|${params.value}}\n{unit|个}`;
+            },
+            rich: {
+              name: {
+                fontSize: 12,
+                color: "#64748b",
+                lineHeight: 20,
+              },
+              value: {
+                fontSize: 24,
+                fontWeight: "bold",
+                color: "#1e293b",
+                lineHeight: 32,
+              },
+              unit: {
+                fontSize: 12,
+                color: "#94a3b8",
+              },
+            },
+          },
+          itemStyle: {
+            shadowBlur: 15,
+            shadowOffsetX: 0,
+            shadowColor: "rgba(0, 0, 0, 0.2)",
+          },
+        },
+        labelLine: {
+          show: false,
+        },
+        data: data,
+      },
+    ],
+    animationDuration: 800,
+    animationEasing: "cubicOut",
+  };
+}
+
+// 初始化创作类型分布图表
+function initTypeChart() {
+  console.log("初始化类型分布图表, ref:", typeChartRef.value);
+  if (!typeChartRef.value) {
+    setTimeout(initTypeChart, 100);
+    return;
+  }
+
+  try {
+    if (typeChartInstance.value) {
+      typeChartInstance.value.dispose();
+      typeChartInstance.value = null;
+    }
+
+    const container = typeChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("类型分布容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initTypeChart, 200);
+      return;
+    }
+
+    typeChartInstance.value = echarts.init(container);
+    const option = generateTypeChartOption();
+    typeChartInstance.value.setOption(option);
+    console.log("类型分布图表初始化成功");
+
+    // 点击事件 - 筛选类型
+    typeChartInstance.value.on("click", function (params) {
+      const typeMap = {
+        "课件 PPT": "ppt",
+        教案文档: "doc",
+        教学题: "interactive",
+      };
+      const type = typeMap[params.name];
+      if (type) {
+        filterByType(type);
+        console.log("点击了类型:", params.name, type);
+      }
+    });
+  } catch (error) {
+    console.error("类型分布图表初始化失败:", error);
+  }
+}
+
+// 更新创作类型分布图表
+function updateTypeChart() {
+  if (typeChartInstance.value) {
+    const option = generateTypeChartOption();
+    typeChartInstance.value.setOption(option, true);
+  }
 }
 
 // 模拟使用数据 - 丰富的教育场景数据
@@ -842,11 +1370,15 @@ function switchTimeRange(range) {
   usageTimeRange.value = range;
   selectedDate.value = null;
   selectedType.value = "all";
+  // 更新创作趋势图表
+  updateTrendChart();
 }
 
 // 切换类型筛选
 function filterByType(type) {
   selectedType.value = type;
+  // 更新创作趋势图表颜色
+  updateTrendChart();
 }
 
 // 处理数据点悬停
@@ -1037,6 +1569,35 @@ function likePost(post) {
 function saveProfile() {
   alert("个人资料保存成功！");
 }
+
+// 生命周期钩子
+onMounted(() => {
+  // 延迟初始化确保DOM完全渲染
+  setTimeout(() => {
+    nextTick(() => {
+      initWorkChart();
+      initTrendChart();
+      initTypeChart();
+    });
+  }, 300);
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+  if (workChartInstance.value) {
+    workChartInstance.value.dispose();
+    workChartInstance.value = null;
+  }
+  if (trendChartInstance.value) {
+    trendChartInstance.value.dispose();
+    trendChartInstance.value = null;
+  }
+  if (typeChartInstance.value) {
+    typeChartInstance.value.dispose();
+    typeChartInstance.value = null;
+  }
+});
 </script>
 
 <template>
@@ -1409,10 +1970,10 @@ function saveProfile() {
             </div>
           </div>
 
-          <!-- 类型分布 -->
-          <div class="type-distribution">
-            <h4 class="section-title">
-              创作类型分布
+          <!-- 创作类型分布 - ECharts环形图 -->
+          <div class="type-distribution-chart">
+            <div class="type-chart-header">
+              <h4 class="section-title">创作类型分布</h4>
               <span v-if="selectedType !== 'all'" class="filter-tag">
                 已筛选:
                 {{
@@ -1426,104 +1987,35 @@ function saveProfile() {
                   ✕
                 </button>
               </span>
-            </h4>
-            <div class="type-bars">
-              <!-- 全部 -->
-              <div
-                class="type-bar-item"
-                :class="{ active: selectedType === 'all' }"
-                @click="filterByType('all')"
-              >
-                <div class="type-label">
-                  <span class="type-dot all"></span>
-                  <span>全部</span>
-                </div>
-                <div class="type-progress">
-                  <div class="progress-bg">
-                    <div
-                      class="progress-fill all"
-                      :style="{ width: '100%' }"
-                    ></div>
-                  </div>
-                  <span class="progress-value"
-                    >{{
-                      getTypeCount("ppt") +
-                      getTypeCount("doc") +
-                      getTypeCount("interactive")
-                    }}个</span
-                  >
-                </div>
-              </div>
-              <!-- 课件 -->
-              <div
-                class="type-bar-item"
-                :class="{ active: selectedType === 'ppt' }"
-                @click="filterByType('ppt')"
-              >
-                <div class="type-label">
-                  <span class="type-dot ppt"></span>
-                  <span>课件 PPT</span>
-                </div>
-                <div class="type-progress">
-                  <div class="progress-bg">
-                    <div
-                      class="progress-fill ppt"
-                      :style="{ width: getTypePercentage('ppt') + '%' }"
-                    ></div>
-                  </div>
-                  <span class="progress-value"
-                    >{{ getTypeCount("ppt") }}个</span
-                  >
-                </div>
-              </div>
-              <!-- 教案 -->
-              <div
-                class="type-bar-item"
-                :class="{ active: selectedType === 'doc' }"
-                @click="filterByType('doc')"
-              >
-                <div class="type-label">
-                  <span class="type-dot doc"></span>
-                  <span>教案文档</span>
-                </div>
-                <div class="type-progress">
-                  <div class="progress-bg">
-                    <div
-                      class="progress-fill doc"
-                      :style="{ width: getTypePercentage('doc') + '%' }"
-                    ></div>
-                  </div>
-                  <span class="progress-value"
-                    >{{ getTypeCount("doc") }}个</span
-                  >
-                </div>
-              </div>
-              <!-- 教学题 -->
-              <div
-                class="type-bar-item"
-                :class="{ active: selectedType === 'interactive' }"
-                @click="filterByType('interactive')"
-              >
-                <div class="type-label">
-                  <span class="type-dot interactive"></span>
-                  <span>教学题</span>
-                </div>
-                <div class="type-progress">
-                  <div class="progress-bg">
-                    <div
-                      class="progress-fill interactive"
-                      :style="{ width: getTypePercentage('interactive') + '%' }"
-                    ></div>
-                  </div>
-                  <span class="progress-value"
-                    >{{ getTypeCount("interactive") }}个</span
-                  >
-                </div>
-              </div>
             </div>
+            <div ref="typeChartRef" class="type-chart-container"></div>
           </div>
 
-          <!-- 美化折线图 -->
+          <!-- 作品生成轨迹堆叠柱状图 -->
+          <div class="work-chart-section">
+            <div class="work-chart-header">
+              <h4 class="section-title">最近任务</h4>
+              <div class="work-chart-controls">
+                <button
+                  class="time-range-btn"
+                  :class="{ active: selectedTimeRange === 'week' }"
+                  @click="switchWorkTimeRange('week')"
+                >
+                  本周
+                </button>
+                <button
+                  class="time-range-btn"
+                  :class="{ active: selectedTimeRange === 'month' }"
+                  @click="switchWorkTimeRange('month')"
+                >
+                  本月
+                </button>
+              </div>
+            </div>
+            <div ref="workChartRef" class="work-chart-container"></div>
+          </div>
+
+          <!-- 创作趋势 - ECharts平滑面积图 -->
           <div class="chart-section">
             <div class="chart-header">
               <h4 class="section-title">
@@ -1558,258 +2050,7 @@ function saveProfile() {
                 </span>
               </div>
             </div>
-            <div class="chart-container">
-              <svg
-                class="chart-svg"
-                viewBox="0 0 700 280"
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <!-- 背景网格 - 更柔和 -->
-                <g class="grid-lines">
-                  <line
-                    x1="50"
-                    y1="50"
-                    x2="650"
-                    y2="50"
-                    stroke="#f1f5f9"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="50"
-                    y1="100"
-                    x2="650"
-                    y2="100"
-                    stroke="#f1f5f9"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="50"
-                    y1="150"
-                    x2="650"
-                    y2="150"
-                    stroke="#f1f5f9"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="50"
-                    y1="200"
-                    x2="650"
-                    y2="200"
-                    stroke="#f1f5f9"
-                    stroke-width="1"
-                  />
-                </g>
-
-                <!-- Y轴标签 -->
-                <g class="y-labels">
-                  <text
-                    x="35"
-                    y="55"
-                    text-anchor="end"
-                    fill="#94a3b8"
-                    font-size="11"
-                    font-weight="500"
-                  >
-                    {{ chartPath.max }}
-                  </text>
-                  <text
-                    x="35"
-                    y="105"
-                    text-anchor="end"
-                    fill="#94a3b8"
-                    font-size="11"
-                    font-weight="500"
-                  >
-                    {{ Math.round(chartPath.max * 0.75) }}
-                  </text>
-                  <text
-                    x="35"
-                    y="155"
-                    text-anchor="end"
-                    fill="#94a3b8"
-                    font-size="11"
-                    font-weight="500"
-                  >
-                    {{ Math.round(chartPath.max * 0.5) }}
-                  </text>
-                  <text
-                    x="35"
-                    y="205"
-                    text-anchor="end"
-                    fill="#94a3b8"
-                    font-size="11"
-                    font-weight="500"
-                  >
-                    {{ Math.round(chartPath.max * 0.25) }}
-                  </text>
-                  <text
-                    x="35"
-                    y="230"
-                    text-anchor="end"
-                    fill="#94a3b8"
-                    font-size="11"
-                    font-weight="500"
-                  >
-                    0
-                  </text>
-                </g>
-
-                <!-- 渐变填充区域 - 根据类型动态变化 -->
-                <defs>
-                  <linearGradient
-                    id="lineGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop offset="0%" :stop-color="chartPath.colors.primary" />
-                    <stop
-                      offset="100%"
-                      :stop-color="chartPath.colors.secondary"
-                    />
-                  </linearGradient>
-                  <linearGradient
-                    id="areaGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <stop
-                      offset="0%"
-                      :stop-color="chartPath.colors.primary"
-                      stop-opacity="0.5"
-                    />
-                    <stop
-                      offset="50%"
-                      :stop-color="chartPath.colors.secondary"
-                      stop-opacity="0.2"
-                    />
-                    <stop
-                      offset="100%"
-                      :stop-color="chartPath.colors.secondary"
-                      stop-opacity="0.02"
-                    />
-                  </linearGradient>
-                  <filter
-                    id="glow"
-                    x="-50%"
-                    y="-50%"
-                    width="200%"
-                    height="200%"
-                  >
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                    <feMerge>
-                      <feMergeNode in="coloredBlur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-
-                <!-- 面积填充 -->
-                <path
-                  v-if="chartPath.path"
-                  class="chart-area"
-                  :d="
-                    chartPath.path +
-                    ` L ${chartPath.points[chartPath.points.length - 1].x} 230 L ${chartPath.points[0].x} 230 Z`
-                  "
-                  fill="url(#areaGradient)"
-                />
-
-                <!-- 折线 - 带发光效果 -->
-                <path
-                  v-if="chartPath.path"
-                  class="chart-line"
-                  :d="chartPath.path"
-                  fill="none"
-                  stroke="url(#lineGradient)"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  :style="{
-                    filter: `drop-shadow(0 2px 8px ${chartPath.colors.shadow})`,
-                  }"
-                />
-
-                <!-- 数据点 - 实心圆点 -->
-                <g class="data-points">
-                  <circle
-                    v-for="point in chartPath.points"
-                    :key="point.index"
-                    class="data-point"
-                    :cx="point.x"
-                    :cy="point.y"
-                    r="6"
-                    fill="url(#lineGradient)"
-                    :style="{
-                      filter: `drop-shadow(0 2px 4px ${chartPath.colors.shadow})`,
-                    }"
-                    @mouseenter="handlePointHover(point)"
-                    @mouseleave="handlePointLeave"
-                    @click="handlePointClick(point)"
-                  />
-                </g>
-
-                <!-- X轴标签 -->
-                <g class="x-labels">
-                  <text
-                    v-for="(label, index) in usageData[usageTimeRange].labels"
-                    :key="index"
-                    :x="chartPath.points[index]?.x || 0"
-                    y="255"
-                    text-anchor="middle"
-                    fill="#64748b"
-                    font-size="12"
-                    font-weight="500"
-                  >
-                    {{ label }}
-                  </text>
-                </g>
-              </svg>
-
-              <!-- 精美悬停提示 -->
-              <div
-                v-if="hoveredDataPoint"
-                class="chart-tooltip chart-tooltip--enhanced"
-                :style="{
-                  left: hoveredDataPoint.x + 'px',
-                  top: hoveredDataPoint.y - 80 + 'px',
-                }"
-              >
-                <div class="tooltip-header">
-                  <span class="tooltip-date">{{
-                    usageData[usageTimeRange].labels[hoveredDataPoint.index]
-                  }}</span>
-                  <span
-                    class="tooltip-badge"
-                    :class="getEfficiencyClass(hoveredDataPoint.value)"
-                    >{{ getEfficiencyLabel(hoveredDataPoint.value) }}</span
-                  >
-                </div>
-                <div class="tooltip-body">
-                  <div class="tooltip-value">
-                    {{ hoveredDataPoint.value }} <small>个课件</small>
-                  </div>
-                  <div
-                    class="tooltip-detail"
-                    v-if="getDayDetail(hoveredDataPoint.index)"
-                  >
-                    <span class="detail-item"
-                      >📚
-                      {{
-                        getDayDetail(hoveredDataPoint.index).subjects.join("、")
-                      }}</span
-                    >
-                    <span class="detail-item"
-                      >⏰ 高峰
-                      {{ getDayDetail(hoveredDataPoint.index).peakHour }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div ref="trendChartRef" class="trend-chart-container"></div>
           </div>
 
           <!-- 选中日期详情 - 更丰富的展示 -->
@@ -3785,6 +4026,86 @@ function saveProfile() {
   font-weight: 600;
   color: #64748b;
   text-align: right;
+}
+
+/* 作品生成轨迹图表区域 */
+.work-chart-section {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  margin-bottom: 24px;
+}
+
+.work-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.work-chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.time-range-btn {
+  padding: 6px 16px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.time-range-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.time-range-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+}
+
+.work-chart-container {
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+}
+
+/* 创作趋势图表容器 */
+.trend-chart-container {
+  width: 100%;
+  height: 280px;
+  min-height: 280px;
+}
+
+/* 创作类型分布图表 */
+.type-distribution-chart {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  margin-bottom: 24px;
+}
+
+.type-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.type-chart-container {
+  width: 100%;
+  height: 240px;
+  min-height: 240px;
 }
 
 /* 图表区域 */
