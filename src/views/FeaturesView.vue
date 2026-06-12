@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { RouterLink } from "vue-router";
+import * as echarts from "echarts";
 import {
   useFeatures,
   formatFeatureTime,
@@ -29,6 +30,69 @@ const historyPage = ref(1);
 const iterateFeedback = ref({});
 const expandedRecord = ref(null);
 const selectedHistoryType = ref("all"); // 'all' | 'ppt' | 'doc' | 'interactive'
+
+// ==================== 教学档案筛选条件（新版）====================
+const isArchiveFilterExpanded = ref(false);
+const activeArchiveFilterGroups = ref(["basic", "type"]);
+
+// 基础筛选
+const archiveFilters = ref({
+  type: "", // 课件类型
+  subject: "", // 学科
+  grade: "", // 年级
+  status: "", // 状态
+  timeRange: "", // 时间范围
+  format: "", // 文件格式
+  difficulty: "", // 难度
+  searchQuery: "", // 搜索关键词
+});
+
+// 排序方式
+const archiveSortBy = ref("newest");
+
+// 保存的筛选方案
+const savedArchiveFilters = ref([
+  { name: "最近课件", filters: { type: "ppt", timeRange: "week" } },
+  { name: "待优化教案", filters: { type: "doc", status: "iterating" } },
+]);
+
+// 筛选选项数据
+const archiveFilterOptions = {
+  grades: ["七年级", "八年级", "九年级", "高一", "高二", "高三"],
+  formats: [
+    { value: "pptx", label: "PPTX", icon: "📊", color: "#f59e0b" },
+    { value: "pdf", label: "PDF", icon: "📄", color: "#ef4444" },
+    { value: "docx", label: "DOCX", icon: "📝", color: "#3b82f6" },
+    { value: "mp4", label: "MP4", icon: "🎬", color: "#8b5cf6" },
+  ],
+  difficulties: [
+    { value: "basic", label: "基础", color: "#22c55e", bgColor: "#dcfce7" },
+    { value: "medium", label: "中等", color: "#f59e0b", bgColor: "#fef3c7" },
+    { value: "advanced", label: "进阶", color: "#ef4444", bgColor: "#fee2e2" },
+  ],
+  timeRanges: [
+    { value: "today", label: "今天", desc: "今日创建" },
+    { value: "week", label: "近7天", desc: "最近一周" },
+    { value: "month", label: "近30天", desc: "最近一月" },
+    { value: "quarter", label: "本季度", desc: "三个月内" },
+  ],
+};
+
+// 知识点标签
+const knowledgeTags = [
+  "牛顿定律",
+  "电磁感应",
+  "化学反应",
+  "细胞结构",
+  "函数与方程",
+  "几何证明",
+  "文言文阅读",
+  "英语语法",
+  "实验探究",
+  "数据分析",
+  "历史事件",
+  "地理地貌",
+];
 
 // 意见反馈筛选条件
 const feedbackFilters = ref({
@@ -613,6 +677,331 @@ const trajectoryChartLayout = computed(() => {
 
 const hoveredTrajectoryBar = ref(-1);
 
+// ==================== ECharts 雷达图 ====================
+const radarChartRef = ref(null);
+const radarChartInstance = ref(null);
+
+// 生成组合图表配置（柱状图+折线图）
+function generateRadarChartOption() {
+  const data = recentTrajectoryData.value;
+  const dates = data.map((d) => d.label);
+
+  // 计算每日累计使用时间（模拟数据：每个任务约15-30分钟）
+  const usageTimeData = data.map((d) => {
+    const totalTasks = d.ppt + d.doc + d.interactive;
+    // 每个任务15-30分钟，加上基础时间
+    return Math.round(totalTasks * (15 + Math.random() * 15) + 10);
+  });
+
+  return {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross",
+        crossStyle: { color: "#999" },
+      },
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        const dayData = data[params[0].dataIndex];
+        let html = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${dayData.label} ${dayData.date}</div>`;
+
+        params.forEach((param) => {
+          if (param.seriesType === "bar") {
+            html += `<div style="display: flex; align-items: center; margin: 4px 0;">
+              <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 2px; margin-right: 8px;"></span>
+              <span style="flex: 1;">${param.seriesName}:</span>
+              <span style="font-weight: 600;">${param.value} 个</span>
+            </div>`;
+          } else if (param.seriesType === "line") {
+            html += `<div style="display: flex; align-items: center; margin: 4px 0; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 8px;">
+              <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
+              <span style="flex: 1;">${param.seriesName}:</span>
+              <span style="font-weight: 600;">${param.value} 分钟</span>
+            </div>`;
+          }
+        });
+
+        const total = dayData.ppt + dayData.doc + dayData.interactive;
+        html += `<div style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px;">
+          <span style="color: #64748b;">任务总计: </span>
+          <span style="font-weight: 600; color: #4c7dff;">${total} 项</span>
+        </div>`;
+
+        return html;
+      },
+    },
+    legend: {
+      data: ["课件制作", "教案编写", "课堂练习", "累计用时"],
+      bottom: "2%",
+      textStyle: { color: "#64748b", fontSize: 11 },
+      itemWidth: 12,
+      itemHeight: 12,
+      icon: "roundRect",
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "18%",
+      top: "15%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      name: "日期",
+      nameLocation: "middle",
+      nameGap: 30,
+      nameTextStyle: {
+        color: "#64748b",
+        fontSize: 12,
+        fontWeight: 500,
+      },
+      data: dates,
+      axisLine: { lineStyle: { color: "#e2e8f0" } },
+      axisTick: { show: false },
+      axisLabel: {
+        color: "#64748b",
+        fontSize: 11,
+        interval: 0,
+      },
+    },
+    yAxis: [
+      {
+        type: "value",
+        name: "任务数量 (个)",
+        nameLocation: "middle",
+        nameGap: 45,
+        nameTextStyle: {
+          color: "#64748b",
+          fontSize: 12,
+          fontWeight: 500,
+        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: {
+          color: "#94a3b8",
+          fontSize: 10,
+          formatter: "{value} 个",
+        },
+        splitLine: { lineStyle: { color: "#f1f5f9", type: "dashed" } },
+      },
+      {
+        type: "value",
+        name: "累计用时 (分钟)",
+        nameLocation: "middle",
+        nameGap: 50,
+        nameTextStyle: {
+          color: "#64748b",
+          fontSize: 12,
+          fontWeight: 500,
+        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: {
+          color: "#94a3b8",
+          fontSize: 10,
+          formatter: "{value} 分",
+        },
+        splitLine: { show: false },
+      },
+    ],
+    series: [
+      // 课件制作 - 蓝色柱状图（非堆叠，独立显示）
+      {
+        name: "课件制作",
+        type: "bar",
+        data: data.map((d) => d.ppt),
+        barWidth: "22%",
+        barGap: "8%",
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#4c7dff" },
+            { offset: 1, color: "#6b9aff" },
+          ]),
+          borderRadius: [4, 4, 0, 0],
+        },
+        label: {
+          show: true,
+          position: "top",
+          formatter: "{c}",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#4c7dff",
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: "rgba(76, 125, 255, 0.5)",
+          },
+          label: {
+            fontSize: 13,
+            fontWeight: 700,
+          },
+        },
+        animationDelay: function (idx) {
+          return idx * 50;
+        },
+      },
+      // 教案编写 - 青色柱状图（非堆叠，独立显示）
+      {
+        name: "教案编写",
+        type: "bar",
+        data: data.map((d) => d.doc),
+        barWidth: "22%",
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#23c3b2" },
+            { offset: 1, color: "#4dd9c4" },
+          ]),
+          borderRadius: [4, 4, 0, 0],
+        },
+        label: {
+          show: true,
+          position: "top",
+          formatter: "{c}",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#23c3b2",
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: "rgba(35, 195, 178, 0.5)",
+          },
+          label: {
+            fontSize: 13,
+            fontWeight: 700,
+          },
+        },
+        animationDelay: function (idx) {
+          return idx * 50 + 100;
+        },
+      },
+      // 课堂练习 - 紫色柱状图（非堆叠，独立显示）
+      {
+        name: "课堂练习",
+        type: "bar",
+        data: data.map((d) => d.interactive),
+        barWidth: "22%",
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#8b5cf6" },
+            { offset: 1, color: "#a78bfa" },
+          ]),
+          borderRadius: [4, 4, 0, 0],
+        },
+        label: {
+          show: true,
+          position: "top",
+          formatter: "{c}",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#8b5cf6",
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: "rgba(139, 92, 246, 0.5)",
+          },
+          label: {
+            fontSize: 13,
+            fontWeight: 700,
+          },
+        },
+        animationDelay: function (idx) {
+          return idx * 50 + 200;
+        },
+      },
+      // 累计用时 - 橙色折线图
+      {
+        name: "累计用时",
+        type: "line",
+        yAxisIndex: 1,
+        data: usageTimeData,
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 8,
+        lineStyle: {
+          width: 3,
+          color: "#f59e0b",
+          shadowColor: "rgba(245, 158, 11, 0.3)",
+          shadowBlur: 8,
+        },
+        itemStyle: {
+          color: "#f59e0b",
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+        emphasis: {
+          scale: true,
+          itemStyle: {
+            shadowBlur: 15,
+            shadowColor: "rgba(245, 158, 11, 0.5)",
+          },
+        },
+        animationDelay: function (idx) {
+          return idx * 50 + 300;
+        },
+      },
+    ],
+    // 出场动画配置
+    animationEasing: "elasticOut",
+    animationDuration: 1500,
+  };
+}
+
+// 初始化雷达图
+function initRadarChart() {
+  console.log("初始化雷达图, ref:", radarChartRef.value);
+  if (!radarChartRef.value) {
+    setTimeout(initRadarChart, 100);
+    return;
+  }
+
+  try {
+    if (radarChartInstance.value) {
+      radarChartInstance.value.dispose();
+      radarChartInstance.value = null;
+    }
+
+    const container = radarChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("雷达图容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initRadarChart, 200);
+      return;
+    }
+
+    radarChartInstance.value = echarts.init(container);
+    const option = generateRadarChartOption();
+    radarChartInstance.value.setOption(option);
+    console.log("雷达图初始化成功");
+  } catch (error) {
+    console.error("雷达图初始化失败:", error);
+  }
+}
+
+// 更新雷达图
+function updateRadarChart() {
+  if (radarChartInstance.value) {
+    const option = generateRadarChartOption();
+    radarChartInstance.value.setOption(option, true);
+  }
+}
+
+// 监听窗口大小变化
+function handleRadarResize() {
+  if (radarChartInstance.value) {
+    radarChartInstance.value.resize();
+  }
+}
+
 const pptPreviewStructure = {
   实验探究型: [
     "情境导入",
@@ -974,6 +1363,424 @@ const ringChartSegments = computed(() => {
 let toastTimer = null;
 const hoveredRingSegment = ref(-1);
 
+// ==================== ECharts 任务状态饼图 ====================
+const taskPieChartRef = ref(null);
+const taskPieChartInstance = ref(null);
+
+// 生成任务状态饼图配置
+function generateTaskPieChartOption() {
+  const data = taskRingData.value.map((item) => ({
+    value: item.value,
+    name: item.label,
+    itemStyle: {
+      color: item.color,
+    },
+  }));
+
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  return {
+    tooltip: {
+      trigger: "item",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        const percent =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `<div style="font-weight: 600; margin-bottom: 4px;">${params.name}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="display: inline-block; width: 10px; height: 10px; background: ${params.color}; border-radius: 50%;"></span>
+                  <span>${params.value} 个 (${percent}%)</span>
+                </div>`;
+      },
+    },
+    legend: {
+      orient: "vertical",
+      right: "0%",
+      top: "center",
+      itemGap: 16,
+      itemWidth: 12,
+      itemHeight: 12,
+      textStyle: {
+        fontSize: 13,
+        color: "#475569",
+      },
+      icon: "circle",
+      formatter: function (name) {
+        const item = data.find((d) => d.name === name);
+        const count = item ? item.value : 0;
+        return `{name|${name}}  {value|${count}}`;
+      },
+      textStyle: {
+        rich: {
+          name: {
+            fontSize: 13,
+            color: "#475569",
+            width: 60,
+          },
+          value: {
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#334155",
+          },
+        },
+      },
+    },
+    series: [
+      {
+        name: "任务状态",
+        type: "pie",
+        radius: ["45%", "70%"],
+        center: ["35%", "50%"],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 8,
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+        label: {
+          show: true,
+          position: "center",
+          formatter: function () {
+            return `{total|${total}}\n{label|全部任务}`;
+          },
+          rich: {
+            total: {
+              fontSize: 24,
+              fontWeight: 800,
+              color: "#334155",
+              lineHeight: 32,
+            },
+            label: {
+              fontSize: 11,
+              color: "#94a3b8",
+              lineHeight: 16,
+            },
+          },
+        },
+        emphasis: {
+          scale: true,
+          scaleSize: 10,
+          label: {
+            show: true,
+            formatter: function (params) {
+              return `{name|${params.name}}\n{value|${params.value}}\n{unit|个}`;
+            },
+            rich: {
+              name: {
+                fontSize: 12,
+                color: "#64748b",
+                lineHeight: 18,
+              },
+              value: {
+                fontSize: 22,
+                fontWeight: 800,
+                color: "#334155",
+                lineHeight: 28,
+              },
+              unit: {
+                fontSize: 11,
+                color: "#94a3b8",
+              },
+            },
+          },
+          itemStyle: {
+            shadowBlur: 20,
+            shadowOffsetX: 0,
+            shadowColor: "rgba(0, 0, 0, 0.2)",
+            borderWidth: 3,
+          },
+        },
+        labelLine: {
+          show: false,
+        },
+        data: data,
+        // 动画效果
+        animationType: "scale",
+        animationEasing: "elasticOut",
+        animationDelay: function (idx) {
+          return Math.random() * 200;
+        },
+      },
+    ],
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+  };
+}
+
+// 初始化任务状态饼图
+function initTaskPieChart() {
+  console.log("初始化任务状态饼图, ref:", taskPieChartRef.value);
+  if (!taskPieChartRef.value) {
+    setTimeout(initTaskPieChart, 100);
+    return;
+  }
+
+  try {
+    if (taskPieChartInstance.value) {
+      taskPieChartInstance.value.dispose();
+      taskPieChartInstance.value = null;
+    }
+
+    const container = taskPieChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("任务状态饼图容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initTaskPieChart, 200);
+      return;
+    }
+
+    taskPieChartInstance.value = echarts.init(container);
+    const option = generateTaskPieChartOption();
+    taskPieChartInstance.value.setOption(option);
+    console.log("任务状态饼图初始化成功");
+
+    // 监听数据变化更新图表
+    watch(
+      taskRingData,
+      () => {
+        updateTaskPieChart();
+      },
+      { deep: true },
+    );
+  } catch (error) {
+    console.error("任务状态饼图初始化失败:", error);
+  }
+}
+
+// 更新任务状态饼图
+function updateTaskPieChart() {
+  if (taskPieChartInstance.value) {
+    const option = generateTaskPieChartOption();
+    taskPieChartInstance.value.setOption(option, true);
+  }
+}
+
+// 监听窗口大小变化
+function handleTaskPieResize() {
+  if (taskPieChartInstance.value) {
+    taskPieChartInstance.value.resize();
+  }
+}
+
+// ==================== ECharts 本周创作趋势折线图 ====================
+const trendLineChartRef = ref(null);
+const trendLineChartInstance = ref(null);
+
+// 生成本周创作趋势折线图配置
+function generateTrendLineChartOption() {
+  const data = trendItems.value;
+  const dates = data.map((item) => item.label);
+  const values = data.map((item) => item.value);
+  const maxValue = Math.max(...values, 8);
+
+  return {
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
+      borderColor: "#e2e8f0",
+      borderWidth: 1,
+      padding: [12, 16],
+      textStyle: { color: "#1e293b" },
+      extraCssText:
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+      formatter: function (params) {
+        const item = data[params[0].dataIndex];
+        const value = params[0].value;
+        const efficiency = value >= 6 ? "高效日" : value >= 4 ? "正常" : "轻松";
+        const efficiencyColor =
+          value >= 6 ? "#23c3b2" : value >= 4 ? "#4c7dff" : "#8b5cf6";
+
+        return `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${item.label} ${item.date}</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin: 6px 0;">
+                  <span style="display: inline-block; width: 8px; height: 8px; background: linear-gradient(135deg, #4c7dff, #7c5cff); border-radius: 50%;"></span>
+                  <span>创作数量: <strong>${value} 个</strong></span>
+                </div>
+                <div style="display: inline-block; padding: 2px 10px; background: ${efficiencyColor}20; border-radius: 10px; color: ${efficiencyColor}; font-size: 12px; font-weight: 600;">
+                  ${efficiency}
+                </div>`;
+      },
+    },
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: "15%",
+      top: "15%",
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      name: "日期",
+      nameLocation: "middle",
+      nameGap: 35,
+      nameTextStyle: {
+        color: "#64748b",
+        fontSize: 12,
+        fontWeight: 500,
+      },
+      boundaryGap: false,
+      data: dates,
+      axisLine: {
+        lineStyle: { color: "#e2e8f0" },
+      },
+      axisTick: { show: false },
+      axisLabel: {
+        color: "#64748b",
+        fontSize: 12,
+        formatter: function (value, index) {
+          const item = data[index];
+          return `{day|${value}}\n{date|${item.date}}`;
+        },
+        rich: {
+          day: {
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#334155",
+            lineHeight: 20,
+          },
+          date: {
+            fontSize: 11,
+            color: "#94a3b8",
+            lineHeight: 16,
+          },
+        },
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "创作数量(个)",
+      nameLocation: "middle",
+      nameGap: 40,
+      nameTextStyle: {
+        color: "#64748b",
+        fontSize: 12,
+        fontWeight: 500,
+      },
+      min: 0,
+      max: Math.ceil(maxValue * 1.2),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: {
+        color: "#94a3b8",
+        fontSize: 11,
+      },
+      splitLine: {
+        lineStyle: {
+          color: "#f1f5f9",
+          type: "dashed",
+        },
+      },
+    },
+    series: [
+      {
+        name: "创作数量",
+        type: "line",
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 10,
+        lineStyle: {
+          width: 3,
+          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: "#4c7dff" },
+            { offset: 1, color: "#7c5cff" },
+          ]),
+        },
+        itemStyle: {
+          color: function (params) {
+            const value = params.value;
+            return value >= 6 ? "#23c3b2" : value >= 4 ? "#4c7dff" : "#8b5cf6";
+          },
+          borderColor: "#fff",
+          borderWidth: 2,
+          shadowColor: "rgba(76, 125, 255, 0.3)",
+          shadowBlur: 8,
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(122, 162, 255, 0.38)" },
+            { offset: 1, color: "rgba(122, 162, 255, 0.02)" },
+          ]),
+        },
+        emphasis: {
+          scale: true,
+          itemStyle: {
+            shadowBlur: 15,
+            shadowColor: "rgba(76, 125, 255, 0.5)",
+          },
+        },
+        data: values,
+        // 出现特效 - 从左侧逐渐绘制
+        animationDuration: 2000,
+        animationEasing: "cubicOut",
+        animationDelay: function (idx) {
+          return idx * 100;
+        },
+      },
+    ],
+  };
+}
+
+// 初始化本周创作趋势折线图
+function initTrendLineChart() {
+  console.log("初始化趋势折线图, ref:", trendLineChartRef.value);
+  if (!trendLineChartRef.value) {
+    setTimeout(initTrendLineChart, 100);
+    return;
+  }
+
+  try {
+    if (trendLineChartInstance.value) {
+      trendLineChartInstance.value.dispose();
+      trendLineChartInstance.value = null;
+    }
+
+    const container = trendLineChartRef.value;
+    const rect = container.getBoundingClientRect();
+    console.log("趋势折线图容器尺寸:", rect.width, rect.height);
+
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initTrendLineChart, 200);
+      return;
+    }
+
+    trendLineChartInstance.value = echarts.init(container);
+    const option = generateTrendLineChartOption();
+    trendLineChartInstance.value.setOption(option);
+    console.log("趋势折线图初始化成功");
+
+    // 点击事件
+    trendLineChartInstance.value.on("click", function (params) {
+      const item = trendItems.value[params.dataIndex];
+      if (item) {
+        showDayDetail(item);
+      }
+    });
+  } catch (error) {
+    console.error("趋势折线图初始化失败:", error);
+  }
+}
+
+// 更新趋势折线图
+function updateTrendLineChart() {
+  if (trendLineChartInstance.value) {
+    const option = generateTrendLineChartOption();
+    trendLineChartInstance.value.setOption(option, true);
+  }
+}
+
+// 监听窗口大小变化
+function handleTrendLineResize() {
+  if (trendLineChartInstance.value) {
+    trendLineChartInstance.value.resize();
+  }
+}
+
 function refresh() {
   history.value = getHistory();
   stats.value = getStats();
@@ -1186,6 +1993,58 @@ function filterHistoryByType(typeLabel) {
   historyPage.value = 1; // 重置到第一页
 }
 
+// ==================== 教学档案筛选方法（新版）====================
+// 计算已选筛选条件数量
+const activeArchiveFilterCount = computed(() => {
+  return Object.values(archiveFilters.value).filter((v) => v && v !== "")
+    .length;
+});
+
+// 切换筛选组展开状态
+function toggleArchiveFilterGroup(group) {
+  const index = activeArchiveFilterGroups.value.indexOf(group);
+  if (index > -1) {
+    activeArchiveFilterGroups.value.splice(index, 1);
+  } else {
+    activeArchiveFilterGroups.value.push(group);
+  }
+}
+
+// 重置所有筛选条件
+function resetArchiveFilters() {
+  archiveFilters.value = {
+    type: "",
+    subject: "",
+    grade: "",
+    status: "",
+    timeRange: "",
+    format: "",
+    difficulty: "",
+    searchQuery: "",
+  };
+  selectedHistoryType.value = "all";
+  historyPage.value = 1;
+}
+
+// 应用保存的筛选方案
+function applySavedArchiveFilter(saved) {
+  archiveFilters.value = { ...archiveFilters.value, ...saved.filters };
+  if (saved.filters.type) {
+    selectedHistoryType.value = saved.filters.type;
+  }
+  historyPage.value = 1;
+}
+
+// 保存当前筛选方案
+function saveCurrentArchiveFilter() {
+  const name = `方案 ${savedArchiveFilters.value.length + 1}`;
+  savedArchiveFilters.value.push({
+    name,
+    filters: { ...archiveFilters.value },
+  });
+  showToast(`已保存筛选方案：${name}`);
+}
+
 // 获取记录预览文本
 function getRecordPreview(item) {
   const previews = {
@@ -1254,6 +2113,39 @@ watch(historyQuery, () => {
 });
 watch(totalHistoryPages, (value) => {
   if (historyPage.value > value) historyPage.value = value;
+});
+
+// 生命周期钩子
+onMounted(() => {
+  // 延迟初始化确保DOM完全渲染
+  setTimeout(() => {
+    nextTick(() => {
+      initRadarChart();
+      initTaskPieChart();
+      initTrendLineChart();
+    });
+  }, 300);
+  window.addEventListener("resize", handleRadarResize);
+  window.addEventListener("resize", handleTaskPieResize);
+  window.addEventListener("resize", handleTrendLineResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleRadarResize);
+  window.removeEventListener("resize", handleTaskPieResize);
+  window.removeEventListener("resize", handleTrendLineResize);
+  if (radarChartInstance.value) {
+    radarChartInstance.value.dispose();
+    radarChartInstance.value = null;
+  }
+  if (taskPieChartInstance.value) {
+    taskPieChartInstance.value.dispose();
+    taskPieChartInstance.value = null;
+  }
+  if (trendLineChartInstance.value) {
+    trendLineChartInstance.value.dispose();
+    trendLineChartInstance.value = null;
+  }
 });
 </script>
 
@@ -1421,101 +2313,9 @@ watch(totalHistoryPages, (value) => {
                 不强调空洞的大数字，把任务状态、创作节奏和类型分布融入清晰的视觉流中
               </p>
 
-              <!-- 任务状态环形图 -->
-              <div class="task-ring-chart">
-                <div class="ring-chart-wrapper">
-                  <svg viewBox="0 0 140 140" class="ring-svg">
-                    <defs>
-                      <filter
-                        id="ringShadow"
-                        x="-10%"
-                        y="-10%"
-                        width="130%"
-                        height="130%"
-                      >
-                        <feDropShadow
-                          dx="0"
-                          dy="2"
-                          stdDeviation="3"
-                          flood-opacity="0.08"
-                        />
-                      </filter>
-                    </defs>
-                    <!-- 背景环 -->
-                    <circle
-                      cx="70"
-                      cy="70"
-                      r="58"
-                      fill="none"
-                      stroke="rgba(148,163,184,0.15)"
-                      stroke-width="22"
-                    />
-                    <!-- 数据环段 -->
-                    <circle
-                      v-for="(seg, i) in ringChartSegments"
-                      :key="seg.label"
-                      cx="70"
-                      cy="70"
-                      r="58"
-                      fill="none"
-                      :stroke="seg.color"
-                      stroke-width="22"
-                      stroke-linecap="round"
-                      :stroke-dasharray="seg.dashArray"
-                      :stroke-dashoffset="seg.dashOffset"
-                      filter="url(#ringShadow)"
-                      :style="{
-                        transition: 'all 0.5s ease',
-                        transformOrigin: '70px 70px',
-                        transform:
-                          hoveredRingSegment === i ? 'scale(1.04)' : 'scale(1)',
-                        opacity:
-                          hoveredRingSegment === -1 || hoveredRingSegment === i
-                            ? 1
-                            : 0.55,
-                      }"
-                    />
-                    <!-- 中心文字 -->
-                    <text
-                      x="70"
-                      y="66"
-                      text-anchor="middle"
-                      fill="#334155"
-                      font-size="20"
-                      font-weight="800"
-                    >
-                      {{ taskRingData.reduce((s, d) => s + d.value, 0) }}
-                    </text>
-                    <text
-                      x="70"
-                      y="82"
-                      text-anchor="middle"
-                      fill="#94a3b8"
-                      font-size="10"
-                      font-weight="500"
-                    >
-                      全部任务
-                    </text>
-                  </svg>
-                </div>
-                <!-- 图例 -->
-                <div class="ring-legend">
-                  <div
-                    v-for="(item, i) in taskRingData"
-                    :key="item.label"
-                    class="ring-legend-item"
-                    :class="{ active: hoveredRingSegment === i }"
-                    @mouseenter="hoveredRingSegment = i"
-                    @mouseleave="hoveredRingSegment = -1"
-                  >
-                    <span
-                      class="legend-dot"
-                      :style="{ background: item.color }"
-                    ></span>
-                    <span class="legend-label">{{ item.label }}</span>
-                    <span class="legend-value">{{ item.value }}</span>
-                  </div>
-                </div>
+              <!-- 任务状态 ECharts 交互式饼图 -->
+              <div class="task-pie-chart">
+                <div ref="taskPieChartRef" class="pie-chart-container"></div>
               </div>
             </div>
 
@@ -1573,212 +2373,11 @@ watch(totalHistoryPages, (value) => {
                 </div>
               </div>
 
-              <div class="line-chart-card">
-                <svg
-                  viewBox="0 0 520 220"
-                  class="line-chart"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <defs>
-                    <linearGradient
-                      id="overviewAreaGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stop-color="#7aa2ff"
-                        stop-opacity="0.38"
-                      />
-                      <stop
-                        offset="100%"
-                        stop-color="#7aa2ff"
-                        stop-opacity="0.02"
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="overviewStrokeGradient"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop offset="0%" stop-color="#4c7dff" />
-                      <stop offset="100%" stop-color="#7c5cff" />
-                    </linearGradient>
-                    <filter
-                      id="pointGlow"
-                      x="-50%"
-                      y="-50%"
-                      width="200%"
-                      height="200%"
-                    >
-                      <feGaussianBlur stdDeviation="2" result="blur" />
-                      <feMerge>
-                        <feMergeNode in="blur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-
-                  <!-- Y轴网格线 -->
-                  <line
-                    v-for="y in [40, 80, 120, 160]"
-                    :key="y"
-                    x1="45"
-                    :y1="y"
-                    x2="480"
-                    :y2="y"
-                    class="line-chart__grid"
-                  />
-
-                  <!-- Y轴标签 -->
-                  <text
-                    v-for="(y, i) in [40, 80, 120, 160]"
-                    :key="'y-' + i"
-                    x="35"
-                    :y="y + 4"
-                    class="y-axis-label"
-                    text-anchor="end"
-                  >
-                    {{ 8 - i * 2 }}
-                  </text>
-
-                  <!-- 面积和折线 -->
-                  <path :d="weeklyAreaPath" fill="url(#overviewAreaGradient)" />
-                  <path
-                    :d="weeklyFlowPath"
-                    fill="none"
-                    stroke="url(#overviewStrokeGradient)"
-                    stroke-width="3"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-
-                  <!-- 数据点 -->
-                  <g
-                    v-for="item in trendItems"
-                    :key="item.label"
-                    class="data-point"
-                    @click="showDayDetail(item)"
-                  >
-                    <!-- 外圈 -->
-                    <circle
-                      :cx="item.x"
-                      :cy="item.y"
-                      r="14"
-                      fill="transparent"
-                      class="point-hit-area"
-                    />
-                    <!-- 实心圆点 -->
-                    <circle
-                      :cx="item.x"
-                      :cy="item.y"
-                      r="6"
-                      :fill="
-                        item.value >= 6
-                          ? '#23c3b2'
-                          : item.value >= 4
-                            ? '#4c7dff'
-                            : '#8b5cf6'
-                      "
-                      class="point-circle"
-                      filter="url(#pointGlow)"
-                    />
-                    <!-- 悬停提示 - 丰富信息 -->
-                    <g class="point-tooltip">
-                      <!-- 背景 -->
-                      <rect
-                        :x="item.x - 50"
-                        :y="item.y - 75"
-                        width="100"
-                        height="55"
-                        rx="12"
-                        fill="#16233c"
-                      />
-                      <!-- 日期 -->
-                      <text
-                        :x="item.x"
-                        :y="item.y - 55"
-                        text-anchor="middle"
-                        fill="#7aa2ff"
-                        font-size="10"
-                        font-weight="600"
-                      >
-                        {{ item.label }} {{ item.date }}
-                      </text>
-                      <!-- 数量 -->
-                      <text
-                        :x="item.x"
-                        :y="item.y - 38"
-                        text-anchor="middle"
-                        fill="#fff"
-                        font-size="14"
-                        font-weight="800"
-                      >
-                        {{ item.value }} 个课件
-                      </text>
-                      <!-- 效率标签 -->
-                      <rect
-                        :x="item.x - 20"
-                        :y="item.y - 32"
-                        width="40"
-                        height="16"
-                        rx="8"
-                        :fill="
-                          item.value >= 6
-                            ? 'rgba(35,195,178,0.2)'
-                            : item.value >= 4
-                              ? 'rgba(76,125,255,0.2)'
-                              : 'rgba(139,92,246,0.2)'
-                        "
-                      />
-                      <text
-                        :x="item.x"
-                        :y="item.y - 22"
-                        text-anchor="middle"
-                        :fill="
-                          item.value >= 6
-                            ? '#23c3b2'
-                            : item.value >= 4
-                              ? '#7aa2ff'
-                              : '#a78bfa'
-                        "
-                        font-size="9"
-                        font-weight="700"
-                      >
-                        {{
-                          item.value >= 6
-                            ? "高效日"
-                            : item.value >= 4
-                              ? "正常"
-                              : "轻松"
-                        }}
-                      </text>
-                      <!-- 箭头 -->
-                      <polygon
-                        :points="`${item.x},${item.y - 12} ${item.x - 5},${item.y - 18} ${item.x + 5},${item.y - 18}`"
-                        fill="#16233c"
-                      />
-                    </g>
-                  </g>
-                </svg>
-
-                <!-- X轴标签 -->
-                <div class="line-chart__labels">
-                  <div
-                    v-for="item in trendItems"
-                    :key="item.label"
-                    class="line-chart__label"
-                    @click="showDayDetail(item)"
-                  >
-                    <strong>{{ item.label }}</strong>
-                    <span>{{ item.date }}</span>
-                  </div>
-                </div>
-              </div>
+              <!-- ECharts 本周创作趋势折线图 -->
+              <div
+                ref="trendLineChartRef"
+                class="trend-line-chart-container"
+              ></div>
 
               <!-- 日期详情面板 - 丰富内容 -->
               <Transition name="slide-fade">
@@ -2141,121 +2740,8 @@ watch(totalHistoryPages, (value) => {
               </button>
             </div>
 
-            <!-- 现代风格柱状图 -->
-            <div class="modern-chart">
-              <!-- 图例 -->
-              <div class="modern-legend">
-                <div class="legend-item">
-                  <span
-                    class="legend-dot"
-                    style="
-                      background: linear-gradient(135deg, #4c7dff, #6b9aff);
-                    "
-                  ></span>
-                  <span>课件制作</span>
-                </div>
-                <div class="legend-item">
-                  <span
-                    class="legend-dot"
-                    style="
-                      background: linear-gradient(135deg, #23c3b2, #4dd9c4);
-                    "
-                  ></span>
-                  <span>教案编写</span>
-                </div>
-                <div class="legend-item">
-                  <span
-                    class="legend-dot"
-                    style="
-                      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-                    "
-                  ></span>
-                  <span>课堂练习</span>
-                </div>
-              </div>
-
-              <!-- 柱状图主体 -->
-              <div class="chart-area">
-                <div class="chart-bars-container">
-                  <div
-                    v-for="(bar, bi) in trajectoryChartLayout.bars"
-                    :key="bar.label"
-                    class="modern-bar-wrapper"
-                    :class="{ active: hoveredTrajectoryBar === bi }"
-                    :style="{ animationDelay: `${bi * 0.06}s` }"
-                    @mouseenter="hoveredTrajectoryBar = bi"
-                    @mouseleave="hoveredTrajectoryBar = -1"
-                  >
-                    <!-- 数值标签 -->
-                    <div
-                      class="bar-value-label"
-                      :class="{ show: hoveredTrajectoryBar === bi }"
-                    >
-                      {{ bar.total }}
-                    </div>
-
-                    <!-- 堆叠柱 -->
-                    <div class="modern-bar-stack">
-                      <div
-                        v-for="seg in [...bar.segments].reverse()"
-                        :key="seg.type"
-                        class="modern-bar-segment"
-                        :style="{
-                          height: `${(seg.value / trajectoryChartLayout.maxVal) * 100}%`,
-                          background: `linear-gradient(180deg, ${seg.color}, ${seg.color}dd)`,
-                          opacity:
-                            hoveredTrajectoryBar === -1 ||
-                            hoveredTrajectoryBar === bi
-                              ? 1
-                              : 0.35,
-                        }"
-                      ></div>
-                    </div>
-
-                    <!-- 日期标签 -->
-                    <div class="bar-day-label">{{ bar.label }}</div>
-
-                    <!-- 悬停详情卡片 -->
-                    <Transition name="tooltip-fade">
-                      <div
-                        v-if="hoveredTrajectoryBar === bi"
-                        class="modern-tooltip"
-                      >
-                        <div class="tooltip-header">
-                          <span class="tooltip-day">{{ bar.label }}</span>
-                          <span class="tooltip-total"
-                            >共 {{ bar.total }} 项</span
-                          >
-                        </div>
-                        <div class="tooltip-body">
-                          <div
-                            v-for="seg in bar.segments"
-                            :key="seg.type"
-                            class="tooltip-row"
-                          >
-                            <span
-                              class="row-dot"
-                              :style="{ background: seg.color }"
-                            ></span>
-                            <span class="row-label">{{ seg.label }}</span>
-                            <span class="row-value">{{ seg.value }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </Transition>
-                  </div>
-                </div>
-
-                <!-- Y轴刻度线 -->
-                <div class="y-axis-lines">
-                  <div v-for="i in 4" :key="i" class="y-line">
-                    <span class="y-label">{{
-                      Math.round(trajectoryChartLayout.maxVal * ((5 - i) / 4))
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- ECharts 雷达图 -->
+            <div ref="radarChartRef" class="radar-chart-container"></div>
           </section>
         </div>
 
@@ -3833,7 +4319,20 @@ watch(totalHistoryPages, (value) => {
   font-size: 0.92rem;
 }
 
-/* 环形图容器 */
+/* ECharts 饼图容器 */
+.task-pie-chart {
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+}
+
+.pie-chart-container {
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+}
+
+/* 环形图容器 - 保留旧样式兼容 */
 .task-ring-chart {
   display: flex;
   align-items: center;
@@ -4134,6 +4633,43 @@ watch(totalHistoryPages, (value) => {
   border-radius: 3px;
 }
 
+/* ========== ECharts 组合图表（柱状图+折线图） ========== */
+.radar-chart-container {
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+  animation: chartFadeIn 0.8s ease-out;
+}
+
+/* 图表容器出场动画 */
+@keyframes chartFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 任务状态饼图容器动画 */
+.pie-chart-container {
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+  animation: chartFadeIn 0.8s ease-out 0.2s both;
+}
+
+/* 趋势折线图容器动画 */
+.trend-line-chart-container {
+  width: 100%;
+  height: 280px;
+  min-height: 280px;
+  margin-top: 8px;
+  animation: chartFadeIn 0.8s ease-out 0.4s both;
+}
+
 /* ========== 现代风格柱状图 ========== */
 .modern-chart {
   position: relative;
@@ -4432,6 +4968,7 @@ watch(totalHistoryPages, (value) => {
   display: block;
 }
 
+/* 旧版SVG折线图样式保留兼容 */
 .line-chart__grid {
   stroke: rgba(114, 135, 168, 0.12);
   stroke-width: 1;
