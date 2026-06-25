@@ -423,6 +423,11 @@ function generateTime(index) {
 
 // 点击日期显示详情
 function showDayDetail(item) {
+  // 点击同一天则关闭
+  if (selectedDay.value && selectedDay.value.label === item.label) {
+    selectedDay.value = null;
+    return;
+  }
   selectedDay.value = getDayDetails(item);
 }
 
@@ -1621,147 +1626,267 @@ function generateTrendLineChartOption() {
   const dates = data.map((item) => item.label);
   const values = data.map((item) => item.value);
   const maxValue = Math.max(...values, 8);
+  const minValue = Math.min(...values);
+  const avgValue = Math.round(
+    values.reduce((a, b) => a + b, 0) / values.length,
+  );
+  const maxIndex = values.indexOf(maxValue);
+
+  // 按值分档颜色
+  function getNodeColor(val) {
+    if (val >= 7) return "#23c3b2";
+    if (val >= 5) return "#4c7dff";
+    return "#a78bfa";
+  }
 
   return {
+    // ===== 颜色主题 =====
+    color: ["#667eea"],
+    // ===== 背景区域标识生产效率区间 =====
+    visualMap: {
+      show: false,
+      pieces: [
+        { gte: 7, color: "#23c3b2" },
+        { gte: 5, lte: 6, color: "#4c7dff" },
+        { lt: 5, color: "#a78bfa" },
+      ],
+      dimension: 1,
+    },
+    // ===== 提示框 =====
     tooltip: {
       trigger: "axis",
       backgroundColor: "rgba(255, 255, 255, 0.98)",
       borderColor: "#e2e8f0",
       borderWidth: 1,
-      padding: [12, 16],
-      textStyle: { color: "#1e293b" },
+      padding: [14, 18],
+      textStyle: { color: "#1e293b", fontSize: 13 },
       extraCssText:
-        "box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 12px;",
+        "box-shadow: 0 12px 32px rgba(0,0,0,0.1); border-radius: 16px;",
       formatter: function (params) {
-        const item = data[params[0].dataIndex];
+        const idx = params[0].dataIndex;
+        const item = data[idx];
         const value = params[0].value;
-        const efficiency = value >= 6 ? "高效日" : value >= 4 ? "正常" : "轻松";
-        const efficiencyColor =
-          value >= 6 ? "#23c3b2" : value >= 4 ? "#4c7dff" : "#8b5cf6";
+        const efficiency =
+          value >= 7 ? "🔥 高效日" : value >= 5 ? "📋 正常" : "☕ 轻松";
+        const efficiencyColor = getNodeColor(value);
+        const isMax = value === maxValue;
+        const isAvgAbove = value >= avgValue;
 
-        return `<div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">${item.label} ${item.date}</div>
-                <div style="display: flex; align-items: center; gap: 8px; margin: 6px 0;">
-                  <span style="display: inline-block; width: 8px; height: 8px; background: linear-gradient(135deg, #4c7dff, #7c5cff); border-radius: 50%;"></span>
-                  <span>创作数量: <strong>${value} 个</strong></span>
-                </div>
-                <div style="display: inline-block; padding: 2px 10px; background: ${efficiencyColor}20; border-radius: 10px; color: ${efficiencyColor}; font-size: 12px; font-weight: 600;">
-                  ${efficiency}
-                </div>`;
+        let html = "";
+        html +=
+          '<div style="font-weight: 700; margin-bottom: 10px; font-size: 15px; color: #1e293b;">';
+        html += `${item.label} ${item.date}`;
+        if (isMax)
+          html +=
+            ' <span style="color: #f59e0b; font-size: 13px;">🏆 本周最高</span>';
+        html += "</div>";
+
+        html +=
+          '<div style="display: flex; align-items: center; gap: 8px; margin: 8px 0;">';
+        html += `<span style="display: inline-block; width: 10px; height: 10px; background: ${efficiencyColor}; border-radius: 50%; box-shadow: 0 0 6px ${efficiencyColor}80;"></span>`;
+        html += `<span>创作数量: <strong style="font-size: 18px; color: ${efficiencyColor};">${value}</strong> 个</span>`;
+        html += "</div>";
+
+        html += `<div style="display: flex; gap: 16px; margin: 10px 0 6px; font-size: 12px; color: #64748b;">`;
+        html += `<span>📊 均值 ${avgValue} 个</span>`;
+        html += `<span>${isAvgAbove ? "📈 高于均值" : "📉 低于均值"}</span>`;
+        html += "</div>";
+
+        html += `<div style="display: inline-block; padding: 3px 12px; background: ${efficiencyColor}18; border-radius: 12px; color: ${efficiencyColor}; font-size: 12px; font-weight: 700; border: 1px solid ${efficiencyColor}30;">`;
+        html += efficiency;
+        html += "</div>";
+
+        return html;
       },
     },
+    // ===== 网格布局 =====
     grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "15%",
-      top: "15%",
+      left: "5%",
+      right: "6%",
+      bottom: "12%",
+      top: "12%",
       containLabel: true,
     },
+    // ===== X轴 =====
     xAxis: {
       type: "category",
-      name: "日期",
-      nameLocation: "middle",
-      nameGap: 35,
-      nameTextStyle: {
-        color: "#64748b",
-        fontSize: 12,
-        fontWeight: 500,
-      },
       boundaryGap: false,
       data: dates,
       axisLine: {
-        lineStyle: { color: "#e2e8f0" },
+        lineStyle: { color: "#e8ecf1" },
       },
       axisTick: { show: false },
       axisLabel: {
-        color: "#64748b",
-        fontSize: 12,
+        color: "#334155",
+        fontSize: 13,
+        fontWeight: 600,
+        margin: 14,
         formatter: function (value, index) {
-          const item = data[index];
-          return `{day|${value}}\n{date|${item.date}}`;
+          return `{day|${value}}\n{date|${data[index].date}}`;
         },
         rich: {
           day: {
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 700,
             color: "#334155",
             lineHeight: 20,
+            padding: [0, 0, 2, 0],
           },
           date: {
-            fontSize: 11,
+            fontSize: 10,
             color: "#94a3b8",
-            lineHeight: 16,
+            lineHeight: 14,
           },
         },
       },
     },
+    // ===== Y轴 =====
     yAxis: {
       type: "value",
-      name: "创作数量(个)",
-      nameLocation: "middle",
-      nameGap: 40,
+      name: "创作数量（个）",
+      nameLocation: "end",
+      nameGap: 12,
       nameTextStyle: {
-        color: "#64748b",
-        fontSize: 12,
+        color: "#94a3b8",
+        fontSize: 11,
         fontWeight: 500,
       },
       min: 0,
-      max: Math.ceil(maxValue * 1.2),
+      max: Math.ceil(maxValue * 1.25),
+      interval: 2,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
         color: "#94a3b8",
-        fontSize: 11,
+        fontSize: 12,
+        fontWeight: 500,
+        formatter: "{value}",
       },
       splitLine: {
         lineStyle: {
           color: "#f1f5f9",
           type: "dashed",
+          dashOffset: 5,
         },
       },
     },
+    // ===== 数据系列 =====
     series: [
       {
         name: "创作数量",
         type: "line",
-        smooth: true,
+        smooth: 0.4,
         symbol: "circle",
-        symbolSize: 10,
-        lineStyle: {
-          width: 3,
-          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-            { offset: 0, color: "#4c7dff" },
-            { offset: 1, color: "#7c5cff" },
-          ]),
+        symbolSize: function (val, params) {
+          return params.dataIndex === maxIndex ? 14 : 8;
         },
+        // === 线条样式 ===
+        lineStyle: {
+          width: 3.5,
+          color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+            { offset: 0, color: "#667eea" },
+            { offset: 0.5, color: "#764ba2" },
+            { offset: 1, color: "#23c3b2" },
+          ]),
+          shadowColor: "rgba(102, 126, 234, 0.35)",
+          shadowBlur: 12,
+          shadowOffsetY: 4,
+        },
+        // === 节点样式 ===
         itemStyle: {
           color: function (params) {
-            const value = params.value;
-            return value >= 6 ? "#23c3b2" : value >= 4 ? "#4c7dff" : "#8b5cf6";
+            return getNodeColor(params.value);
           },
           borderColor: "#fff",
-          borderWidth: 2,
-          shadowColor: "rgba(76, 125, 255, 0.3)",
-          shadowBlur: 8,
+          borderWidth: 2.5,
+          shadowColor: "rgba(102, 126, 234, 0.4)",
+          shadowBlur: 10,
         },
+        // === 面积填充 ===
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "rgba(122, 162, 255, 0.38)" },
-            { offset: 1, color: "rgba(122, 162, 255, 0.02)" },
+            { offset: 0, color: "rgba(102, 126, 234, 0.45)" },
+            { offset: 0.35, color: "rgba(118, 75, 162, 0.22)" },
+            { offset: 0.7, color: "rgba(35, 195, 178, 0.08)" },
+            { offset: 1, color: "rgba(35, 195, 178, 0.01)" },
           ]),
         },
+        // === 高亮状态 ===
         emphasis: {
-          scale: true,
+          scale: 3,
+          focus: "series",
           itemStyle: {
-            shadowBlur: 15,
-            shadowColor: "rgba(76, 125, 255, 0.5)",
+            shadowBlur: 20,
+            shadowColor: "rgba(102, 126, 234, 0.6)",
+            borderWidth: 3,
           },
         },
+        // === 数据标签 ===
+        label: {
+          show: true,
+          position: "top",
+          distance: 12,
+          color: "#334155",
+          fontSize: 12,
+          fontWeight: 700,
+          formatter: function (params) {
+            return params.dataIndex === maxIndex
+              ? `{max|${params.value}}\n{tag|最高}`
+              : `{normal|${params.value}}`;
+          },
+          rich: {
+            normal: {
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#64748b",
+            },
+            max: {
+              fontSize: 15,
+              fontWeight: 800,
+              color: "#23c3b2",
+              textShadowColor: "rgba(35, 195, 178, 0.3)",
+              textShadowBlur: 6,
+            },
+            tag: {
+              fontSize: 10,
+              color: "#f59e0b",
+              fontWeight: 700,
+              backgroundColor: "#fffbeb",
+              borderRadius: 4,
+              padding: [1, 6],
+            },
+          },
+        },
+        // === 平均线标记 ===
+        markLine: {
+          silent: true,
+          symbol: "none",
+          lineStyle: {
+            color: "#f59e0b",
+            type: "dashed",
+            width: 2,
+            opacity: 0.7,
+          },
+          label: {
+            position: "end",
+            formatter: `均值 ${avgValue}`,
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#f59e0b",
+            backgroundColor: "#fffbeb",
+            borderRadius: 8,
+            padding: [4, 12],
+            borderColor: "#f59e0b30",
+            borderWidth: 1,
+          },
+          data: [{ yAxis: avgValue, name: "日均产出" }],
+        },
         data: values,
-        // 出现特效 - 从左侧逐渐绘制
+        // === 动画 ===
         animationDuration: 2000,
         animationEasing: "cubicOut",
         animationDelay: function (idx) {
-          return idx * 100;
+          return idx * 80;
         },
       },
     ],
@@ -1796,11 +1921,25 @@ function initTrendLineChart() {
     trendLineChartInstance.value.setOption(option);
     console.log("趋势折线图初始化成功");
 
-    // 点击事件
+    // 点击事件 - 支持数据点和X轴标签
     trendLineChartInstance.value.on("click", function (params) {
-      const item = trendItems.value[params.dataIndex];
+      let item = null;
+      if (params.componentType === "series") {
+        // 点击数据点
+        item = trendItems.value[params.dataIndex];
+      } else if (params.componentType === "xAxis") {
+        // 点击X轴日期标签
+        item = trendItems.value.find((d) => d.label === params.value);
+      }
       if (item) {
         showDayDetail(item);
+      }
+    });
+    // 已选中日期的数据点高亮还原
+    trendLineChartInstance.value.getZr().on("click", function (params) {
+      if (!params.target) {
+        // 点击空白区域关闭详情
+        closeDayDetail();
       }
     });
   } catch (error) {
@@ -4821,9 +4960,9 @@ onUnmounted(() => {
 /* 趋势折线图容器动画 */
 .trend-line-chart-container {
   width: 100%;
-  height: 280px;
-  min-height: 280px;
-  margin-top: 8px;
+  height: 320px;
+  min-height: 320px;
+  margin: 12px 0 8px;
   animation: chartFadeIn 0.8s ease-out 0.4s both;
 }
 
