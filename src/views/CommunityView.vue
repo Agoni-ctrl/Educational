@@ -648,14 +648,14 @@ onMounted(() => {
 }
 
 .btn--dark {
-  background: var(--ink, #0f172a);
+  background: linear-gradient(135deg, #4facfe 0%, #0072ff 100%);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(10, 15, 26, 0.12);
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
 }
 
 .btn--dark:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(10, 15, 26, 0.16);
+  box-shadow: 0 8px 28px rgba(79, 172, 254, 0.4);
 }
 
 .btn--ghost {
