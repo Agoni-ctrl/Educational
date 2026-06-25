@@ -1181,19 +1181,61 @@ const TYPE_MAP = {
 const filteredHistory = computed(() => {
   let result = history.value;
 
-  // 按类型筛选
-  if (selectedHistoryType.value !== "all") {
-    result = result.filter((item) => item.type === selectedHistoryType.value);
+  // 按类型筛选（类型卡片和下拉框共用）
+  const typeFilter = archiveFilters.value.type || selectedHistoryType.value;
+  if (typeFilter && typeFilter !== "all") {
+    result = result.filter((item) => item.type === typeFilter);
   }
 
-  // 按关键词搜索
-  const keyword = historyQuery.value.trim().toLowerCase();
+  // 按学科筛选
+  if (archiveFilters.value.subject) {
+    result = result.filter(
+      (item) => item.subject === archiveFilters.value.subject,
+    );
+  }
+
+  // 按状态筛选
+  if (archiveFilters.value.status) {
+    result = result.filter(
+      (item) => item.status === archiveFilters.value.status,
+    );
+  }
+
+  // 按时间范围筛选
+  if (archiveFilters.value.timeRange) {
+    const now = Date.now();
+    const ranges = {
+      today: 1,
+      week: 7,
+      month: 30,
+      quarter: 90,
+    };
+    const days = ranges[archiveFilters.value.timeRange];
+    if (days) {
+      const cutoff = now - days * 24 * 60 * 60 * 1000;
+      result = result.filter((item) => item.createdAt >= cutoff);
+    }
+  }
+
+  // 按搜索关键词
+  const keyword = (archiveFilters.value.searchQuery || historyQuery.value)
+    .trim()
+    .toLowerCase();
   if (keyword) {
     result = result.filter((item) =>
       [item.title, item.subject, TYPE_LABELS[item.type]]
         .filter(Boolean)
         .some((text) => text.toLowerCase().includes(keyword)),
     );
+  }
+
+  // 按排序
+  if (archiveSortBy.value === "newest") {
+    result = [...result].sort((a, b) => b.createdAt - a.createdAt);
+  } else if (archiveSortBy.value === "oldest") {
+    result = [...result].sort((a, b) => a.createdAt - b.createdAt);
+  } else if (archiveSortBy.value === "title") {
+    result = [...result].sort((a, b) => a.title.localeCompare(b.title));
   }
 
   return result;
@@ -1990,7 +2032,8 @@ function toggleRecordExpand(id) {
 function filterHistoryByType(typeLabel) {
   const type = TYPE_MAP[typeLabel] || "all";
   selectedHistoryType.value = type;
-  historyPage.value = 1; // 重置到第一页
+  archiveFilters.value.type = type === "all" ? "" : type;
+  historyPage.value = 1;
 }
 
 // ==================== 教学档案筛选方法（新版）====================
@@ -2023,6 +2066,7 @@ function resetArchiveFilters() {
     searchQuery: "",
   };
   selectedHistoryType.value = "all";
+  historyQuery.value = "";
   historyPage.value = 1;
 }
 
@@ -3334,33 +3378,146 @@ onUnmounted(() => {
           </div>
 
           <!-- 筛选状态提示 -->
-          <div v-if="selectedHistoryType !== 'all'" class="filter-status-bar">
+          <div
+            v-if="selectedHistoryType !== 'all' || activeArchiveFilterCount > 0"
+            class="filter-status-bar"
+          >
             <span class="filter-info">
-              正在查看：<strong>{{
-                selectedHistoryType === "ppt"
-                  ? "课件"
-                  : selectedHistoryType === "doc"
-                    ? "教案"
-                    : "教学题"
-              }}</strong>
+              <template v-if="activeArchiveFilterCount > 0">
+                已选 {{ activeArchiveFilterCount }} 项筛选条件
+              </template>
+              <template v-else>
+                正在查看：<strong>{{
+                  selectedHistoryType === "ppt"
+                    ? "课件"
+                    : selectedHistoryType === "doc"
+                      ? "教案"
+                      : "教学题"
+                }}</strong>
+              </template>
               <span class="filter-count"
                 >（{{ filteredHistory.length }} 条记录）</span
               >
             </span>
-            <button
-              class="clear-filter-btn"
-              @click="filterHistoryByType('全部记录')"
-            >
-              <span>✕</span> 清除筛选
+            <button class="clear-filter-btn" @click="resetArchiveFilters()">
+              <span>✕</span> 清除所有筛选
             </button>
           </div>
 
-          <div class="history-toolbar">
-            <input
-              v-model="historyQuery"
-              type="text"
-              placeholder="搜索课题、学科或类型"
-            />
+          <!-- 多维筛选栏 -->
+          <div class="archive-filter-bar">
+            <div class="archive-filter-row">
+              <!-- 课件类型 -->
+              <div class="archive-filter-group">
+                <label class="archive-filter-label">课件类型</label>
+                <select
+                  v-model="archiveFilters.type"
+                  class="archive-filter-select"
+                >
+                  <option value="">全部类型</option>
+                  <option
+                    v-for="opt in contentTypeOptions.filter((o) => o.value)"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- 学科 -->
+              <div class="archive-filter-group">
+                <label class="archive-filter-label">学科</label>
+                <select
+                  v-model="archiveFilters.subject"
+                  class="archive-filter-select"
+                >
+                  <option value="">全部学科</option>
+                  <option
+                    v-for="sub in availableSubjects"
+                    :key="sub"
+                    :value="sub"
+                  >
+                    {{ sub }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- 状态 -->
+              <div class="archive-filter-group">
+                <label class="archive-filter-label">状态</label>
+                <select
+                  v-model="archiveFilters.status"
+                  class="archive-filter-select"
+                >
+                  <option value="">全部状态</option>
+                  <option value="completed">已完成</option>
+                  <option value="draft">待完善</option>
+                  <option value="iterating">优化中</option>
+                </select>
+              </div>
+
+              <!-- 创建时间 -->
+              <div class="archive-filter-group">
+                <label class="archive-filter-label">创建时间</label>
+                <select
+                  v-model="archiveFilters.timeRange"
+                  class="archive-filter-select"
+                >
+                  <option value="">全部时间</option>
+                  <option
+                    v-for="tr in timeRangeOptions.filter((o) => o.value)"
+                    :key="tr.value"
+                    :value="tr.value"
+                  >
+                    {{ tr.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- 排序 -->
+              <div class="archive-filter-group">
+                <label class="archive-filter-label">排序</label>
+                <select v-model="archiveSortBy" class="archive-filter-select">
+                  <option value="newest">最新优先</option>
+                  <option value="oldest">最早优先</option>
+                  <option value="title">按名称</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 搜索 + 操作行 -->
+            <div class="archive-filter-actions">
+              <div class="archive-search-wrapper">
+                <span class="archive-search-icon">🔍</span>
+                <input
+                  v-model="archiveFilters.searchQuery"
+                  type="text"
+                  placeholder="搜索课件名称或学科..."
+                  class="archive-search-input"
+                />
+              </div>
+              <button
+                class="archive-btn archive-btn--reset"
+                :disabled="
+                  activeArchiveFilterCount === 0 && !archiveFilters.searchQuery
+                "
+                @click="resetArchiveFilters()"
+              >
+                重置
+              </button>
+            </div>
+          </div>
+
+          <!-- 分页 -->
+          <div class="history-toolbar history-toolbar--compact">
+            <span class="toolbar-summary">
+              共 {{ filteredHistory.length }} 条记录
+              <template v-if="archiveFilters.searchQuery"
+                >，搜索 "<em>{{ archiveFilters.searchQuery }}</em
+                >"</template
+              >
+            </span>
             <div class="pager">
               <button :disabled="historyPage <= 1" @click="historyPage -= 1">
                 上一页
@@ -6979,6 +7136,159 @@ onUnmounted(() => {
 .pager span {
   color: var(--ink-muted);
   font-size: 0.82rem;
+}
+
+.history-toolbar--compact {
+  margin-top: 0;
+  padding: 10px 0;
+}
+
+.history-toolbar--compact .toolbar-summary {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.history-toolbar--compact .toolbar-summary em {
+  color: var(--accent-deep);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ==================== 教学档案多维筛选栏 ==================== */
+.archive-filter-bar {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 1px solid rgba(76, 125, 255, 0.08);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.archive-filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.archive-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+  flex: 1;
+}
+
+.archive-filter-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.archive-filter-select {
+  padding: 9px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  color: #1e293b;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.archive-filter-select:focus {
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.08);
+}
+
+.archive-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.archive-search-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.archive-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.archive-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #1e293b;
+  background: white;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.archive-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.archive-search-input:focus {
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.08);
+}
+
+.archive-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.archive-btn--reset {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.archive-btn--reset:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.archive-btn--reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .archive-filter-row {
+    flex-direction: column;
+  }
+
+  .archive-filter-group {
+    min-width: 100%;
+  }
+
+  .archive-filter-bar {
+    padding: 16px;
+  }
 }
 
 .feedback-card__head,

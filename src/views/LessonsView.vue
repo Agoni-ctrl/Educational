@@ -1,11 +1,11 @@
 <script setup>
-import { ref, onMounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
 import SiteNav from "../components/layout/SiteNav.vue";
-import { init as echartsInit } from "echarts";
+import * as echarts from "echarts";
 
 // ==================== 状态管理 ====================
 // 当前激活的菜单项
-const activeMenu = ref("course-resource");
+const activeMenu = ref("home");
 // 菜单切换动画状态
 const isTransitioning = ref(false);
 
@@ -28,6 +28,31 @@ const menuItems = [
   { id: "ai-summary", label: "AI总结助手", icon: "🤖", desc: "智能学习总结" },
 ];
 
+// 主页卡片详细描述
+function getHomeDesc(id) {
+  const map = {
+    "course-resource":
+      "浏览所有课程资源，查看课程详情与学习进度，点击即可开始学习。",
+    "course-analysis": "选择课程查看能力雷达图与时间分配，获取课件制作建议。",
+    "qa-session": "课堂互动问答，支持学生提问、教师解答，促进课堂参与。",
+    "after-class": "课后深入探讨课程疑难点，巩固学习效果，拓展知识边界。",
+    "ai-summary": "AI 自动生成课程学习总结，提炼核心知识点，评估掌握程度。",
+  };
+  return map[id] || "";
+}
+
+// 主页卡片角标
+function getHomeBadge(id) {
+  const map = {
+    "course-resource": "资源库",
+    "course-analysis": "数据看板",
+    "qa-session": "互动",
+    "after-class": "拓展",
+    "ai-summary": "AI",
+  };
+  return map[id] || "";
+}
+
 // ==================== 课程数据 ====================
 const courses = ref([
   {
@@ -41,6 +66,39 @@ const courses = ref([
     description: "通过实验探究力、质量和加速度的关系",
     tags: ["实验课", "核心概念"],
     progress: 85,
+    // 课程能力画像（6维度 0-100）
+    capabilities: {
+      知识覆盖面: 78,
+      实验实践性: 92,
+      思维启发性: 85,
+      互动参与度: 80,
+      难度梯度: 65,
+      知识系统性: 75,
+    },
+    // 课程要点
+    keyPoints: [
+      "控制变量法在实验中的应用",
+      "F=ma 公式的推导与理解",
+      "加速度与力、质量的关系",
+      "实验数据采集与误差分析",
+    ],
+    // 课件制作建议
+    designTips: {
+      strengths: "实验环节设计出色，学生动手参与度高",
+      improvements: "可增加生活实例导入，降低抽象概念理解门槛",
+      suggestions: [
+        "增加打点计时器实验动画演示",
+        "设计阶梯式练习题巩固公式应用",
+      ],
+    },
+    // 教学时间分配占比
+    timeAllocation: [
+      { value: 25, name: "理论讲解" },
+      { value: 35, name: "实验操作" },
+      { value: 20, name: "数据分析" },
+      { value: 15, name: "互动讨论" },
+      { value: 5, name: "课堂测评" },
+    ],
   },
   {
     id: 2,
@@ -53,6 +111,32 @@ const courses = ref([
     description: "探究影响化学反应速率的因素",
     tags: ["理论课", "实验探究"],
     progress: 60,
+    capabilities: {
+      知识覆盖面: 72,
+      实验实践性: 88,
+      思维启发性: 70,
+      互动参与度: 65,
+      难度梯度: 72,
+      知识系统性: 80,
+    },
+    keyPoints: [
+      "浓度对反应速率的影响",
+      "温度对反应速率的定量关系",
+      "催化剂的作用机理",
+      "压强对气体反应的影响",
+    ],
+    designTips: {
+      strengths: "实验素材丰富，变量控制清晰",
+      improvements: "理论讲解偏多，建议增加学生自主实验时间",
+      suggestions: ["添加微观粒子碰撞动画模拟", "设计探究式实验报告模板"],
+    },
+    timeAllocation: [
+      { value: 20, name: "理论讲解" },
+      { value: 30, name: "实验操作" },
+      { value: 25, name: "数据分析" },
+      { value: 15, name: "互动讨论" },
+      { value: 10, name: "课堂测评" },
+    ],
   },
   {
     id: 3,
@@ -65,6 +149,35 @@ const courses = ref([
     description: "从图像到定义的完整学习",
     tags: ["概念课", "数形结合"],
     progress: 100,
+    capabilities: {
+      知识覆盖面: 65,
+      实验实践性: 30,
+      思维启发性: 90,
+      互动参与度: 55,
+      难度梯度: 78,
+      知识系统性: 85,
+    },
+    keyPoints: [
+      "函数单调性的直观图像理解",
+      "单调递增/递减的严格定义",
+      "定义法证明函数单调性",
+      "复合函数单调性判断",
+    ],
+    designTips: {
+      strengths: "数形结合方法恰当，逻辑推导严谨",
+      improvements: "可增加动态几何软件演示，提升直观性",
+      suggestions: [
+        "用GeoGebra制作函数图像动态演示",
+        "增加生活场景中的单调性案例",
+      ],
+    },
+    timeAllocation: [
+      { value: 35, name: "概念讲解" },
+      { value: 25, name: "例题演示" },
+      { value: 20, name: "练习巩固" },
+      { value: 12, name: "互动讨论" },
+      { value: 8, name: "课堂测评" },
+    ],
   },
   {
     id: 4,
@@ -77,6 +190,32 @@ const courses = ref([
     description: "显微镜下的细胞世界",
     tags: ["观察课", "微观世界"],
     progress: 30,
+    capabilities: {
+      知识覆盖面: 80,
+      实验实践性: 95,
+      思维启发性: 60,
+      互动参与度: 70,
+      难度梯度: 50,
+      知识系统性: 78,
+    },
+    keyPoints: [
+      "细胞膜的结构与功能",
+      "线粒体与叶绿体的比较",
+      "显微观察操作规范",
+      "细胞器协调工作机制",
+    ],
+    designTips: {
+      strengths: "观察课设计直观，学生兴趣浓厚",
+      improvements: "知识点记忆量大，需设计更多互动环节",
+      suggestions: ["制作3D细胞器模型图", "设计细胞工厂角色扮演活动"],
+    },
+    timeAllocation: [
+      { value: 20, name: "理论讲解" },
+      { value: 40, name: "观察实践" },
+      { value: 15, name: "绘图记录" },
+      { value: 18, name: "互动讨论" },
+      { value: 7, name: "课堂测评" },
+    ],
   },
   {
     id: 5,
@@ -89,6 +228,32 @@ const courses = ref([
     description: "近代中国历史的转折点",
     tags: ["历史事件", "思辨分析"],
     progress: 0,
+    capabilities: {
+      知识覆盖面: 70,
+      实验实践性: 15,
+      思维启发性: 92,
+      互动参与度: 75,
+      难度梯度: 55,
+      知识系统性: 82,
+    },
+    keyPoints: [
+      "鸦片贸易的背景与危害",
+      "林则徐虎门销烟的经过",
+      "《南京条约》的内容与影响",
+      "鸦片战争的历史意义",
+    ],
+    designTips: {
+      strengths: "史料丰富，思辨性强，启发性好",
+      improvements: "文字材料较多，建议增加可视化元素",
+      suggestions: ["制作事件时间轴思维导图", "引入一手史料图片增强历史感"],
+    },
+    timeAllocation: [
+      { value: 30, name: "史料讲解" },
+      { value: 25, name: "思辨讨论" },
+      { value: 20, name: "案例分析" },
+      { value: 15, name: "互动问答" },
+      { value: 10, name: "课堂测评" },
+    ],
   },
   {
     id: 6,
@@ -101,6 +266,32 @@ const courses = ref([
     description: "全球气候形成的基础",
     tags: ["自然地理", "系统思维"],
     progress: 45,
+    capabilities: {
+      知识覆盖面: 75,
+      实验实践性: 35,
+      思维启发性: 80,
+      互动参与度: 50,
+      难度梯度: 70,
+      知识系统性: 88,
+    },
+    keyPoints: [
+      "三圈环流的形成机制",
+      "气压带与风带的分布规律",
+      "季风环流的成因与特点",
+      "大气环流对气候的影响",
+    ],
+    designTips: {
+      strengths: "系统性思维培养到位，逻辑链条清晰",
+      improvements: "抽象概念多，建议增加3D动画辅助理解",
+      suggestions: ["制作三圈环流3D动画演示", "设计全球气候类型连线图"],
+    },
+    timeAllocation: [
+      { value: 25, name: "理论讲解" },
+      { value: 15, name: "图表识读" },
+      { value: 30, name: "案例分析" },
+      { value: 20, name: "互动讨论" },
+      { value: 10, name: "课堂测评" },
+    ],
   },
 ]);
 
@@ -212,27 +403,101 @@ const aiSummaries = ref([
   },
 ]);
 
-// ==================== 课程分析数据 ====================
-const analysisData = {
-  subjectDistribution: [
-    { value: 35, name: "物理", itemStyle: { color: "#5470c6" } },
-    { value: 25, name: "化学", itemStyle: { color: "#91cc75" } },
-    { value: 20, name: "数学", itemStyle: { color: "#fac858" } },
-    { value: 12, name: "生物", itemStyle: { color: "#ee6666" } },
-    { value: 8, name: "其他", itemStyle: { color: "#73c0de" } },
-  ],
-  learningProgress: [
-    { value: 45, name: "已完成", itemStyle: { color: "#91cc75" } },
-    { value: 30, name: "学习中", itemStyle: { color: "#fac858" } },
-    { value: 25, name: "未开始", itemStyle: { color: "#ee6666" } },
-  ],
-  courseTypes: [
-    { value: 40, name: "理论课", itemStyle: { color: "#5470c6" } },
-    { value: 35, name: "实验课", itemStyle: { color: "#91cc75" } },
-    { value: 15, name: "习题课", itemStyle: { color: "#fac858" } },
-    { value: 10, name: "讨论课", itemStyle: { color: "#ee6666" } },
-  ],
-};
+// ==================== 课程分析——选中课程的能力画像 ====================
+const selectedCourseId = ref(1);
+
+// 筛选条件
+const filterSubject = ref("");
+const filterGrade = ref("");
+const filterTag = ref("");
+const filterStatus = ref("");
+
+// 可供选择的筛选项（从课程数据动态提取）
+const filterOptions = computed(() => ({
+  subjects: [...new Set(courses.value.map((c) => c.subject))],
+  grades: [...new Set(courses.value.map((c) => c.grade))],
+  tags: [...new Set(courses.value.flatMap((c) => c.tags))],
+}));
+
+// 根据筛选条件过滤课程
+const filteredCourses = computed(() => {
+  let result = courses.value;
+  if (filterSubject.value) {
+    result = result.filter((c) => c.subject === filterSubject.value);
+  }
+  if (filterGrade.value) {
+    result = result.filter((c) => c.grade === filterGrade.value);
+  }
+  if (filterTag.value) {
+    result = result.filter((c) => c.tags.includes(filterTag.value));
+  }
+  if (filterStatus.value === "completed") {
+    result = result.filter((c) => c.progress === 100);
+  } else if (filterStatus.value === "in-progress") {
+    result = result.filter((c) => c.progress > 0 && c.progress < 100);
+  } else if (filterStatus.value === "not-started") {
+    result = result.filter((c) => c.progress === 0);
+  }
+  return result;
+});
+
+// 过滤后自动选中第一个匹配课程
+watch(filteredCourses, (list) => {
+  if (list.length > 0 && !list.find((c) => c.id === selectedCourseId.value)) {
+    selectedCourseId.value = list[0].id;
+    nextTick(() => reInitCharts());
+  }
+});
+
+// 重置所有筛选条件
+function resetFilters() {
+  filterSubject.value = "";
+  filterGrade.value = "";
+  filterTag.value = "";
+  filterStatus.value = "";
+}
+
+// 是否有活跃筛选条件
+const hasActiveFilter = computed(
+  () =>
+    filterSubject.value ||
+    filterGrade.value ||
+    filterTag.value ||
+    filterStatus.value,
+);
+
+const selectedCourse = computed(() =>
+  courses.value.find((c) => c.id === selectedCourseId.value),
+);
+
+const radarDimensions = [
+  "知识覆盖面",
+  "实验实践性",
+  "思维启发性",
+  "互动参与度",
+  "难度梯度",
+  "知识系统性",
+];
+
+// 雷达图系列数据
+const radarData = computed(() => {
+  const course = selectedCourse.value;
+  if (!course) return [];
+  return [
+    {
+      value: radarDimensions.map((d) => course.capabilities[d]),
+      name: course.title,
+    },
+  ];
+});
+
+// 获取维度评级
+function getDimensionLabel(value) {
+  if (value >= 85) return { text: "强项", color: "#22c55e" };
+  if (value >= 65) return { text: "良好", color: "#4c7dff" };
+  if (value >= 40) return { text: "待提升", color: "#f59e0b" };
+  return { text: "薄弱", color: "#ef4444" };
+}
 
 // ==================== 菜单切换 ====================
 function switchMenu(menuId) {
@@ -256,218 +521,183 @@ function switchMenu(menuId) {
 let charts = {};
 
 function initCharts() {
-  // 学科分布饼图
-  const subjectChart = echarts.init(document.getElementById("subject-chart"));
-  charts.subject = subjectChart;
+  const chartDom = document.getElementById("radar-chart");
+  if (!chartDom) return;
 
-  subjectChart.setOption({
+  if (charts.radar) charts.radar.dispose();
+
+  const course = selectedCourse.value;
+  if (!course) return;
+
+  const radarChart = echarts.init(chartDom);
+  charts.radar = radarChart;
+
+  const indicator = radarDimensions.map((name) => ({ name, max: 100 }));
+
+  radarChart.setOption({
     title: {
-      text: "学科分布",
+      text: `${course.title}\n能力画像`,
       left: "center",
       top: 10,
-      textStyle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#1e293b",
-      },
+      textStyle: { fontSize: 16, fontWeight: "bold", color: "#1e293b" },
+    },
+    legend: {
+      bottom: 5,
+      data: [course.title],
+      textStyle: { fontSize: 12, color: "#64748b" },
     },
     tooltip: {
       trigger: "item",
-      formatter: "{a} <br/>{b}: {c}% ({d}%)",
+      formatter: (params) => {
+        if (params.name) {
+          const value = params.value;
+          const label = getDimensionLabel(value);
+          return `<b>${params.name}</b><br/>分值: <span style="color:${label.color};font-weight:bold">${value}</span> <span style="color:${label.color}">(${label.text})</span>`;
+        }
+        return "";
+      },
       backgroundColor: "rgba(255, 255, 255, 0.95)",
       borderColor: "#e2e8f0",
       borderWidth: 1,
       textStyle: { color: "#334155" },
     },
-    legend: {
-      orient: "vertical",
-      left: "left",
-      top: 50,
-      textStyle: { color: "#64748b" },
+    radar: {
+      indicator,
+      center: ["50%", "55%"],
+      radius: "60%",
+      shape: "polygon",
+      splitNumber: 5,
+      axisName: {
+        color: "#475569",
+        fontSize: 12,
+        borderRadius: 3,
+        padding: [3, 5],
+      },
+      splitArea: {
+        areaStyle: {
+          color: [
+            "rgba(76,125,255,0.02)",
+            "rgba(76,125,255,0.02)",
+            "rgba(76,125,255,0.04)",
+            "rgba(76,125,255,0.06)",
+            "rgba(76,125,255,0.08)",
+          ],
+        },
+      },
+      splitLine: { lineStyle: { color: "rgba(76,125,255,0.15)" } },
+      axisLine: { lineStyle: { color: "rgba(76,125,255,0.3)" } },
     },
     series: [
       {
-        name: "学科占比",
-        type: "pie",
-        radius: ["40%", "70%"],
-        center: ["60%", "55%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
+        type: "radar",
+        data: radarData.value,
+        symbol: "circle",
+        symbolSize: 6,
+        lineStyle: { color: "#4c7dff", width: 2 },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: "rgba(76,125,255,0.35)" },
+              { offset: 1, color: "rgba(99,102,241,0.08)" },
+            ],
+          },
         },
+        itemStyle: { color: "#4c7dff", borderColor: "#fff", borderWidth: 2 },
         label: {
           show: true,
-          formatter: "{b}\n{c}%",
+          formatter: (p) => p.value,
           color: "#475569",
+          fontSize: 10,
         },
         emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: "bold",
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.2)",
-          },
+          areaStyle: { color: "rgba(76,125,255,0.5)" },
+          label: { fontSize: 13, fontWeight: "bold" },
         },
-        labelLine: {
-          show: true,
-          lineStyle: { color: "#cbd5e1" },
-        },
-        data: analysisData.subjectDistribution,
-        animationType: "scale",
+        animationDuration: 1500,
         animationEasing: "elasticOut",
-        animationDelay: function (idx) {
-          return Math.random() * 200;
-        },
       },
     ],
   });
 
-  // 学习进度饼图
-  const progressChart = echartsInit(document.getElementById("progress-chart"));
-  charts.progress = progressChart;
-
-  progressChart.setOption({
-    title: {
-      text: "学习进度",
-      left: "center",
-      top: 10,
-      textStyle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#1e293b",
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: "{a} <br/>{b}: {c}% ({d}%)",
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      borderColor: "#e2e8f0",
-      borderWidth: 1,
-      textStyle: { color: "#334155" },
-    },
-    legend: {
-      orient: "vertical",
-      left: "left",
-      top: 50,
-      textStyle: { color: "#64748b" },
-    },
-    series: [
-      {
-        name: "进度分布",
-        type: "pie",
-        radius: ["40%", "70%"],
-        center: ["60%", "55%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          formatter: "{b}\n{c}%",
-          color: "#475569",
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: "bold",
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.2)",
-          },
-        },
-        data: analysisData.learningProgress,
-        animationType: "scale",
-        animationEasing: "elasticOut",
-        animationDelay: function (idx) {
-          return Math.random() * 200 + 200;
-        },
-      },
-    ],
-  });
-
-  // 课程类型饼图
-  const typeChart = echarts.init(document.getElementById("type-chart"));
-  charts.type = typeChart;
-
-  typeChart.setOption({
-    title: {
-      text: "课程类型",
-      left: "center",
-      top: 10,
-      textStyle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#1e293b",
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: "{a} <br/>{b}: {c}% ({d}%)",
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      borderColor: "#e2e8f0",
-      borderWidth: 1,
-      textStyle: { color: "#334155" },
-    },
-    legend: {
-      orient: "vertical",
-      left: "left",
-      top: 50,
-      textStyle: { color: "#64748b" },
-    },
-    series: [
-      {
-        name: "类型分布",
-        type: "pie",
-        radius: ["40%", "70%"],
-        center: ["60%", "55%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          formatter: "{b}\n{c}%",
-          color: "#475569",
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: "bold",
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.2)",
-          },
-        },
-        data: analysisData.courseTypes,
-        animationType: "scale",
-        animationEasing: "elasticOut",
-        animationDelay: function (idx) {
-          return Math.random() * 200 + 400;
-        },
-      },
-    ],
-  });
-
-  // 窗口大小改变时重新调整图表
   window.addEventListener("resize", () => {
-    Object.values(charts).forEach((chart) => chart.resize());
+    charts.radar?.resize?.();
+    charts.factorPie?.resize?.();
   });
+
+  // 教学时间分配饼图
+  const pieDom = document.getElementById("factor-chart");
+  if (pieDom && course.timeAllocation) {
+    const pieChart = echarts.init(pieDom);
+    charts.factorPie = pieChart;
+
+    const pieColors = ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"];
+    pieChart.setOption({
+      title: {
+        text: "教学时间分配",
+        left: "center",
+        top: 10,
+        textStyle: { fontSize: 15, fontWeight: "bold", color: "#1e293b" },
+      },
+      tooltip: {
+        trigger: "item",
+        formatter: "<b>{b}</b><br/>占比: {c}% ({d}%)",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        textStyle: { color: "#334155" },
+      },
+      legend: {
+        bottom: 5,
+        textStyle: { fontSize: 11, color: "#64748b" },
+      },
+      series: [
+        {
+          type: "pie",
+          radius: ["45%", "75%"],
+          center: ["50%", "50%"],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: "#fff",
+            borderWidth: 2,
+          },
+          label: {
+            show: true,
+            formatter: "{b}\n{d}%",
+            color: "#475569",
+            fontSize: 10,
+          },
+          emphasis: {
+            label: { fontSize: 14, fontWeight: "bold" },
+            itemStyle: { shadowBlur: 10, shadowColor: "rgba(0,0,0,0.15)" },
+          },
+          data: course.timeAllocation.map((d, i) => ({
+            ...d,
+            itemStyle: { color: pieColors[i % pieColors.length] },
+          })),
+          animationType: "scale",
+          animationEasing: "elasticOut",
+        },
+      ],
+    });
+  }
+}
+
+// 重置图表
+function reInitCharts() {
+  if (charts.radar) {
+    charts.radar.dispose();
+    charts.radar = null;
+  }
+  if (charts.factorPie) {
+    charts.factorPie.dispose();
+    charts.factorPie = null;
+  }
+  nextTick(() => initCharts());
 }
 
 // ==================== 辅助函数 ====================
@@ -499,12 +729,14 @@ onMounted(() => {
 // 监听菜单变化，清理图表
 watch(activeMenu, (newVal) => {
   if (newVal !== "course-analysis") {
-    Object.values(charts).forEach((chart) => {
-      if (chart) {
-        chart.dispose();
-      }
-    });
-    charts = {};
+    if (charts.radar) {
+      charts.radar.dispose();
+      charts.radar = null;
+    }
+    if (charts.factorPie) {
+      charts.factorPie.dispose();
+      charts.factorPie = null;
+    }
   }
 });
 </script>
@@ -515,13 +747,20 @@ watch(activeMenu, (newVal) => {
     <SiteNav />
 
     <main class="lessons-main">
-      <div class="lessons-container">
-        <!-- 左侧功能菜单 -->
-        <aside class="sidebar-menu">
-          <div class="menu-header">
+      <div
+        class="lessons-container"
+        :class="{ 'lessons-container--home': activeMenu === 'home' }"
+      >
+        <!-- 左侧功能菜单（主页时隐藏） -->
+        <aside v-if="activeMenu !== 'home'" class="sidebar-menu">
+          <div
+            class="menu-header"
+            @click="switchMenu('home')"
+            style="cursor: pointer"
+          >
             <div class="menu-icon">🎓</div>
             <h2>课堂教程</h2>
-            <p>选择功能模块开始学习</p>
+            <p>点击返回主页</p>
           </div>
 
           <nav class="menu-list">
@@ -559,8 +798,93 @@ watch(activeMenu, (newVal) => {
         <section class="content-area">
           <div
             class="content-wrapper"
-            :class="{ 'content-wrapper--transitioning': isTransitioning }"
+            :class="{
+              'content-wrapper--transitioning': isTransitioning,
+              'content-wrapper--home': activeMenu === 'home',
+            }"
           >
+            <!-- 主页 -->
+            <div
+              v-if="activeMenu === 'home'"
+              class="content-panel content-panel--home"
+            >
+              <!-- 背景装饰 -->
+              <div class="home-backdrop">
+                <div class="home-orb home-orb--1"></div>
+                <div class="home-orb home-orb--2"></div>
+                <div class="home-orb home-orb--3"></div>
+              </div>
+
+              <!-- Hero 区域 -->
+              <div class="home-hero">
+                <div class="home-hero-badge">智能教学平台</div>
+                <h1 class="home-hero-title">
+                  课堂<span class="gradient-text">教程</span>
+                </h1>
+                <p class="home-hero-subtitle">
+                  集成课程资源、数据分析、互动问答与AI总结的一站式教学工具，<br />帮助教师高效备课，提升课堂质量。
+                </p>
+                <div class="home-stats-row">
+                  <div class="home-stat">
+                    <span class="home-stat-num">{{ courses.length }}</span>
+                    <span class="home-stat-label">课程资源</span>
+                  </div>
+                  <div class="home-stat">
+                    <span class="home-stat-num">6</span>
+                    <span class="home-stat-label">学科覆盖</span>
+                  </div>
+                  <div class="home-stat">
+                    <span class="home-stat-num">5</span>
+                    <span class="home-stat-label">功能模块</span>
+                  </div>
+                  <div class="home-stat">
+                    <span class="home-stat-num">86%</span>
+                    <span class="home-stat-label">平均完成率</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 模块卡片 -->
+              <div class="home-section">
+                <h2 class="home-section-title">选择功能模块</h2>
+                <p class="home-section-desc">点击卡片进入对应的教学工具模块</p>
+                <div class="home-cards">
+                  <div
+                    v-for="item in menuItems"
+                    :key="item.id"
+                    class="home-card"
+                    :class="[`home-card--${item.id}`]"
+                    @click="switchMenu(item.id)"
+                  >
+                    <div class="home-card-top">
+                      <div class="home-card-icon-wrap">
+                        <span class="home-card-emoji">{{ item.icon }}</span>
+                      </div>
+                      <span class="home-card-badge">{{
+                        getHomeBadge(item.id)
+                      }}</span>
+                    </div>
+                    <div class="home-card-body">
+                      <h3 class="home-card-title">{{ item.label }}</h3>
+                      <p class="home-card-desc">{{ getHomeDesc(item.id) }}</p>
+                    </div>
+                    <div class="home-card-footer">
+                      <span class="home-card-action">
+                        进入模块
+                        <span class="home-card-arrow">→</span>
+                      </span>
+                    </div>
+                    <div class="home-card-glow"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 底部提示 -->
+              <div class="home-footer-hint">
+                <span>💡 也可以使用左侧菜单栏在各模块间快速切换</span>
+              </div>
+            </div>
+
             <!-- 1. 课程资源 -->
             <div v-if="activeMenu === 'course-resource'" class="content-panel">
               <div class="panel-header">
@@ -613,73 +937,224 @@ watch(activeMenu, (newVal) => {
             <div v-if="activeMenu === 'course-analysis'" class="content-panel">
               <div class="panel-header">
                 <h1>📊 课程分析</h1>
-                <p>通过数据可视化了解学习情况</p>
+                <p>选择一个课程，查看该课程的能力画像与课件制作建议</p>
               </div>
 
               <div class="analysis-dashboard">
-                <!-- 统计卡片 -->
-                <div class="stats-row">
-                  <div class="stat-card">
-                    <div class="stat-icon">📖</div>
-                    <div class="stat-info">
-                      <span class="stat-number">20</span>
-                      <span class="stat-name">总课程数</span>
+                <!-- 下拉筛选栏 -->
+                <div class="filter-search-bar">
+                  <div class="filter-row">
+                    <div class="filter-group">
+                      <label class="filter-label">学科</label>
+                      <select v-model="filterSubject" class="filter-select">
+                        <option value="">全部学科</option>
+                        <option
+                          v-for="sub in filterOptions.subjects"
+                          :key="sub"
+                          :value="sub"
+                        >
+                          {{ sub }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="filter-group">
+                      <label class="filter-label">年级</label>
+                      <select v-model="filterGrade" class="filter-select">
+                        <option value="">全部年级</option>
+                        <option
+                          v-for="g in filterOptions.grades"
+                          :key="g"
+                          :value="g"
+                        >
+                          {{ g }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="filter-group">
+                      <label class="filter-label">标签</label>
+                      <select v-model="filterTag" class="filter-select">
+                        <option value="">全部标签</option>
+                        <option
+                          v-for="t in filterOptions.tags"
+                          :key="t"
+                          :value="t"
+                        >
+                          {{ t }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="filter-group">
+                      <label class="filter-label">进度</label>
+                      <select v-model="filterStatus" class="filter-select">
+                        <option value="">全部状态</option>
+                        <option value="completed">已完成</option>
+                        <option value="in-progress">进行中</option>
+                        <option value="not-started">未开始</option>
+                      </select>
                     </div>
                   </div>
-                  <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-info">
-                      <span class="stat-number">9</span>
-                      <span class="stat-name">已完成</span>
-                    </div>
+                  <div class="filter-actions">
+                    <button
+                      class="filter-btn filter-btn-go"
+                      @click="reInitCharts()"
+                    >
+                      筛选
+                    </button>
+                    <button
+                      class="filter-btn filter-btn-reset"
+                      :disabled="!hasActiveFilter"
+                      @click="resetFilters()"
+                    >
+                      重置
+                    </button>
                   </div>
-                  <div class="stat-card">
-                    <div class="stat-icon">⏳</div>
-                    <div class="stat-info">
-                      <span class="stat-number">6</span>
-                      <span class="stat-name">学习中</span>
-                    </div>
+                </div>
+
+                <!-- 筛选结果提示 -->
+                <div v-if="hasActiveFilter" class="result-count">
+                  找到 {{ filteredCourses.length }} 门匹配课程
+                </div>
+
+                <!-- 课程选择器 -->
+                <div class="course-selector-bar">
+                  <div
+                    v-for="course in filteredCourses"
+                    :key="course.id"
+                    class="course-chip"
+                    :class="{ active: selectedCourseId === course.id }"
+                    @click="
+                      selectedCourseId = course.id;
+                      reInitCharts();
+                    "
+                  >
+                    <span class="chip-subject">{{ course.subject }}</span>
+                    <span class="chip-title">{{ course.title }}</span>
                   </div>
-                  <div class="stat-card">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-info">
-                      <span class="stat-number">86%</span>
-                      <span class="stat-name">平均掌握度</span>
+                </div>
+
+                <!-- 选中课程信息卡片 -->
+                <div v-if="selectedCourse" class="course-info-card">
+                  <div class="info-card-left">
+                    <h2>{{ selectedCourse.title }}</h2>
+                    <div class="info-card-tags">
+                      <span class="info-tag">{{ selectedCourse.subject }}</span>
+                      <span class="info-tag">{{ selectedCourse.grade }}</span>
+                      <span class="info-tag">{{ selectedCourse.teacher }}</span>
+                      <span class="info-tag">{{
+                        selectedCourse.duration
+                      }}</span>
+                    </div>
+                    <p class="info-card-desc">
+                      {{ selectedCourse.description }}
+                    </p>
+                  </div>
+                  <div class="info-card-right">
+                    <span
+                      class="info-badge"
+                      :style="{
+                        background:
+                          selectedCourse.progress === 100
+                            ? '#22c55e'
+                            : selectedCourse.progress > 0
+                              ? '#f59e0b'
+                              : '#94a3b8',
+                      }"
+                    >
+                      {{
+                        selectedCourse.progress === 100
+                          ? "已完成"
+                          : selectedCourse.progress > 0
+                            ? "进行中"
+                            : "未开始"
+                      }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 雷达图 + 饼图 + 维度解读 -->
+                <div class="radar-section">
+                  <div class="radar-chart-container">
+                    <div id="radar-chart" class="chart"></div>
+                  </div>
+                  <div class="radar-chart-container">
+                    <div id="factor-chart" class="chart"></div>
+                  </div>
+                  <div class="dimension-list">
+                    <h3>📐 能力维度解读</h3>
+                    <div
+                      v-for="dim in radarDimensions"
+                      :key="dim"
+                      class="dimension-item"
+                    >
+                      <div class="dim-header">
+                        <span class="dim-name">{{ dim }}</span>
+                        <span
+                          class="dim-score"
+                          :style="{
+                            color: getDimensionLabel(
+                              selectedCourse?.capabilities[dim],
+                            ).color,
+                          }"
+                        >
+                          {{ selectedCourse?.capabilities[dim] }}
+                        </span>
+                      </div>
+                      <div class="dim-bar-bg">
+                        <div
+                          class="dim-bar-fill"
+                          :style="{
+                            width:
+                              (selectedCourse?.capabilities[dim] || 0) + '%',
+                            background: getDimensionLabel(
+                              selectedCourse?.capabilities[dim],
+                            ).color,
+                          }"
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- 图表区域 -->
-                <div class="charts-grid">
-                  <div class="chart-container">
-                    <div id="subject-chart" class="chart"></div>
+                <!-- 课程要点 + 课件建议 -->
+                <div class="tips-row">
+                  <!-- 课程要点 -->
+                  <div class="tips-card">
+                    <h3>📋 核心知识点</h3>
+                    <ul class="keypoints-list">
+                      <li
+                        v-for="(point, idx) in selectedCourse?.keyPoints"
+                        :key="idx"
+                      >
+                        <span class="kp-index">{{ idx + 1 }}</span>
+                        <span>{{ point }}</span>
+                      </li>
+                    </ul>
                   </div>
-                  <div class="chart-container">
-                    <div id="progress-chart" class="chart"></div>
-                  </div>
-                  <div class="chart-container">
-                    <div id="type-chart" class="chart"></div>
-                  </div>
-                </div>
 
-                <!-- 学习建议 -->
-                <div class="suggestions-section">
-                  <h3>💡 学习建议</h3>
-                  <div class="suggestion-cards">
-                    <div class="suggestion-card">
-                      <span class="suggestion-icon">🎯</span>
-                      <h4>重点突破</h4>
-                      <p>物理学科占比较大，建议加强力学部分的练习</p>
-                    </div>
-                    <div class="suggestion-card">
-                      <span class="suggestion-icon">📈</span>
-                      <h4>进度提醒</h4>
-                      <p>有5门课程还未开始，建议制定学习计划</p>
-                    </div>
-                    <div class="suggestion-card">
-                      <span class="suggestion-icon">🔬</span>
-                      <h4>实验课程</h4>
-                      <p>实验课程完成度较高，继续保持动手能力</p>
+                  <!-- 课件制作建议 -->
+                  <div class="tips-card">
+                    <h3>💡 课件制作建议</h3>
+                    <div class="design-section">
+                      <div class="design-item strength">
+                        <span class="design-label">✅ 优势</span>
+                        <p>{{ selectedCourse?.designTips?.strengths }}</p>
+                      </div>
+                      <div class="design-item improvement">
+                        <span class="design-label">⚠️ 改进方向</span>
+                        <p>{{ selectedCourse?.designTips?.improvements }}</p>
+                      </div>
+                      <div class="design-item suggestions">
+                        <span class="design-label">🔧 具体建议</span>
+                        <ul>
+                          <li
+                            v-for="(tip, idx) in selectedCourse?.designTips
+                              ?.suggestions"
+                            :key="idx"
+                          >
+                            {{ tip }}
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -830,6 +1305,88 @@ watch(activeMenu, (newVal) => {
         </section>
       </div>
     </main>
+
+    <!-- 页面底部装饰 -->
+    <footer class="lessons-footer">
+      <!-- 波浪分隔线 -->
+      <div class="footer-wave">
+        <svg
+          viewBox="0 0 1200 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0 40 C150 10, 300 70, 600 40 C900 10, 1050 70, 1200 40 L1200 80 L0 80 Z"
+            class="footer-wave-path footer-wave--front"
+          />
+          <path
+            d="M0 55 C200 25, 400 80, 600 55 C800 30, 1000 80, 1200 55 L1200 80 L0 80 Z"
+            class="footer-wave-path footer-wave--back"
+          />
+        </svg>
+      </div>
+
+      <div class="footer-content">
+        <!-- 底部装饰光球 -->
+        <div class="footer-glow footer-glow--1"></div>
+        <div class="footer-glow footer-glow--2"></div>
+        <div class="footer-glow footer-glow--3"></div>
+
+        <div class="footer-inner">
+          <!-- 品牌区 -->
+          <div class="footer-brand">
+            <div class="footer-logo">🎓</div>
+            <h3>课堂教程</h3>
+            <p>
+              集成课程资源、数据分析、互动问答<br />与AI总结的一站式智能教学平台
+            </p>
+          </div>
+
+          <!-- 快速导航 -->
+          <div class="footer-nav">
+            <h4>功能模块</h4>
+            <ul>
+              <li
+                v-for="item in menuItems"
+                :key="item.id"
+                @click="switchMenu(item.id)"
+              >
+                {{ item.icon }} {{ item.label }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- 数据概览 -->
+          <div class="footer-stats">
+            <h4>教学数据</h4>
+            <div class="footer-stat-row">
+              <div class="footer-stat-item">
+                <span class="footer-stat-num">{{ courses.length }}</span>
+                <span class="footer-stat-desc">课程资源</span>
+              </div>
+              <div class="footer-stat-item">
+                <span class="footer-stat-num">6</span>
+                <span class="footer-stat-desc">学科覆盖</span>
+              </div>
+              <div class="footer-stat-item">
+                <span class="footer-stat-num">5</span>
+                <span class="footer-stat-desc">功能模块</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部线 -->
+        <div class="footer-bottom">
+          <span class="footer-copy">© 2026 课堂教程 · 智能教学平台</span>
+          <div class="footer-dots">
+            <span class="footer-dot"></span>
+            <span class="footer-dot"></span>
+            <span class="footer-dot"></span>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -854,6 +1411,16 @@ watch(activeMenu, (newVal) => {
       900px 500px at -10% 30%,
       rgba(99, 102, 241, 0.06),
       transparent
+    ),
+    radial-gradient(
+      800px 400px at 70% 90%,
+      rgba(76, 125, 255, 0.04),
+      transparent
+    ),
+    radial-gradient(
+      600px 350px at 20% 95%,
+      rgba(139, 92, 246, 0.03),
+      transparent
     );
   pointer-events: none;
   z-index: 0;
@@ -864,7 +1431,7 @@ watch(activeMenu, (newVal) => {
   z-index: 1;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 100px 24px 24px;
 }
 
 .lessons-container {
@@ -1049,6 +1616,10 @@ watch(activeMenu, (newVal) => {
   transform: translateY(10px);
 }
 
+.content-wrapper--home {
+  padding: 0;
+}
+
 .panel-header {
   margin-bottom: 28px;
   padding-bottom: 20px;
@@ -1066,6 +1637,460 @@ watch(activeMenu, (newVal) => {
   font-size: 1rem;
   color: #64748b;
   margin: 0;
+}
+
+/* ==================== 主页 ==================== */
+.lessons-container--home {
+  grid-template-columns: 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.content-panel--home {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景装饰层 */
+.home-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.home-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+}
+
+.home-orb--1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(76, 125, 255, 0.5), transparent);
+  top: -120px;
+  right: -60px;
+  animation: orbFloat1 8s ease-in-out infinite alternate;
+}
+
+.home-orb--2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent);
+  bottom: 15%;
+  left: -80px;
+  animation: orbFloat2 10s ease-in-out infinite alternate;
+}
+
+.home-orb--3 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25), transparent);
+  top: 55%;
+  right: 10%;
+  animation: orbFloat3 9s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+}
+
+@keyframes orbFloat2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-25px, 15px) scale(1.08);
+  }
+}
+
+@keyframes orbFloat3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(20px, -10px) scale(1.06);
+  }
+}
+
+/* Hero 区域 */
+.home-hero {
+  text-align: center;
+  padding: 70px 20px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 3px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #4c7dff, #a78bfa, #f59e0b);
+}
+
+.home-hero-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: rgba(76, 125, 255, 0.08);
+  color: #4c7dff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.home-hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  letter-spacing: -1px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #4c7dff 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-hero-subtitle {
+  font-size: 1.05rem;
+  color: #64748b;
+  line-height: 1.7;
+  margin: 0 auto 36px;
+  max-width: 560px;
+}
+
+/* Hero 统计数据 */
+.home-stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.home-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.home-stat-num {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.home-stat-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* 模块卡片区域 */
+.home-section {
+  padding: 50px 30px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-section-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.home-section-desc {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin: 0 0 40px 0;
+}
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 32px;
+}
+
+.home-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 22px 22px;
+  border: 1px solid rgba(76, 125, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.home-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(76, 125, 255, 0.12);
+  border-color: rgba(76, 125, 255, 0.2);
+}
+
+.home-card:hover .home-card-glow {
+  opacity: 1;
+}
+
+/* 按模块类型着色 */
+.home-card--course-resource .home-card-icon-wrap {
+  background: #eff6ff;
+}
+.home-card--course-resource .home-card-badge {
+  background: #3b82f6;
+}
+.home-card--course-resource:hover .home-card-badge {
+  background: #2563eb;
+}
+
+.home-card--course-analysis .home-card-icon-wrap {
+  background: #fef3c7;
+}
+.home-card--course-analysis .home-card-badge {
+  background: #f59e0b;
+}
+.home-card--course-analysis:hover .home-card-badge {
+  background: #d97706;
+}
+
+.home-card--qa-session .home-card-icon-wrap {
+  background: #ecfdf5;
+}
+.home-card--qa-session .home-card-badge {
+  background: #10b981;
+}
+.home-card--qa-session:hover .home-card-badge {
+  background: #059669;
+}
+
+.home-card--after-class .home-card-icon-wrap {
+  background: #faf5ff;
+}
+.home-card--after-class .home-card-badge {
+  background: #8b5cf6;
+}
+.home-card--after-class:hover .home-card-badge {
+  background: #7c3aed;
+}
+
+.home-card--ai-summary .home-card-icon-wrap {
+  background: #fee2e2;
+}
+.home-card--ai-summary .home-card-badge {
+  background: #ef4444;
+}
+.home-card--ai-summary:hover .home-card-badge {
+  background: #dc2626;
+}
+
+.home-card--course-resource .home-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(59, 130, 246, 0.08),
+    transparent 70%
+  );
+}
+.home-card--course-analysis .home-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(245, 158, 11, 0.08),
+    transparent 70%
+  );
+}
+.home-card--qa-session .home-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(16, 185, 129, 0.08),
+    transparent 70%
+  );
+}
+.home-card--after-class .home-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(139, 92, 246, 0.08),
+    transparent 70%
+  );
+}
+.home-card--ai-summary .home-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(239, 68, 68, 0.08),
+    transparent 70%
+  );
+}
+
+.home-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.home-card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.home-card:hover .home-card-icon-wrap {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.home-card-emoji {
+  font-size: 1.6rem;
+}
+
+.home-card-badge {
+  font-size: 0.7rem;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.home-card-body {
+  flex: 1;
+}
+
+.home-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.home-card-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.home-card-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.home-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4c7dff;
+  transition: color 0.25s ease;
+}
+
+.home-card:hover .home-card-action {
+  color: #1e40af;
+}
+
+.home-card-arrow {
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.home-card:hover .home-card-arrow {
+  transform: translateX(4px);
+}
+
+/* 底部提示 */
+.home-footer-hint {
+  text-align: center;
+  padding: 32px 0 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-footer-hint span {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.08);
+  padding: 8px 20px;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .home-hero {
+    padding: 40px 16px 36px;
+  }
+
+  .home-hero-title {
+    font-size: 2.2rem;
+  }
+
+  .home-stats-row {
+    gap: 20px;
+  }
+
+  .home-stat-num {
+    font-size: 1.5rem;
+  }
+
+  .home-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .home-card {
+    padding: 20px 16px 18px;
+  }
+}
+
+@media (max-width: 500px) {
+  .home-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero-title {
+    font-size: 1.8rem;
+  }
+
+  .home-stats-row {
+    gap: 12px;
+  }
 }
 
 /* ==================== 课程资源样式 ==================== */
@@ -1241,124 +2266,406 @@ watch(activeMenu, (newVal) => {
   gap: 24px;
 }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.stat-card {
+/* 下拉筛选栏 */
+.filter-search-bar {
   background: white;
   border-radius: 16px;
   padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
   border: 1px solid rgba(76, 125, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(76, 125, 255, 0.1);
-}
-
-.stat-icon {
-  font-size: 2rem;
-  width: 56px;
-  height: 56px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(76, 125, 255, 0.1);
-  border-radius: 12px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.stat-info {
+.filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filter-group {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  min-width: 130px;
+  flex: 1;
 }
 
-.stat-number {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.stat-name {
-  font-size: 0.85rem;
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #64748b;
 }
 
-.charts-grid {
+.filter-select {
+  padding: 10px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #1e293b;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.filter-select:focus {
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.1);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.filter-btn {
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-btn-go {
+  background: linear-gradient(135deg, #4c7dff, #6366f1);
+  color: white;
+}
+
+.filter-btn-go:hover {
+  box-shadow: 0 4px 12px rgba(76, 125, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.filter-btn-reset {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.filter-btn-reset:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.filter-btn-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.result-count {
+  font-size: 0.8rem;
+  color: #4c7dff;
+  font-weight: 500;
+}
+
+/* 筛选结果提示 + 课程选择器 */
+.course-selector-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.course-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.course-chip:hover {
+  border-color: #4c7dff;
+  box-shadow: 0 2px 8px rgba(76, 125, 255, 0.1);
+}
+
+.course-chip.active {
+  background: linear-gradient(135deg, #4c7dff, #6366f1);
+  border-color: transparent;
+}
+
+.course-chip.active .chip-subject,
+.course-chip.active .chip-title {
+  color: white;
+}
+
+.chip-subject {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: rgba(76, 125, 255, 0.1);
+  border-radius: 4px;
+  font-weight: 600;
+  color: #4c7dff;
+  white-space: nowrap;
+}
+
+.course-chip.active .chip-subject {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.chip-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+/* 课程信息卡片 */
+.course-info-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(76, 125, 255, 0.1);
+}
+
+.info-card-left h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+}
+
+.info-card-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.info-tag {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background: rgba(76, 125, 255, 0.08);
+  border-radius: 6px;
+  color: #4c7dff;
+  font-weight: 500;
+}
+
+.info-card-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.info-badge {
+  font-size: 0.75rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 雷达图区域 */
+.radar-section {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
 }
 
-.chart-container {
+.radar-chart-container {
   background: white;
   border-radius: 16px;
   padding: 20px;
   border: 1px solid rgba(76, 125, 255, 0.1);
+}
+
+.dimension-list {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(76, 125, 255, 0.1);
+}
+
+.dimension-list h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.dimension-item {
+  margin-bottom: 14px;
+}
+
+.dimension-item:last-child {
+  margin-bottom: 0;
+}
+
+.dim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.dim-name {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.dim-score {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.dim-bar-bg {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dim-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 要点 + 建议行 */
+.tips-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.tips-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(76, 125, 255, 0.1);
+}
+
+.tips-card h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.keypoints-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keypoints-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.kp-index {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4c7dff, #6366f1);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.design-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.design-item {
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.design-item.strength {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.design-item.improvement {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.design-item.suggestions {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.design-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+}
+
+.design-item p {
+  font-size: 0.82rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.design-item ul {
+  list-style: disc;
+  padding-left: 18px;
+  margin: 0;
+}
+
+.design-item ul li {
+  font-size: 0.8rem;
+  color: #475569;
+  margin-bottom: 4px;
+  line-height: 1.4;
 }
 
 .chart {
   width: 100%;
-  height: 320px;
+  height: 380px;
 }
 
-.suggestions-section {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid rgba(76, 125, 255, 0.1);
-}
+@media (max-width: 900px) {
+  .radar-section,
+  .tips-row {
+    grid-template-columns: 1fr;
+  }
 
-.suggestions-section h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 20px 0;
-}
+  .course-selector-bar {
+    flex-direction: column;
+  }
 
-.suggestion-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.suggestion-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(76, 125, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.suggestion-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(76, 125, 255, 0.1);
-}
-
-.suggestion-icon {
-  font-size: 2rem;
-  margin-bottom: 12px;
-  display: block;
-}
-
-.suggestion-card h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 8px 0;
-}
-
-.suggestion-card p {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.5;
+  .course-chip {
+    width: 100%;
+  }
 }
 
 /* ==================== 边问边答样式 ==================== */
@@ -1794,7 +3101,7 @@ watch(activeMenu, (newVal) => {
 
 @media (max-width: 768px) {
   .lessons-main {
-    padding: 16px;
+    padding: 88px 16px 16px;
   }
 
   .lessons-container {
@@ -1856,6 +3163,290 @@ watch(activeMenu, (newVal) => {
 
   .ai-actions {
     flex-direction: column;
+  }
+}
+
+/* ==================== 页面底部装饰 ==================== */
+.lessons-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 60px;
+}
+
+/* 波浪分隔线 */
+.footer-wave {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.footer-wave svg {
+  width: 100%;
+  height: 100%;
+}
+
+.footer-wave-path {
+  fill: #f8fafc;
+}
+
+.footer-wave--front {
+  fill: rgba(76, 125, 255, 0.04);
+}
+
+.footer-wave--back {
+  fill: rgba(99, 102, 241, 0.02);
+}
+
+/* 底部内容区 */
+.footer-content {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(76, 125, 255, 0.03) 0%,
+    rgba(99, 102, 241, 0.05) 40%,
+    rgba(15, 23, 42, 0.03) 100%
+  );
+  border-top: 1px solid rgba(76, 125, 255, 0.06);
+  padding: 60px 24px 32px;
+  overflow: hidden;
+}
+
+/* 底部光球装饰 */
+.footer-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.footer-glow--1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(76, 125, 255, 0.5), transparent);
+  top: -80px;
+  left: 10%;
+  animation: footerGlow1 12s ease-in-out infinite alternate;
+}
+
+.footer-glow--2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent);
+  bottom: -40px;
+  right: 5%;
+  animation: footerGlow2 15s ease-in-out infinite alternate;
+}
+
+.footer-glow--3 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25), transparent);
+  top: 30%;
+  right: 40%;
+  animation: footerGlow3 10s ease-in-out infinite alternate;
+}
+
+@keyframes footerGlow1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, -25px) scale(1.1);
+  }
+}
+
+@keyframes footerGlow2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-30px, 20px) scale(1.12);
+  }
+}
+
+@keyframes footerGlow3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(15px, -15px) scale(1.08);
+  }
+}
+
+.footer-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 48px;
+}
+
+/* 品牌区 */
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-logo {
+  font-size: 2.4rem;
+  margin-bottom: 4px;
+}
+
+.footer-brand h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.footer-brand p {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 导航 */
+.footer-nav h4,
+.footer-stats h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.5px;
+}
+
+.footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-nav li {
+  font-size: 0.82rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 0;
+}
+
+.footer-nav li:hover {
+  color: #4c7dff;
+  transform: translateX(4px);
+}
+
+/* 数据概览 */
+.footer-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.footer-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  background: rgba(76, 125, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(76, 125, 255, 0.06);
+}
+
+.footer-stat-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4c7dff;
+  line-height: 1;
+}
+
+.footer-stat-desc {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+/* 底部线 */
+.footer-bottom {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(76, 125, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copy {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.footer-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.footer-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c7d2fe;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+.footer-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.footer-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+@media (max-width: 768px) {
+  .lessons-footer {
+    margin-top: 40px;
+  }
+
+  .footer-content {
+    padding: 40px 16px 24px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .footer-stat-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 </style>
