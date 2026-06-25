@@ -1265,7 +1265,18 @@ watch(activeMenu, (newVal) => {
                         class="cover-img"
                         :style="{
                           objectPosition:
-                            course.subject === '化学' ? '50% 70%' : 'center',
+                            course.subject === '化学'
+                              ? '50% 37%'
+                              : course.subject === '生物'
+                                ? '50% 35%'
+                                : course.subject === '物理'
+                                  ? '50% 22%'
+                                  : 'center',
+                          transform:
+                            course.subject === '物理' ||
+                            course.subject === '化学'
+                              ? 'scale(1)'
+                              : undefined,
                         }"
                       />
                       <!-- 底部渐变遮罩 -->
