@@ -29,7 +29,6 @@ const historyQuery = ref("");
 const historyPage = ref(1);
 const iterateFeedback = ref({});
 const expandedRecord = ref(null);
-const selectedHistoryType = ref("all"); // 'all' | 'ppt' | 'doc' | 'interactive'
 
 // ==================== 教学档案筛选条件（新版）====================
 const isArchiveFilterExpanded = ref(false);
@@ -1144,50 +1143,11 @@ const questionRecommendation = computed(() => {
   }));
 });
 
-const historySummary = computed(() => [
-  {
-    label: "全部记录",
-    value: stats.value.total,
-    note: "累计创作产出",
-    icon: "📊",
-    color: "#6366f1",
-  },
-  {
-    label: "课件",
-    value: stats.value.ppt,
-    note: "适合投屏讲授",
-    icon: "📽️",
-    color: "#4c7dff",
-  },
-  {
-    label: "教案",
-    value: stats.value.doc,
-    note: "可继续编辑沉淀",
-    icon: "📄",
-    color: "#23c3b2",
-  },
-  {
-    label: "教学题",
-    value: stats.value.interactive,
-    note: "课堂练习与检测",
-    icon: "✏️",
-    color: "#8b5cf6",
-  },
-]);
-
-// 类型映射：卡片标签到数据类型
-const TYPE_MAP = {
-  全部记录: "all",
-  课件: "ppt",
-  教案: "doc",
-  教学题: "interactive",
-};
-
 const filteredHistory = computed(() => {
   let result = history.value;
 
-  // 按类型筛选（类型卡片和下拉框共用）
-  const typeFilter = archiveFilters.value.type || selectedHistoryType.value;
+  // 按类型筛选
+  const typeFilter = archiveFilters.value.type;
   if (typeFilter && typeFilter !== "all") {
     result = result.filter((item) => item.type === typeFilter);
   }
@@ -2167,14 +2127,6 @@ function toggleRecordExpand(id) {
   expandedRecord.value = expandedRecord.value === id ? null : id;
 }
 
-// 按类型筛选记录
-function filterHistoryByType(typeLabel) {
-  const type = TYPE_MAP[typeLabel] || "all";
-  selectedHistoryType.value = type;
-  archiveFilters.value.type = type === "all" ? "" : type;
-  historyPage.value = 1;
-}
-
 // ==================== 教学档案筛选方法（新版）====================
 // 计算已选筛选条件数量
 const activeArchiveFilterCount = computed(() => {
@@ -2204,7 +2156,6 @@ function resetArchiveFilters() {
     difficulty: "",
     searchQuery: "",
   };
-  selectedHistoryType.value = "all";
   historyQuery.value = "";
   historyPage.value = 1;
 }
@@ -2212,9 +2163,6 @@ function resetArchiveFilters() {
 // 应用保存的筛选方案
 function applySavedArchiveFilter(saved) {
   archiveFilters.value = { ...archiveFilters.value, ...saved.filters };
-  if (saved.filters.type) {
-    selectedHistoryType.value = saved.filters.type;
-  }
   historyPage.value = 1;
 }
 
@@ -3490,57 +3438,10 @@ onUnmounted(() => {
         </section>
 
         <section v-else-if="activePanel === 'history'" class="panel">
-          <!-- 统计概览卡片 -->
-          <div class="record-summary">
-            <article
-              v-for="item in historySummary"
-              :key="item.label"
-              class="summary-card"
-              :class="{ active: selectedHistoryType === TYPE_MAP[item.label] }"
-              :style="{ '--card-color': item.color }"
-              @click="filterHistoryByType(item.label)"
-            >
-              <div class="summary-card__icon">{{ item.icon }}</div>
-              <div class="summary-card__content">
-                <span class="summary-label">{{ item.label }}</span>
-                <strong class="summary-value">{{ item.value }}</strong>
-                <p class="summary-note">{{ item.note }}</p>
-              </div>
-              <div class="summary-card__decorator"></div>
-              <div
-                v-if="selectedHistoryType === TYPE_MAP[item.label]"
-                class="selected-indicator"
-              >
-                ✓
-              </div>
-            </article>
-          </div>
-
-          <!-- 筛选状态提示 -->
-          <div
-            v-if="selectedHistoryType !== 'all' || activeArchiveFilterCount > 0"
-            class="filter-status-bar"
-          >
-            <span class="filter-info">
-              <template v-if="activeArchiveFilterCount > 0">
-                已选 {{ activeArchiveFilterCount }} 项筛选条件
-              </template>
-              <template v-else>
-                正在查看：<strong>{{
-                  selectedHistoryType === "ppt"
-                    ? "课件"
-                    : selectedHistoryType === "doc"
-                      ? "教案"
-                      : "教学题"
-                }}</strong>
-              </template>
-              <span class="filter-count"
-                >（{{ filteredHistory.length }} 条记录）</span
-              >
-            </span>
-            <button class="clear-filter-btn" @click="resetArchiveFilters()">
-              <span>✕</span> 清除所有筛选
-            </button>
+          <!-- 教学档案标题 -->
+          <div class="archive-section-header">
+            <h2>📂 教学档案</h2>
+            <p>筛选和浏览您的教学创作记录</p>
           </div>
 
           <!-- 多维筛选栏 -->
@@ -7033,213 +6934,6 @@ onUnmounted(() => {
   margin-top: 16px;
 }
 
-.record-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-/* 新版统计卡片 */
-.summary-card {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 20px;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(248, 251, 255, 0.9) 100%
-  );
-  border-radius: 18px;
-  border: 1px solid rgba(76, 125, 255, 0.1);
-  box-shadow: 0 4px 16px rgba(76, 125, 255, 0.06);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(76, 125, 255, 0.12);
-  border-color: rgba(76, 125, 255, 0.2);
-  cursor: pointer;
-}
-
-/* 选中状态 */
-.summary-card.active {
-  border: 2px solid var(--card-color, #4c7dff);
-  box-shadow: 0 8px 24px rgba(76, 125, 255, 0.15);
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(240, 245, 255, 0.95) 100%
-  );
-}
-
-.summary-card.active .summary-card__decorator {
-  opacity: 0.2;
-}
-
-/* 选中指示器 */
-.selected-indicator {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card-color, #4c7dff);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.summary-card__icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(248, 251, 255, 0.8)
-  );
-  border-radius: 14px;
-  border: 1px solid rgba(76, 125, 255, 0.08);
-  flex-shrink: 0;
-}
-
-.summary-card__content {
-  flex: 1;
-  min-width: 0;
-}
-
-.summary-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.summary-value {
-  display: block;
-  margin-top: 6px;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.summary-note {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-  line-height: 1.4;
-}
-
-.summary-card__decorator {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(
-    circle at top right,
-    var(--card-color, #4c7dff) 0%,
-    transparent 70%
-  );
-  opacity: 0.08;
-  border-radius: 0 18px 0 80px;
-  transition: opacity 0.3s ease;
-}
-
-.summary-card:hover .summary-card__decorator {
-  opacity: 0.15;
-}
-
-/* 第一个卡片（全部记录）特殊样式 */
-.summary-card:first-child {
-  background: linear-gradient(
-    145deg,
-    rgba(99, 102, 241, 0.08) 0%,
-    rgba(139, 92, 246, 0.04) 100%
-  );
-  border-color: rgba(99, 102, 241, 0.2);
-}
-
-.summary-card:first-child .summary-value {
-  color: #6366f1;
-}
-
-.summary-card:first-child .summary-card__icon {
-  background: linear-gradient(
-    145deg,
-    rgba(99, 102, 241, 0.15),
-    rgba(139, 92, 246, 0.1)
-  );
-}
-
-/* 筛选状态栏 */
-.filter-status-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
-  border: 1px solid rgba(76, 125, 255, 0.15);
-  border-radius: 12px;
-}
-
-.filter-info {
-  font-size: 0.9rem;
-  color: var(--ink);
-}
-
-.filter-info strong {
-  color: var(--accent-deep);
-  font-weight: 600;
-}
-
-.filter-count {
-  color: var(--ink-muted);
-  font-size: 0.85rem;
-  margin-left: 4px;
-}
-
-.clear-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(76, 125, 255, 0.1);
-  border: none;
-  border-radius: 8px;
-  color: var(--accent-deep);
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clear-filter-btn:hover {
-  background: rgba(76, 125, 255, 0.2);
-}
-
-.clear-filter-btn span {
-  font-size: 0.75rem;
-}
-
 .history-toolbar {
   display: flex;
   justify-content: space-between;
@@ -7291,6 +6985,24 @@ onUnmounted(() => {
   color: var(--accent-deep);
   font-style: normal;
   font-weight: 500;
+}
+
+/* ==================== 教学档案面板标题 ==================== */
+.archive-section-header {
+  margin-bottom: 20px;
+}
+
+.archive-section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.archive-section-header p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
 }
 
 /* ==================== 教学档案多维筛选栏 ==================== */
@@ -7847,7 +7559,6 @@ onUnmounted(() => {
   .overview-stage,
   .insight-grid,
   .generator-layout,
-  .record-summary,
   .insight-grid--simple {
     grid-template-columns: 1fr;
   }
@@ -7890,7 +7601,6 @@ onUnmounted(() => {
   }
 
   .metric-grid,
-  .record-summary,
   .line-chart__labels {
     grid-template-columns: 1fr;
   }
