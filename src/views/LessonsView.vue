@@ -53,6 +53,18 @@ function getHomeBadge(id) {
   return map[id] || "";
 }
 
+// 主页卡片关键词标签
+function getHomeKeywords(id) {
+  const map = {
+    "course-resource": ["课程浏览", "进度跟踪"],
+    "course-analysis": ["雷达图", "能力画像"],
+    "qa-session": ["实时问答", "课堂参与"],
+    "after-class": ["深度探讨", "知识拓展"],
+    "ai-summary": ["智能总结", "掌握评估"],
+  };
+  return map[id] || [];
+}
+
 // ==================== 课程数据 ====================
 const courses = ref([
   {
@@ -295,6 +307,71 @@ const courses = ref([
   },
 ]);
 
+// 学科视觉配置：颜色 + 图标 + 背景纹理
+const subjectStyleMap = {
+  物理: {
+    color: "#6c5ce7",
+    bg: "linear-gradient(135deg, #f3f0ff 0%, #e8e5ff 50%, #dcd6ff 100%)",
+    icon: "⚛️",
+    symbol: "φ",
+    label: "PHYSICS",
+    image: "/image/物理.png",
+  },
+  化学: {
+    color: "#00b894",
+    bg: "linear-gradient(135deg, #e6fff5 0%, #d4f8e8 50%, #bdf0d9 100%)",
+    icon: "🧪",
+    symbol: "⚗",
+    label: "CHEMISTRY",
+    image: "/image/化学.png",
+  },
+  数学: {
+    color: "#0984e3",
+    bg: "linear-gradient(135deg, #e8f4fd 0%, #d6ecfb 50%, #c4e2f8 100%)",
+    icon: "📐",
+    symbol: "∑",
+    label: "MATH",
+    image: "/image/数学.png",
+  },
+  生物: {
+    color: "#00cec9",
+    bg: "linear-gradient(135deg, #e8faf8 0%, #d4f5f1 50%, #bdf0ea 100%)",
+    icon: "🔬",
+    symbol: "🧬",
+    label: "BIOLOGY",
+    image: "/image/生物.png",
+  },
+  历史: {
+    color: "#d63031",
+    bg: "linear-gradient(135deg, #fff0f0 0%, #ffe8e8 50%, #ffdbdb 100%)",
+    icon: "📜",
+    symbol: "㊦",
+    label: "HISTORY",
+    image: "/image/历史.png",
+  },
+  地理: {
+    color: "#e17055",
+    bg: "linear-gradient(135deg, #fff5f0 0%, #ffede5 50%, #ffe4d9 100%)",
+    icon: "🌍",
+    symbol: "◈",
+    label: "GEOGRAPHY",
+    image: "/image/地理.png",
+  },
+};
+
+function getSubjectStyle(subject) {
+  return (
+    subjectStyleMap[subject] || {
+      color: "#4c7dff",
+      bg: "linear-gradient(135deg, #f0f4ff 0%, #e4e9ff 50%, #d8deff 100%)",
+      icon: "📚",
+      symbol: "✦",
+      label: "COURSE",
+      image: "/image/物理.png",
+    }
+  );
+}
+
 // ==================== 问答数据 ====================
 const qaList = ref([
   {
@@ -470,6 +547,175 @@ const selectedCourse = computed(() =>
   courses.value.find((c) => c.id === selectedCourseId.value),
 );
 
+// ==================== 课程资源——视频详情页 ====================
+const currentCourseId = ref(null); // null = 课程列表，数字 = 某课程的视频详情
+
+// 每个课程的视频资源数据
+const courseVideos = {
+  1: [
+    {
+      id: "v1",
+      title: "牛顿第二定律实验演示",
+      duration: "12:30",
+      cover: "physics-1",
+    },
+    {
+      id: "v2",
+      title: "控制变量法详解",
+      duration: "08:45",
+      cover: "physics-2",
+    },
+    {
+      id: "v3",
+      title: "打点计时器使用教程",
+      duration: "15:20",
+      cover: "physics-3",
+    },
+    {
+      id: "v4",
+      title: "F=ma 公式推导与例题",
+      duration: "18:10",
+      cover: "physics-4",
+    },
+    {
+      id: "v5",
+      title: "实验数据分析与误差处理",
+      duration: "10:55",
+      cover: "physics-5",
+    },
+  ],
+  2: [
+    {
+      id: "v6",
+      title: "浓度对反应速率的影响",
+      duration: "14:20",
+      cover: "chem-1",
+    },
+    {
+      id: "v7",
+      title: "温度与反应速率的定量关系",
+      duration: "11:30",
+      cover: "chem-2",
+    },
+    {
+      id: "v8",
+      title: "催化剂作用机理动画",
+      duration: "09:15",
+      cover: "chem-3",
+    },
+    {
+      id: "v9",
+      title: "压强对气体反应的影响实验",
+      duration: "13:40",
+      cover: "chem-4",
+    },
+  ],
+  3: [
+    {
+      id: "v10",
+      title: "函数单调性图像直观理解",
+      duration: "10:20",
+      cover: "math-1",
+    },
+    {
+      id: "v11",
+      title: "单调递增与递减定义",
+      duration: "08:50",
+      cover: "math-2",
+    },
+    {
+      id: "v12",
+      title: "定义法证明函数单调性",
+      duration: "16:00",
+      cover: "math-3",
+    },
+    {
+      id: "v13",
+      title: "复合函数单调性判断技巧",
+      duration: "12:35",
+      cover: "math-4",
+    },
+    {
+      id: "v14",
+      title: "单调性综合习题精讲",
+      duration: "20:10",
+      cover: "math-5",
+    },
+  ],
+  4: [
+    { id: "v15", title: "细胞膜结构与功能", duration: "11:40", cover: "bio-1" },
+    {
+      id: "v16",
+      title: "线粒体与叶绿体对比",
+      duration: "09:55",
+      cover: "bio-2",
+    },
+    {
+      id: "v17",
+      title: "显微镜操作规范演示",
+      duration: "14:30",
+      cover: "bio-3",
+    },
+    {
+      id: "v18",
+      title: "细胞器协调工作机制",
+      duration: "13:15",
+      cover: "bio-4",
+    },
+  ],
+  5: [
+    {
+      id: "v19",
+      title: "鸦片贸易的历史背景",
+      duration: "15:00",
+      cover: "hist-1",
+    },
+    { id: "v20", title: "林则徐虎门销烟", duration: "12:20", cover: "hist-2" },
+    {
+      id: "v21",
+      title: "《南京条约》内容解读",
+      duration: "10:45",
+      cover: "hist-3",
+    },
+    {
+      id: "v22",
+      title: "鸦片战争历史意义",
+      duration: "13:50",
+      cover: "hist-4",
+    },
+  ],
+  6: [
+    { id: "v23", title: "大气环流基本概念", duration: "10:30", cover: "geo-1" },
+    { id: "v24", title: "三圈环流模型解析", duration: "14:15", cover: "geo-2" },
+    {
+      id: "v25",
+      title: "全球气压带与风带分布",
+      duration: "12:00",
+      cover: "geo-3",
+    },
+    { id: "v26", title: "气候类型识别技巧", duration: "16:40", cover: "geo-4" },
+    { id: "v27", title: "季风气候专题复习", duration: "11:25", cover: "geo-5" },
+  ],
+};
+
+const currentCourse = computed(() =>
+  currentCourseId.value
+    ? courses.value.find((c) => c.id === currentCourseId.value)
+    : null,
+);
+
+const currentVideos = computed(() =>
+  currentCourseId.value ? courseVideos[currentCourseId.value] || [] : [],
+);
+
+function openCourseDetail(id) {
+  currentCourseId.value = id;
+}
+
+function closeCourseDetail() {
+  currentCourseId.value = null;
+}
+
 const radarDimensions = [
   "知识覆盖面",
   "实验实践性",
@@ -504,6 +750,7 @@ function switchMenu(menuId) {
   if (menuId === activeMenu.value) return;
 
   isTransitioning.value = true;
+  currentCourseId.value = null; // 切换菜单时回到课程列表
   setTimeout(() => {
     activeMenu.value = menuId;
     nextTick(() => {
@@ -627,6 +874,7 @@ function initCharts() {
   window.addEventListener("resize", () => {
     charts.radar?.resize?.();
     charts.factorPie?.resize?.();
+    charts.bar?.resize?.();
   });
 
   // 教学时间分配饼图
@@ -685,6 +933,97 @@ function initCharts() {
       ],
     });
   }
+
+  // 能力维度水平柱状图
+  const barDom = document.getElementById("bar-chart");
+  if (barDom) {
+    const barChart = echarts.init(barDom);
+    charts.bar = barChart;
+
+    // 反转维度顺序（从上到下显示），配合反转的 Y 轴
+    const items = radarDimensions
+      .map((dim) => {
+        const score = course.capabilities[dim] || 0;
+        const label = getDimensionLabel(score);
+        return {
+          name: dim,
+          value: score,
+          color: label.color,
+          label: label.text,
+        };
+      })
+      .reverse();
+
+    barChart.setOption({
+      title: {
+        text: "能力维度解读",
+        left: "center",
+        top: 10,
+        textStyle: { fontSize: 15, fontWeight: "bold", color: "#1e293b" },
+      },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        formatter: (params) => {
+          const p = params[0];
+          return `<b>${p.name}</b><br/>分值: <span style="color:${p.color};font-weight:bold">${p.value}</span>`;
+        },
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#e2e8f0",
+        borderWidth: 1,
+        textStyle: { color: "#334155" },
+      },
+      grid: {
+        left: "5%",
+        right: "12%",
+        top: "18%",
+        bottom: "5%",
+        containLabel: true,
+      },
+      xAxis: {
+        type: "value",
+        max: 100,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: { lineStyle: { color: "#f1f5f9", type: "dashed" } },
+        axisLabel: { color: "#94a3b8", fontSize: 10, formatter: "{value}" },
+      },
+      yAxis: {
+        type: "category",
+        data: items.map((d) => d.name),
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: "#475569", fontSize: 11, fontWeight: 500 },
+        inverse: true,
+      },
+      series: [
+        {
+          type: "bar",
+          data: items.map((d) => ({
+            value: d.value,
+            itemStyle: {
+              color: d.color,
+              borderRadius: [0, 6, 6, 0],
+            },
+          })),
+          barWidth: 18,
+          label: {
+            show: true,
+            position: "right",
+            formatter: (p) => `${p.value}`,
+            color: "#475569",
+            fontSize: 10,
+            fontWeight: 600,
+          },
+          emphasis: {
+            itemStyle: { shadowBlur: 8, shadowColor: "rgba(0,0,0,0.12)" },
+          },
+          animationDuration: 1200,
+          animationEasing: "cubicOut",
+        },
+      ],
+    });
+  }
 }
 
 // 重置图表
@@ -696,6 +1035,10 @@ function reInitCharts() {
   if (charts.factorPie) {
     charts.factorPie.dispose();
     charts.factorPie = null;
+  }
+  if (charts.bar) {
+    charts.bar.dispose();
+    charts.bar = null;
   }
   nextTick(() => initCharts());
 }
@@ -736,6 +1079,10 @@ watch(activeMenu, (newVal) => {
     if (charts.factorPie) {
       charts.factorPie.dispose();
       charts.factorPie = null;
+    }
+    if (charts.bar) {
+      charts.bar.dispose();
+      charts.bar = null;
     }
   }
 });
@@ -860,13 +1207,23 @@ watch(activeMenu, (newVal) => {
                       <div class="home-card-icon-wrap">
                         <span class="home-card-emoji">{{ item.icon }}</span>
                       </div>
-                      <span class="home-card-badge">{{
-                        getHomeBadge(item.id)
-                      }}</span>
+                      <div class="home-card-top-right">
+                        <span class="home-card-badge">{{
+                          getHomeBadge(item.id)
+                        }}</span>
+                      </div>
                     </div>
                     <div class="home-card-body">
                       <h3 class="home-card-title">{{ item.label }}</h3>
                       <p class="home-card-desc">{{ getHomeDesc(item.id) }}</p>
+                      <div class="home-card-keywords">
+                        <span
+                          v-for="kw in getHomeKeywords(item.id)"
+                          :key="kw"
+                          class="home-keyword"
+                          >{{ kw }}</span
+                        >
+                      </div>
                     </div>
                     <div class="home-card-footer">
                       <span class="home-card-action">
@@ -887,50 +1244,166 @@ watch(activeMenu, (newVal) => {
 
             <!-- 1. 课程资源 -->
             <div v-if="activeMenu === 'course-resource'" class="content-panel">
-              <div class="panel-header">
-                <h1>📚 课程资源</h1>
-                <p>浏览所有可用的课程资源，点击课程开始学习</p>
-              </div>
+              <!-- ===== 课程列表视图 ===== -->
+              <template v-if="!currentCourseId">
+                <div class="panel-header">
+                  <h1>📚 课程资源</h1>
+                  <p>浏览所有可用的课程资源，点击课程查看该课程下的教学视频</p>
+                </div>
 
-              <div class="course-grid">
-                <div
-                  v-for="course in courses"
-                  :key="course.id"
-                  class="course-card"
-                >
-                  <div class="course-cover">
-                    <img :src="course.cover" :alt="course.title" />
-                    <div class="course-overlay">
-                      <button class="play-btn">
-                        <span>▶</span>
-                      </button>
-                    </div>
-                    <span class="course-duration">{{ course.duration }}</span>
-                  </div>
-                  <div class="course-info">
-                    <div class="course-tags">
-                      <span v-for="tag in course.tags" :key="tag" class="tag">{{
-                        tag
-                      }}</span>
-                    </div>
-                    <h3 class="course-title">{{ course.title }}</h3>
-                    <p class="course-desc">{{ course.description }}</p>
-                    <div class="course-meta">
-                      <span class="subject-badge">{{ course.subject }}</span>
-                      <span class="grade-text">{{ course.grade }}</span>
-                    </div>
-                    <div class="course-progress">
-                      <div class="progress-bar">
-                        <div
-                          class="progress-fill"
-                          :style="{ width: course.progress + '%' }"
-                        ></div>
+                <div class="course-grid">
+                  <div
+                    v-for="course in courses"
+                    :key="course.id"
+                    class="course-card"
+                    @click="openCourseDetail(course.id)"
+                  >
+                    <div class="course-cover">
+                      <img
+                        :src="getSubjectStyle(course.subject).image"
+                        :alt="course.subject"
+                        class="cover-img"
+                        :style="{
+                          objectPosition:
+                            course.subject === '化学' ? '50% 70%' : 'center',
+                        }"
+                      />
+                      <!-- 底部渐变遮罩 -->
+                      <div class="cover-gradient"></div>
+                      <!-- 学科标签 -->
+                      <div
+                        class="cover-subject-tag"
+                        :style="{
+                          background: getSubjectStyle(course.subject).color,
+                        }"
+                      >
+                        {{ getSubjectStyle(course.subject).symbol }}
+                        {{ course.subject }}
                       </div>
-                      <span class="progress-text">{{ course.progress }}%</span>
+                      <!-- 悬停浮层（底部） -->
+                      <div class="course-overlay">
+                        <span class="detail-hint">查看视频</span>
+                      </div>
+                      <span class="course-video-count"
+                        >{{
+                          (courseVideos[course.id] || []).length
+                        }}个视频</span
+                      >
+                    </div>
+                    <div class="course-info">
+                      <div class="course-tags">
+                        <span
+                          v-for="tag in course.tags"
+                          :key="tag"
+                          class="tag"
+                          >{{ tag }}</span
+                        >
+                      </div>
+                      <h3 class="course-title">{{ course.title }}</h3>
+                      <p class="course-desc">{{ course.description }}</p>
+                      <div class="course-meta">
+                        <span class="subject-badge">{{ course.subject }}</span>
+                        <span class="grade-text">{{ course.grade }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </template>
+
+              <!-- ===== 视频详情视图 ===== -->
+              <template v-else>
+                <div class="video-detail-page">
+                  <!-- 顶部导航栏 -->
+                  <div class="video-detail-header">
+                    <button class="back-btn" @click="closeCourseDetail">
+                      <span class="back-arrow">←</span>
+                      <span>返回课程资源</span>
+                    </button>
+                    <div
+                      class="video-detail-title-bar"
+                      :style="{
+                        borderLeftColor: getSubjectStyle(currentCourse?.subject)
+                          .color,
+                      }"
+                    >
+                      <div class="video-detail-title-wrap">
+                        <span class="video-detail-icon">{{
+                          getSubjectStyle(currentCourse?.subject).icon
+                        }}</span>
+                        <div>
+                          <h1 class="video-detail-course-name">
+                            {{ currentCourse?.title }}
+                          </h1>
+                          <span class="video-detail-meta">
+                            {{ currentCourse?.subject }} ·
+                            {{ currentCourse?.grade }} ·
+                            {{ currentVideos.length }}个教学视频
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        class="video-detail-subject-badge"
+                        :style="{
+                          background: getSubjectStyle(currentCourse?.subject)
+                            .color,
+                        }"
+                      >
+                        {{ getSubjectStyle(currentCourse?.subject).symbol }}
+                        {{ currentCourse?.subject }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 视频网格 -->
+                  <div class="video-grid">
+                    <div
+                      v-for="video in currentVideos"
+                      :key="video.id"
+                      class="video-card"
+                    >
+                      <div
+                        class="video-cover"
+                        :style="{
+                          background: getSubjectStyle(currentCourse?.subject)
+                            .bg,
+                        }"
+                      >
+                        <div class="video-cover-icon">
+                          {{ getSubjectStyle(currentCourse?.subject).icon }}
+                        </div>
+                        <div
+                          class="video-cover-deco"
+                          :style="{
+                            color: getSubjectStyle(currentCourse?.subject)
+                              .color,
+                          }"
+                        >
+                          {{ getSubjectStyle(currentCourse?.subject).label }}
+                        </div>
+                        <div class="video-overlay">
+                          <div class="video-play-btn">
+                            <span>▶</span>
+                          </div>
+                        </div>
+                        <span class="video-duration-badge">{{
+                          video.duration
+                        }}</span>
+                      </div>
+                      <div class="video-info">
+                        <h3 class="video-title-text">{{ video.title }}</h3>
+                        <div class="video-sub-info">
+                          <span class="video-subject-label">{{
+                            currentCourse?.subject
+                          }}</span>
+                          <span class="video-grade-label">{{
+                            currentCourse?.teacher
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
 
             <!-- 2. 课程分析 -->
@@ -1079,39 +1552,8 @@ watch(activeMenu, (newVal) => {
                   <div class="radar-chart-container">
                     <div id="factor-chart" class="chart"></div>
                   </div>
-                  <div class="dimension-list">
-                    <h3>📐 能力维度解读</h3>
-                    <div
-                      v-for="dim in radarDimensions"
-                      :key="dim"
-                      class="dimension-item"
-                    >
-                      <div class="dim-header">
-                        <span class="dim-name">{{ dim }}</span>
-                        <span
-                          class="dim-score"
-                          :style="{
-                            color: getDimensionLabel(
-                              selectedCourse?.capabilities[dim],
-                            ).color,
-                          }"
-                        >
-                          {{ selectedCourse?.capabilities[dim] }}
-                        </span>
-                      </div>
-                      <div class="dim-bar-bg">
-                        <div
-                          class="dim-bar-fill"
-                          :style="{
-                            width:
-                              (selectedCourse?.capabilities[dim] || 0) + '%',
-                            background: getDimensionLabel(
-                              selectedCourse?.capabilities[dim],
-                            ).color,
-                          }"
-                        ></div>
-                      </div>
-                    </div>
+                  <div class="radar-chart-container">
+                    <div id="bar-chart" class="chart"></div>
                   </div>
                 </div>
 
@@ -1810,7 +2252,7 @@ watch(activeMenu, (newVal) => {
 
 /* 模块卡片区域 */
 .home-section {
-  padding: 50px 30px 40px;
+  padding: 60px 40px 50px;
   position: relative;
   z-index: 1;
 }
@@ -1827,19 +2269,24 @@ watch(activeMenu, (newVal) => {
   text-align: center;
   font-size: 0.9rem;
   color: #94a3b8;
-  margin: 0 0 40px 0;
+  margin: 0 0 48px 0;
 }
 
+/* 3+2 居中网格：上三下二 */
 .home-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 40px 36px;
+  row-gap: 44px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .home-card {
+  grid-column: span 2;
   background: white;
-  border-radius: 20px;
-  padding: 28px 22px 22px;
+  border-radius: 22px;
+  padding: 36px 28px 28px;
   border: 1px solid rgba(76, 125, 255, 0.06);
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1849,10 +2296,19 @@ watch(activeMenu, (newVal) => {
   overflow: hidden;
 }
 
+/* 最后两个居中 */
+.home-card:nth-child(4) {
+  grid-column: 2 / span 2;
+}
+
+.home-card:nth-child(5) {
+  grid-column: 4 / span 2;
+}
+
 .home-card-glow {
   position: absolute;
   inset: 0;
-  border-radius: 20px;
+  border-radius: 22px;
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
@@ -1860,7 +2316,7 @@ watch(activeMenu, (newVal) => {
 
 .home-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(76, 125, 255, 0.12);
+  box-shadow: 0 24px 48px rgba(76, 125, 255, 0.12);
   border-color: rgba(76, 125, 255, 0.2);
 }
 
@@ -1957,15 +2413,22 @@ watch(activeMenu, (newVal) => {
 
 .home-card-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.home-card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .home-card-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1973,43 +2436,72 @@ watch(activeMenu, (newVal) => {
 }
 
 .home-card:hover .home-card-icon-wrap {
-  transform: scale(1.1) rotate(-3deg);
+  transform: scale(1.12) rotate(-3deg);
 }
 
 .home-card-emoji {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
 }
 
 .home-card-badge {
   font-size: 0.7rem;
   color: white;
-  padding: 3px 10px;
-  border-radius: 10px;
+  padding: 4px 12px;
+  border-radius: 12px;
   font-weight: 600;
+  letter-spacing: 0.5px;
   transition: background 0.3s ease;
+}
+
+.home-card-count {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 .home-card-body {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .home-card-title {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0;
+  letter-spacing: -0.3px;
 }
 
 .home-card-desc {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: #64748b;
-  line-height: 1.55;
+  line-height: 1.65;
   margin: 0;
 }
 
+/* 关键词标签 */
+.home-card-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.home-keyword {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(76, 125, 255, 0.06);
+  color: #4c7dff;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
 .home-card-footer {
-  margin-top: 18px;
-  padding-top: 14px;
+  margin-top: 22px;
+  padding-top: 16px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -2017,7 +2509,7 @@ watch(activeMenu, (newVal) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #4c7dff;
   transition: color 0.25s ease;
@@ -2030,6 +2522,7 @@ watch(activeMenu, (newVal) => {
 .home-card-arrow {
   transition: transform 0.3s ease;
   display: inline-block;
+  font-size: 0.9rem;
 }
 
 .home-card:hover .home-card-arrow {
@@ -2069,19 +2562,44 @@ watch(activeMenu, (newVal) => {
     font-size: 1.5rem;
   }
 
+  .home-section {
+    padding: 40px 16px 32px;
+  }
+
   .home-cards {
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 16px;
   }
 
   .home-card {
-    padding: 20px 16px 18px;
+    grid-column: span 1;
+  }
+
+  .home-card:nth-child(4),
+  .home-card:nth-child(5) {
+    grid-column: span 1;
+  }
+
+  .home-card {
+    padding: 24px 18px 20px;
   }
 }
 
 @media (max-width: 500px) {
+  .home-section {
+    padding: 32px 12px 24px;
+  }
+
   .home-cards {
     grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .home-card:nth-child(4),
+  .home-card:nth-child(5) {
+    grid-column: span 1;
   }
 
   .home-hero-title {
@@ -2118,62 +2636,91 @@ watch(activeMenu, (newVal) => {
   position: relative;
   height: 160px;
   overflow: hidden;
+  background: #f1f5f9;
 }
 
-.course-cover img {
+/* 封面图片 */
+.cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.35s ease;
 }
 
-.course-card:hover .course-cover img {
-  transform: scale(1.05);
+.course-card:hover .cover-img {
+  transform: scale(1.06);
+}
+
+/* 底部渐变遮罩，让标签可读 */
+.cover-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 底部学科标签 */
+.cover-subject-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  z-index: 2;
 }
 
 .course-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: 52px;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 2;
 }
 
 .course-card:hover .course-overlay {
   opacity: 1;
 }
 
-.play-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+.detail-hint {
+  padding: 8px 22px;
   background: linear-gradient(135deg, #4c7dff 0%, #6366f1 100%);
-  border: none;
   color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 20px;
   transition: transform 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 125, 255, 0.4);
 }
 
-.play-btn:hover {
-  transform: scale(1.1);
+.course-card:hover .detail-hint {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(76, 125, 255, 0.5);
 }
 
-.course-duration {
+.course-video-count {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.7);
+  bottom: 10px;
+  right: 12px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.55);
   color: white;
-  font-size: 0.75rem;
-  border-radius: 4px;
+  font-size: 0.72rem;
+  border-radius: 5px;
+  font-weight: 500;
+  z-index: 2;
 }
 
 .course-info {
@@ -2231,32 +2778,257 @@ watch(activeMenu, (newVal) => {
   color: #94a3b8;
 }
 
-.course-progress {
+/* ==================== 视频详情页样式 ==================== */
+.video-detail-page {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
+/* 顶部栏 */
+.video-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.back-btn:hover {
+  background: #f8fafc;
+  border-color: #4c7dff;
+  color: #4c7dff;
+}
+
+.back-arrow {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.video-detail-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 16px;
+  padding: 24px 28px;
+  border: 1px solid rgba(76, 125, 255, 0.1);
+  border-left: 5px solid;
+}
+
+.video-detail-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.video-detail-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.video-detail-course-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.video-detail-meta {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.video-detail-subject-badge {
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* 视频网格 */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.video-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(76, 125, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(76, 125, 255, 0.12);
+  border-color: rgba(76, 125, 255, 0.2);
+}
+
+.video-cover {
+  position: relative;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4c7dff 0%, #6366f1 100%);
-  border-radius: 3px;
-  transition: width 0.5s ease;
+.video-cover-icon {
+  font-size: 2.8rem;
+  opacity: 0.75;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
 }
 
-.progress-text {
-  font-size: 0.8rem;
-  color: #4c7dff;
+.video-card:hover .video-cover-icon {
+  transform: scale(1.1);
+}
+
+.video-cover-deco {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-15deg);
+  font-size: 1.8rem;
+  font-weight: 800;
+  opacity: 0.08;
+  letter-spacing: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.video-card:hover .video-overlay {
+  opacity: 1;
+}
+
+.video-play-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4c7dff 0%, #6366f1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 125, 255, 0.4);
+}
+
+.video-card:hover .video-play-btn {
+  transform: scale(1.1);
+}
+
+.video-duration-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  padding: 3px 9px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  font-weight: 500;
+  z-index: 4;
+}
+
+.video-info {
+  padding: 14px 16px;
+}
+
+.video-title-text {
+  font-size: 0.95rem;
   font-weight: 600;
-  min-width: 36px;
+  color: #1e293b;
+  margin: 0 0 10px 0;
+  line-height: 1.45;
+}
+
+.video-sub-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-subject-label {
+  padding: 3px 9px;
+  background: rgba(76, 125, 255, 0.08);
+  color: #4c7dff;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.video-grade-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .video-detail-title-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px 20px;
+  }
+
+  .video-detail-subject-badge {
+    align-self: flex-start;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 500px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .video-detail-course-name {
+    font-size: 1.15rem;
+  }
 }
 
 /* ==================== 课程分析样式 ==================== */
@@ -2486,59 +3258,6 @@ watch(activeMenu, (newVal) => {
   border-radius: 16px;
   padding: 20px;
   border: 1px solid rgba(76, 125, 255, 0.1);
-}
-
-.dimension-list {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid rgba(76, 125, 255, 0.1);
-}
-
-.dimension-list h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 16px 0;
-}
-
-.dimension-item {
-  margin-bottom: 14px;
-}
-
-.dimension-item:last-child {
-  margin-bottom: 0;
-}
-
-.dim-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.dim-name {
-  font-size: 0.8rem;
-  color: #475569;
-  font-weight: 500;
-}
-
-.dim-score {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.dim-bar-bg {
-  height: 6px;
-  background: #f1f5f9;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.dim-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 要点 + 建议行 */
