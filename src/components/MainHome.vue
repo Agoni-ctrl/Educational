@@ -1,88 +1,60 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import SiteNav from "./layout/SiteNav.vue";
 
 const mouse = ref({ x: 0.5, y: 0.5 });
+const router = useRouter();
 
-// 7张界面示例数据（带功能说明）
+// 4张功能展示卡片
 const showcaseItems = [
   {
     id: 1,
-    type: "chat",
-    title: "AI 备课助手",
-    icon: "💬",
-    description: "与AI对话，快速生成教学方案",
-    messages: [
-      { type: "ai", text: "您好！请告诉我今天的教学目标", avatar: "🤖" },
-      { type: "user", text: "讲解牛顿第二定律", avatar: "👨‍🏫" },
-      { type: "ai", text: "好的，需要配合实验演示吗？", avatar: "🤖" },
-    ],
-    showTyping: true,
+    title: "AI 智能备课",
+    subtitle: "输入主题，一键生成完整教案",
+    description:
+      "告别繁琐备课。AI 根据学科、年级、教学目标自动撰写教案框架，生成教学重难点、课堂活动设计和课后练习，大幅提升备课效率。",
+    icon: "✦",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+    accent: "#7c5cff",
+    shape: "ripple",
+    route: "/assistant",
   },
   {
     id: 2,
-    type: "chat",
-    title: "学情分析助手",
-    icon: "📊",
-    description: "智能分析学生数据，精准定位薄弱点",
-    messages: [
-      { type: "ai", text: "正在分析班级上次测验数据...", avatar: "📊" },
-      { type: "ai", text: "发现 68% 学生对力的合成理解有困难", avatar: "💡" },
-      { type: "user", text: "帮我调整一下教学重点", avatar: "👨‍🏫" },
-    ],
-    showTyping: false,
+    title: "课件管理",
+    subtitle: "海量模板，轻松打造精致课件",
+    description:
+      "提供覆盖全学科的 PPT 模板与素材库，支持在线编辑与云端同步。智能排版让每一页课件都专业美观，减轻设计负担。",
+    icon: "◈",
+    gradient: "linear-gradient(135deg, #0ba360 0%, #3cba92 50%, #00d2ff 100%)",
+    accent: "#10b981",
+    shape: "grid",
+    route: "/lessons",
   },
   {
     id: 3,
-    type: "chat",
-    title: "课件优化建议",
-    icon: "✨",
-    description: "AI智能诊断，一键优化课件质量",
-    messages: [
-      { type: "user", text: "帮我优化这个课件", avatar: "👨‍🏫" },
-      { type: "ai", text: "已分析您的课件，建议：", avatar: "🤖" },
-      {
-        type: "ai",
-        text: "1. 增加互动问答环节\n2. 补充生活实例",
-        avatar: "✨",
-      },
-    ],
-    showTyping: false,
+    title: "数据分析",
+    subtitle: "教学趋势，可视化图表洞察",
+    description:
+      "自动汇总教学数据，通过 ECharts 图表直观呈现创作趋势、资源使用分布和学情变化，帮助教师用数据驱动教学决策。",
+    icon: "⬡",
+    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #ffa751 100%)",
+    accent: "#f59e0b",
+    shape: "dots",
+    route: "/features",
   },
   {
     id: 4,
-    type: "chat",
-    title: "作业批改助手",
-    icon: "📝",
-    description: "自动批改作业，生成错题讲解",
-    messages: [
-      { type: "ai", text: "已批改完 45 份作业", avatar: "✅" },
-      { type: "ai", text: "共发现 3 个典型错误，需要讲解", avatar: "📝" },
-      { type: "user", text: "生成错题讲解课件", avatar: "👨‍🏫" },
-    ],
-    showTyping: true,
-  },
-  {
-    id: 5,
-    type: "upload",
-    title: "资料融合",
-    icon: "📎",
-    description: "上传教材资料，AI智能提取整合",
-  },
-  {
-    id: 6,
-    type: "ppt",
-    title: "课件预览",
-    icon: "📑",
-    description: "精美课件实时预览，支持在线编辑",
-  },
-  {
-    id: 7,
-    type: "doc",
-    title: "教案编辑",
-    icon: "📄",
-    description: "结构化教案编辑，规范备课流程",
+    title: "教学社区",
+    subtitle: "分享经验，与全国教师互动交流",
+    description:
+      "汇聚一线教师分享教学心得、优质资源和课堂实录。在这里找到同行、碰撞灵感、共同成长，让教学之路不再孤单。",
+    icon: "◎",
+    gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)",
+    accent: "#06b6d4",
+    shape: "wave",
+    route: "/community",
   },
 ];
 
@@ -111,6 +83,13 @@ function goToSlide(index) {
   setTimeout(() => {
     isAnimating.value = false;
   }, 600);
+}
+
+function navigateToFeature() {
+  const item = showcaseItems[currentIndex.value];
+  if (item.route) {
+    router.push(item.route);
+  }
 }
 
 function startAutoPlay() {
@@ -260,521 +239,83 @@ onUnmounted(() => {
                       4,
                 }"
               >
-                <!-- AI备课助手 - 完整工作台 -->
+                <!-- 视觉装饰卡片 -->
                 <div
-                  v-if="item.type === 'chat' && item.id === 1"
-                  class="ui-mockup ui-mockup--workspace"
+                  class="showcase-card"
+                  :class="{
+                    'showcase-card--clickable': index === currentIndex,
+                  }"
+                  :style="{ background: item.gradient }"
+                  @click="index === currentIndex && navigateToFeature()"
                 >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">AI 备课工作台</span>
-                  </div>
-                  <div class="workspace-body">
-                    <div class="workspace-sidebar">
-                      <div class="sidebar-section">
-                        <div class="sidebar-title">备课任务</div>
-                        <div class="task-item task-item--active">
-                          <span class="task-icon">📝</span>
-                          <span class="task-name">牛顿第二定律</span>
-                          <span class="task-status">进行中</span>
-                        </div>
-                        <div class="task-item">
-                          <span class="task-icon">📊</span>
-                          <span class="task-name">力学综合复习</span>
-                          <span class="task-status">待开始</span>
-                        </div>
-                      </div>
-                      <div class="sidebar-section">
-                        <div class="sidebar-title">快速生成</div>
-                        <div class="quick-actions">
-                          <button class="quick-btn">📑 课件</button>
-                          <button class="quick-btn">📄 教案</button>
-                          <button class="quick-btn">✏️ 习题</button>
-                        </div>
-                      </div>
+                  <!-- 背景图形 -->
+                  <div class="showcase-card__bg">
+                    <div v-if="item.shape === 'ripple'" class="shape-ripple">
+                      <span
+                        v-for="n in 3"
+                        :key="n"
+                        class="ripple-ring"
+                        :style="{
+                          animationDelay: n * 0.3 + 's',
+                          borderColor: item.accent,
+                        }"
+                      />
                     </div>
-                    <div class="workspace-main">
-                      <div class="chat-area">
-                        <div class="chat-bubble chat-bubble--ai">
-                          <div class="chat-avatar">🤖</div>
-                          <div class="chat-text">
-                            <div class="chat-title">备课助手</div>
-                            您好！我已为您准备好《牛顿第二定律》的教学资源包，包含课件、教案和实验视频。
-                          </div>
-                        </div>
-                        <div class="generated-preview">
-                          <div class="preview-card">
-                            <div class="preview-icon">📑</div>
-                            <div class="preview-info">
-                              <div class="preview-name">课件.pptx</div>
-                              <div class="preview-meta">12页 · 预计45分钟</div>
-                            </div>
-                            <button class="preview-btn">查看</button>
-                          </div>
-                          <div class="preview-card">
-                            <div class="preview-icon">📄</div>
-                            <div class="preview-info">
-                              <div class="preview-name">教案.docx</div>
-                              <div class="preview-meta">完整教学设计</div>
-                            </div>
-                            <button class="preview-btn">查看</button>
-                          </div>
-                        </div>
-                        <div class="chat-bubble chat-bubble--user">
-                          <div class="chat-avatar">👨‍🏫</div>
-                          <div class="chat-text">帮我增加一个互动实验环节</div>
-                        </div>
-                      </div>
-                      <div class="input-area">
-                        <input
-                          type="text"
-                          placeholder="输入教学需求，AI帮您生成..."
-                          class="chat-input"
-                        />
-                        <button class="send-btn">➤</button>
-                      </div>
+                    <div v-else-if="item.shape === 'grid'" class="shape-grid">
+                      <span
+                        v-for="n in 16"
+                        :key="n"
+                        class="grid-cell"
+                        :style="{
+                          background: item.accent,
+                          opacity: 0.03 + n * 0.003,
+                        }"
+                      />
+                    </div>
+                    <div v-else-if="item.shape === 'dots'" class="shape-dots">
+                      <span
+                        v-for="n in 20"
+                        :key="n"
+                        class="dot-orb"
+                        :style="{
+                          left: Math.sin(n * 1.7) * 40 + 50 + '%',
+                          top: Math.cos(n * 2.1) * 40 + 50 + '%',
+                          animationDelay: n * 0.15 + 's',
+                          background: item.accent,
+                        }"
+                      />
+                    </div>
+                    <div v-else-if="item.shape === 'wave'" class="shape-wave">
+                      <span
+                        v-for="n in 5"
+                        :key="n"
+                        class="wave-bar"
+                        :style="{
+                          animationDelay: n * 0.12 + 's',
+                          height: 12 + n * 6 + 'px',
+                          background: item.accent,
+                        }"
+                      />
                     </div>
                   </div>
-                </div>
-
-                <!-- 学情分析助手 - 数据仪表盘 -->
-                <div
-                  v-if="item.type === 'chat' && item.id === 2"
-                  class="ui-mockup ui-mookup--dashboard"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">学情分析中心</span>
+                  <!-- 图标区 -->
+                  <div
+                    class="showcase-card__icon"
+                    :style="{ color: item.accent }"
+                  >
+                    {{ item.icon }}
                   </div>
-                  <div class="dashboard-body">
-                    <div class="stats-row">
-                      <div class="stat-card-mini">
-                        <div class="stat-value">87%</div>
-                        <div class="stat-label">平均正确率</div>
-                        <div class="stat-trend trend-up">↑ 5%</div>
-                      </div>
-                      <div class="stat-card-mini">
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">待关注学生</div>
-                        <div class="stat-trend trend-down">↓ 3人</div>
-                      </div>
-                      <div class="stat-card-mini">
-                        <div class="stat-value">68%</div>
-                        <div class="stat-label">力的合成</div>
-                        <div class="stat-trend trend-warn">⚠️ 薄弱</div>
-                      </div>
-                    </div>
-                    <div class="analysis-content">
-                      <div class="analysis-section">
-                        <div class="section-header">
-                          <span class="section-icon">📊</span>
-                          <span class="section-title">知识点掌握情况</span>
-                        </div>
-                        <div class="knowledge-bars">
-                          <div class="knowledge-item">
-                            <span class="knowledge-name">牛顿第一定律</span>
-                            <div class="knowledge-bar">
-                              <div
-                                class="knowledge-fill"
-                                style="width: 92%"
-                              ></div>
-                            </div>
-                            <span class="knowledge-percent">92%</span>
-                          </div>
-                          <div class="knowledge-item">
-                            <span class="knowledge-name">力的合成</span>
-                            <div class="knowledge-bar">
-                              <div
-                                class="knowledge-fill fill-warn"
-                                style="width: 68%"
-                              ></div>
-                            </div>
-                            <span class="knowledge-percent">68%</span>
-                          </div>
-                          <div class="knowledge-item">
-                            <span class="knowledge-name">牛顿第二定律</span>
-                            <div class="knowledge-bar">
-                              <div
-                                class="knowledge-fill fill-avg"
-                                style="width: 78%"
-                              ></div>
-                            </div>
-                            <span class="knowledge-percent">78%</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="analysis-section">
-                        <div class="section-header">
-                          <span class="section-icon">💡</span>
-                          <span class="section-title">AI 教学建议</span>
-                        </div>
-                        <div class="suggestion-list">
-                          <div class="suggestion-item">
-                            <span class="suggestion-priority priority-high"
-                              >高</span
-                            >
-                            <span class="suggestion-text"
-                              >力的合成需增加2课时练习</span
-                            >
-                          </div>
-                          <div class="suggestion-item">
-                            <span class="suggestion-priority priority-medium"
-                              >中</span
-                            >
-                            <span class="suggestion-text"
-                              >为12名学生推送个性化习题</span
-                            >
-                          </div>
-                        </div>
-                        <button class="action-btn">生成针对性课件</button>
-                      </div>
-                    </div>
+                  <!-- 文字 -->
+                  <div class="showcase-card__text">
+                    <h3>{{ item.title }}</h3>
+                    <p class="showcase-card__subtitle">{{ item.subtitle }}</p>
+                    <p class="showcase-card__desc">{{ item.description }}</p>
                   </div>
-                </div>
-
-                <!-- 课件优化建议 - 智能诊断 -->
-                <div
-                  v-if="item.type === 'chat' && item.id === 3"
-                  class="ui-mockup ui-mockup--optimize"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">课件智能诊断</span>
-                  </div>
-                  <div class="optimize-body">
-                    <div class="score-circle">
-                      <div class="score-value">78</div>
-                      <div class="score-label">综合评分</div>
-                    </div>
-                    <div class="optimize-sections">
-                      <div class="optimize-card optimize-card--success">
-                        <div class="optimize-header">
-                          <span class="optimize-icon">✅</span>
-                          <span class="optimize-title">内容完整性</span>
-                          <span class="optimize-score">95分</span>
-                        </div>
-                        <div class="optimize-desc">
-                          教学目标、重难点、过程设计完整
-                        </div>
-                      </div>
-                      <div class="optimize-card optimize-card--warning">
-                        <div class="optimize-header">
-                          <span class="optimize-icon">⚠️</span>
-                          <span class="optimize-title">互动设计</span>
-                          <span class="optimize-score">65分</span>
-                        </div>
-                        <div class="optimize-desc">
-                          建议增加：课堂提问3处、小组讨论1次
-                        </div>
-                        <button class="fix-btn">一键优化</button>
-                      </div>
-                      <div class="optimize-card optimize-card--info">
-                        <div class="optimize-header">
-                          <span class="optimize-icon">💡</span>
-                          <span class="optimize-title">多媒体素材</span>
-                          <span class="optimize-score">74分</span>
-                        </div>
-                        <div class="optimize-desc">
-                          可补充：实验演示视频、生活案例图片
-                        </div>
-                        <button class="fix-btn">智能推荐</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 作业批改助手 - 批改工作台 -->
-                <div
-                  v-if="item.type === 'chat' && item.id === 4"
-                  class="ui-mockup ui-mockup--grading"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">智能批改中心</span>
-                  </div>
-                  <div class="grading-body">
-                    <div class="grading-stats">
-                      <div class="grading-progress">
-                        <div class="progress-ring">
-                          <div class="progress-value">45/45</div>
-                          <div class="progress-label">已批改</div>
-                        </div>
-                      </div>
-                      <div class="grading-summary">
-                        <div class="summary-item">
-                          <span class="summary-label">平均分</span>
-                          <span class="summary-value">82.5</span>
-                        </div>
-                        <div class="summary-item">
-                          <span class="summary-label">优秀率</span>
-                          <span class="summary-value">35%</span>
-                        </div>
-                        <div class="summary-item">
-                          <span class="summary-label">及格率</span>
-                          <span class="summary-value">93%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="error-analysis">
-                      <div class="analysis-title">典型错误分析</div>
-                      <div class="error-list">
-                        <div class="error-item">
-                          <div class="error-rank">1</div>
-                          <div class="error-content">
-                            <div class="error-name">受力分析遗漏摩擦力</div>
-                            <div class="error-count">18人出错 (40%)</div>
-                          </div>
-                          <button class="error-btn">生成讲解</button>
-                        </div>
-                        <div class="error-item">
-                          <div class="error-rank">2</div>
-                          <div class="error-content">
-                            <div class="error-name">加速度方向判断错误</div>
-                            <div class="error-count">12人出错 (27%)</div>
-                          </div>
-                          <button class="error-btn">生成讲解</button>
-                        </div>
-                        <div class="error-item">
-                          <div class="error-rank">3</div>
-                          <div class="error-content">
-                            <div class="error-name">单位换算错误</div>
-                            <div class="error-count">8人出错 (18%)</div>
-                          </div>
-                          <button class="error-btn">生成讲解</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 资料融合 - 资源库 -->
-                <div
-                  v-if="item.type === 'upload'"
-                  class="ui-mockup ui-mockup--resource"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">智能资源库</span>
-                  </div>
-                  <div class="resource-body">
-                    <div class="resource-toolbar">
-                      <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input
-                          type="text"
-                          placeholder="搜索教学资源..."
-                          class="search-input"
-                        />
-                      </div>
-                      <button class="upload-btn">+ 上传资料</button>
-                    </div>
-                    <div class="resource-categories">
-                      <button class="category-btn category-btn--active">
-                        全部
-                      </button>
-                      <button class="category-btn">课件</button>
-                      <button class="category-btn">教案</button>
-                      <button class="category-btn">试题</button>
-                      <button class="category-btn">视频</button>
-                    </div>
-                    <div class="resource-grid">
-                      <div class="resource-card">
-                        <div class="resource-thumb">📑</div>
-                        <div class="resource-info">
-                          <div class="resource-name">牛顿定律课件</div>
-                          <div class="resource-meta">PPT · 2.3MB · 昨天</div>
-                        </div>
-                        <div class="resource-actions">
-                          <button class="action-icon">✏️</button>
-                          <button class="action-icon">📤</button>
-                        </div>
-                      </div>
-                      <div class="resource-card">
-                        <div class="resource-thumb resource-thumb--doc">📄</div>
-                        <div class="resource-info">
-                          <div class="resource-name">力学实验教案</div>
-                          <div class="resource-meta">DOC · 856KB · 3天前</div>
-                        </div>
-                        <div class="resource-actions">
-                          <button class="action-icon">✏️</button>
-                          <button class="action-icon">📤</button>
-                        </div>
-                      </div>
-                      <div class="resource-card">
-                        <div class="resource-thumb resource-thumb--video">
-                          🎬
-                        </div>
-                        <div class="resource-info">
-                          <div class="resource-name">斜面实验演示</div>
-                          <div class="resource-meta">MP4 · 15.6MB · 上周</div>
-                        </div>
-                        <div class="resource-actions">
-                          <button class="action-icon">▶️</button>
-                          <button class="action-icon">📤</button>
-                        </div>
-                      </div>
-                      <div class="resource-card resource-card--new">
-                        <div class="resource-thumb resource-thumb--ai">🤖</div>
-                        <div class="resource-info">
-                          <div class="resource-name">AI生成的习题集</div>
-                          <div class="resource-meta">PDF · AI生成 · 刚刚</div>
-                        </div>
-                        <div class="resource-actions">
-                          <button class="action-icon">👁️</button>
-                          <button class="action-icon">💾</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- PPT预览界面 -->
-                <div
-                  v-if="item.type === 'ppt'"
-                  class="ui-mockup ui-mockup--ppt"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">课件预览 - 牛顿第二定律</span>
-                  </div>
-                  <div class="mockup-body">
-                    <div class="ppt-container">
-                      <!-- 左侧缩略图导航 -->
-                      <div class="ppt-sidebar">
-                        <div class="ppt-thumb ppt-thumb--active">
-                          <div class="thumb-page">1</div>
-                          <div class="thumb-title">封面</div>
-                        </div>
-                        <div class="ppt-thumb">
-                          <div class="thumb-page">2</div>
-                          <div class="thumb-title">学习目标</div>
-                        </div>
-                        <div class="ppt-thumb">
-                          <div class="thumb-page">3</div>
-                          <div class="thumb-title">实验演示</div>
-                        </div>
-                        <div class="ppt-thumb">
-                          <div class="thumb-page">4</div>
-                          <div class="thumb-title">公式推导</div>
-                        </div>
-                        <div class="ppt-thumb">
-                          <div class="thumb-page">5</div>
-                          <div class="thumb-title">例题讲解</div>
-                        </div>
-                      </div>
-
-                      <!-- 主幻灯片区域 -->
-                      <div class="ppt-main">
-                        <div class="ppt-slide-content">
-                          <div class="slide-header">
-                            <span class="slide-badge">高中物理 · 必修一</span>
-                            <span class="slide-time">预计 45 分钟</span>
-                          </div>
-                          <div class="slide-title">牛顿第二定律</div>
-                          <div class="slide-subtitle">力与运动的定量关系</div>
-
-                          <div class="slide-formula">
-                            <div class="formula-box">
-                              <span class="formula-text">F = ma</span>
-                              <span class="formula-desc"
-                                >物体的加速度与所受合力成正比，与质量成反比</span
-                              >
-                            </div>
-                          </div>
-
-                          <div class="slide-keypoints">
-                            <div class="keypoint">
-                              <span class="keypoint-icon">📐</span>
-                              <span class="keypoint-text"
-                                >矢量性：F与a方向相同</span
-                              >
-                            </div>
-                            <div class="keypoint">
-                              <span class="keypoint-icon">⚖️</span>
-                              <span class="keypoint-text"
-                                >瞬时性：力变加速度立即变</span
-                              >
-                            </div>
-                            <div class="keypoint">
-                              <span class="keypoint-icon">🌍</span>
-                              <span class="keypoint-text"
-                                >独立性：每个力独立产生加速度</span
-                              >
-                            </div>
-                          </div>
-
-                          <div class="slide-footer">
-                            <div class="slide-tags">
-                              <span class="slide-tag">重点</span>
-                              <span class="slide-tag">实验</span>
-                              <span class="slide-tag">计算</span>
-                            </div>
-                            <div class="slide-nav">
-                              <span class="nav-btn">◀</span>
-                              <span class="nav-page">1 / 12</span>
-                              <span class="nav-btn nav-btn--primary">▶</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 右侧工具栏 -->
-                      <div class="ppt-toolbar">
-                        <div class="toolbar-btn toolbar-btn--active">🎨</div>
-                        <div class="toolbar-btn">📝</div>
-                        <div class="toolbar-btn">🖼️</div>
-                        <div class="toolbar-btn">📊</div>
-                        <div class="toolbar-divider"></div>
-                        <div class="toolbar-btn">💾</div>
-                        <div class="toolbar-btn">📤</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 教案编辑界面 -->
-                <div
-                  v-if="item.type === 'doc'"
-                  class="ui-mockup ui-mockup--doc"
-                >
-                  <div class="mockup-header">
-                    <span class="mockup-dot" /><span class="mockup-dot" /><span
-                      class="mockup-dot"
-                    />
-                    <span class="mockup-title">教案编辑</span>
-                  </div>
-                  <div class="mockup-body">
-                    <div class="doc-content">
-                      <div class="doc-section">
-                        <div class="doc-h1">一、教学目标</div>
-                        <div class="doc-p">理解牛顿第二定律的物理意义...</div>
-                      </div>
-                      <div class="doc-section">
-                        <div class="doc-h1">二、教学重点</div>
-                        <div class="doc-p">力与加速度的关系</div>
-                      </div>
-                      <div class="doc-section">
-                        <div class="doc-h1">三、教学过程</div>
-                        <div class="doc-list">
-                          <div class="doc-li">引入新课（5分钟）</div>
-                          <div class="doc-li">实验演示（15分钟）</div>
-                          <div class="doc-li">公式推导（10分钟）</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <!-- 底部光条 -->
+                  <div
+                    class="showcase-card__glow"
+                    :style="{ background: item.accent }"
+                  />
                 </div>
               </div>
             </div>
@@ -1071,14 +612,14 @@ onUnmounted(() => {
 }
 
 .btn--dark {
-  background: var(--ink);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  box-shadow: 0 2px 10px rgba(10, 15, 26, 0.14);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
 .btn--dark:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 32px rgba(10, 15, 26, 0.18);
+  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.4);
 }
 
 .btn--ghost {
@@ -1107,73 +648,255 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-/* Showcase Card Stack - Enhanced */
+/* Showcase Card Stack */
 .showcase-wrapper {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  padding: 24px;
+  max-width: 620px;
+  padding: 28px 28px 12px;
 }
 
 .card-stack {
   position: relative;
   width: 100%;
-  aspect-ratio: 1/1.02;
-  perspective: 1500px;
+  aspect-ratio: 4 / 3;
+  perspective: 1200px;
 }
 
 .stack-card {
   position: absolute;
   inset: 0;
   border-radius: 24px;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(248, 250, 252, 0.95) 100%
-  );
-  box-shadow:
-    0 4px 20px -2px rgba(0, 87, 217, 0.08),
-    0 8px 32px -4px rgba(0, 87, 217, 0.05),
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-    0 0 0 1px rgba(226, 232, 240, 0.4);
+  background: transparent;
+  box-shadow: none;
   transform-origin: center center;
-  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
   overflow: hidden;
-  backdrop-filter: blur(12px) saturate(1.1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px) scale(0.94);
 }
 
 .stack-card--active {
-  transform: translateY(0) rotate(0deg) scale(1);
+  transform: translateY(0) scale(1);
   opacity: 1;
   z-index: 10;
+  pointer-events: auto;
   box-shadow:
-    0 8px 32px -4px rgba(0, 87, 217, 0.12),
-    0 16px 48px -8px rgba(0, 87, 217, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-    0 0 0 1px rgba(226, 232, 240, 0.4);
+    0 20px 60px -12px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.9) inset;
 }
 
-/* 非激活卡片的基础样式 - 更淡更轻 */
-.stack-card:not(.stack-card--active) {
-  transform: translateY(16px) translateX(-24px) rotate(-3deg) scale(0.94);
-  opacity: 0.7;
-  z-index: 5;
-  box-shadow:
-    0 2px 12px -2px rgba(0, 87, 217, 0.06),
-    0 4px 20px -4px rgba(0, 87, 217, 0.04),
-    0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-  filter: saturate(0.85);
-}
-
-/* 更靠后的卡片 - 更淡 */
 .stack-card--behind {
-  transform: translateY(28px) translateX(20px) rotate(3deg) scale(0.9);
+  opacity: 0.06;
+  transform: translateY(12px) translateX(-8px) rotate(-1deg) scale(0.96);
+  z-index: 1;
+}
+
+/* ====== Showcase Visual Card ====== */
+.showcase-card {
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.showcase-card--clickable {
+  cursor: pointer;
+}
+
+.showcase-card--clickable:hover .showcase-card__glow {
+  opacity: 0.8;
+  left: 10%;
+  right: 10%;
+  transition: all 0.35s ease;
+}
+
+.showcase-card--clickable:hover .showcase-card__icon {
+  transform: scale(1.08);
+}
+
+.showcase-card__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Shape: ripple (concentric rings) */
+.shape-ripple {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ripple-ring {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  border: 1px solid;
+  border-radius: 50%;
+  opacity: 0.25;
+  animation: ripple-expand 4s ease-out infinite;
+}
+
+@keyframes ripple-expand {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Shape: grid */
+.shape-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 1px;
+  padding: 40px;
+}
+
+.grid-cell {
+  border-radius: 3px;
+  transition: all 0.4s ease;
+}
+
+/* Shape: dots */
+.shape-dots {
+  position: absolute;
+  inset: 0;
+}
+
+.dot-orb {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: dot-float 3s ease-in-out infinite alternate;
+}
+
+@keyframes dot-float {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-12px) scale(1.4);
+    opacity: 0.6;
+  }
+}
+
+/* Shape: wave */
+.shape-wave {
+  position: absolute;
+  bottom: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.wave-bar {
+  width: 6px;
+  border-radius: 3px;
   opacity: 0.45;
-  z-index: 3;
-  box-shadow:
-    0 2px 8px -2px rgba(0, 87, 217, 0.04),
-    0 0 0 1px rgba(255, 255, 255, 0.3) inset;
-  filter: saturate(0.7);
+  animation: wave-pulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes wave-pulse {
+  0% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0.65;
+  }
+}
+
+/* Icon */
+.showcase-card__icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  z-index: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transition: transform 0.4s ease;
+}
+
+.stack-card--active .showcase-card__icon {
+  animation: icon-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes icon-enter {
+  0% {
+    transform: scale(0.4) rotate(-10deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Text */
+.showcase-card__text {
+  text-align: center;
+  z-index: 1;
+  padding: 0 28px;
+  max-width: 100%;
+}
+
+.showcase-card__text h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 6px 0;
+  letter-spacing: 0.03em;
+}
+
+.showcase-card__subtitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 12px 0;
+  letter-spacing: 0.04em;
+}
+
+.showcase-card__desc {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Bottom glow bar */
+.showcase-card__glow {
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  border-radius: 2px;
+  opacity: 0.5;
 }
 
 /* UI Mockup Base - Enhanced */
