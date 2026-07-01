@@ -30,6 +30,231 @@ const historyPage = ref(1);
 const iterateFeedback = ref({});
 const expandedRecord = ref(null);
 
+// ==================== 课堂互动数据 ====================
+const activityTab = ref("quick-answer");
+
+const students = ref([
+  { id: 1, name: "张三", avatar: "👦" },
+  { id: 2, name: "李四", avatar: "👧" },
+  { id: 3, name: "王五", avatar: "👨" },
+  { id: 4, name: "赵六", avatar: "👩" },
+  { id: 5, name: "陈七", avatar: "🧑" },
+  { id: 6, name: "刘八", avatar: "👱" },
+  { id: 7, name: "孙九", avatar: "👴" },
+  { id: 8, name: "周十", avatar: "👵" },
+  { id: 9, name: "吴十一", avatar: "🧒" },
+  { id: 10, name: "郑十二", avatar: "🧑‍🎓" },
+]);
+
+const quickAnswerQuestions = ref([
+  {
+    id: 1,
+    question: "光合作用的主要产物是什么？",
+    options: ["氧气", "二氧化碳", "葡萄糖", "水"],
+    correct: 2,
+    explanation: "光合作用的产物是葡萄糖和氧气。",
+    answered: false,
+    timer: 30,
+  },
+  {
+    id: 2,
+    question: "牛顿第二定律的公式是？",
+    options: ["P=MV", "F=ma", "E=mc²", "W=Fs"],
+    correct: 1,
+    explanation: "牛顿第二定律：物体加速度与合外力成正比，F=ma。",
+    answered: false,
+    timer: 30,
+  },
+  {
+    id: 3,
+    question: "细胞的基本结构不包括以下哪个？",
+    options: ["细胞膜", "细胞质", "细胞核", "细胞壁"],
+    correct: 3,
+    explanation: "动物细胞不含细胞壁，植物细胞才具有。",
+    answered: false,
+    timer: 20,
+  },
+]);
+const qaCurrentQuestion = ref(0);
+const qaTimerRunning = ref(false);
+const qaStarted = ref(false);
+const qaTotalTime = ref(0);
+const qaTotalTimeLeft = ref(0);
+const qaSelectedAnswer = ref(-1);
+let qaTimerInterval = null;
+
+const qaLeaderboard = ref([
+  { name: "李四", score: 5, time: 2.3 },
+  { name: "王五", score: 5, time: 3.1 },
+  { name: "张三", score: 4, time: 1.8 },
+  { name: "赵六", score: 3, time: 4.2 },
+  { name: "陈七", score: 3, time: 5.0 },
+]);
+
+const qaAllAnswered = () => quickAnswerQuestions.value.every((q) => q.answered);
+
+function startQATimer() {
+  qaStarted.value = true;
+  qaTimerRunning.value = true;
+  const total = quickAnswerQuestions.value.reduce((sum, q) => sum + q.timer, 0);
+  qaTotalTime.value = total;
+  qaTotalTimeLeft.value = total;
+  qaTimerInterval = setInterval(() => {
+    qaTotalTimeLeft.value--;
+    if (qaTotalTimeLeft.value <= 0) {
+      // time's up — auto-reveal all unanswered questions
+      quickAnswerQuestions.value.forEach((q) => {
+        if (!q.answered) q.answered = true;
+      });
+      stopQATimer();
+    }
+  }, 1000);
+}
+function stopQATimer() {
+  qaTimerRunning.value = false;
+  if (qaTimerInterval) {
+    clearInterval(qaTimerInterval);
+    qaTimerInterval = null;
+  }
+}
+function nextQAQuestion() {
+  // auto-reveal current answer before moving
+  if (!quickAnswerQuestions.value[qaCurrentQuestion.value].answered) {
+    quickAnswerQuestions.value[qaCurrentQuestion.value].answered = true;
+  }
+  if (qaAllAnswered()) {
+    stopQATimer();
+    return;
+  }
+  if (qaCurrentQuestion.value < quickAnswerQuestions.value.length - 1) {
+    qaSelectedAnswer.value =
+      quickAnswerQuestions.value[qaCurrentQuestion.value + 1].selected ?? -1;
+    qaCurrentQuestion.value++;
+  }
+}
+function submitQA() {
+  if (!quickAnswerQuestions.value[qaCurrentQuestion.value].answered) {
+    quickAnswerQuestions.value[qaCurrentQuestion.value].answered = true;
+  }
+  stopQATimer();
+}
+function prevQAQuestion() {
+  if (qaCurrentQuestion.value > 0) {
+    qaSelectedAnswer.value =
+      quickAnswerQuestions.value[qaCurrentQuestion.value - 1].selected ?? -1;
+    qaCurrentQuestion.value--;
+  }
+}
+function selectQAAnswer(idx) {
+  if (
+    !qaTimerRunning.value ||
+    quickAnswerQuestions.value[qaCurrentQuestion.value].answered
+  )
+    return;
+  qaSelectedAnswer.value = qaSelectedAnswer.value === idx ? -1 : idx;
+  quickAnswerQuestions.value[qaCurrentQuestion.value].selected =
+    qaSelectedAnswer.value === -1 ? undefined : qaSelectedAnswer.value;
+}
+function resetQAQuestion() {
+  stopQATimer();
+  qaStarted.value = false;
+  quickAnswerQuestions.value.forEach((q) => {
+    q.answered = false;
+    q.selected = undefined;
+  });
+  qaSelectedAnswer.value = -1;
+  qaCurrentQuestion.value = 0;
+}
+
+const polls = ref([
+  {
+    id: 1,
+    title: "你认为本节课最难理解的概念是什么？",
+    options: [
+      { label: "控制变量法", votes: 12, color: "#667eea" },
+      { label: "牛顿第二定律公式", votes: 8, color: "#10b981" },
+      { label: "实验误差分析", votes: 5, color: "#f59e0b" },
+      { label: "力的合成与分解", votes: 3, color: "#06b6d4" },
+    ],
+    total: 28,
+  },
+  {
+    id: 2,
+    title: "你更喜欢哪种教学方式？",
+    options: [
+      { label: "传统讲授", votes: 5, color: "#667eea" },
+      { label: "小组合作探究", votes: 15, color: "#10b981" },
+      { label: "动手实验", votes: 18, color: "#f59e0b" },
+      { label: "多媒体互动", votes: 10, color: "#06b6d4" },
+    ],
+    total: 48,
+  },
+]);
+const activePollId = ref(1);
+
+const pickHistory = ref([]);
+const pickingStudent = ref(null);
+const isPicking = ref(false);
+const pickMode = ref("single");
+function startRandomPick() {
+  if (isPicking.value) return;
+  isPicking.value = true;
+  pickingStudent.value = null;
+  let frame = 0;
+  const totalFrames = 30;
+  const interval = setInterval(() => {
+    pickingStudent.value =
+      students.value[Math.floor(Math.random() * students.value.length)];
+    if (++frame >= totalFrames) {
+      clearInterval(interval);
+      isPicking.value = false;
+      pickHistory.value.unshift({
+        name: pickingStudent.value.name,
+        avatar: pickingStudent.value.avatar,
+        time: new Date().toLocaleTimeString(),
+      });
+    }
+  }, 60);
+}
+function removeStudent(id) {
+  students.value = students.value.filter((s) => s.id !== id);
+}
+
+const groups = ref([
+  {
+    id: 1,
+    name: "第一组",
+    color: "#667eea",
+    score: 85,
+    members: ["张三", "李四", "王五"],
+  },
+  {
+    id: 2,
+    name: "第二组",
+    color: "#10b981",
+    score: 72,
+    members: ["赵六", "陈七"],
+  },
+  {
+    id: 3,
+    name: "第三组",
+    color: "#f59e0b",
+    score: 63,
+    members: ["刘八", "孙九"],
+  },
+  {
+    id: 4,
+    name: "第四组",
+    color: "#06b6d4",
+    score: 91,
+    members: ["周十", "吴十一", "郑十二"],
+  },
+]);
+function addGroupScore(groupId, points) {
+  const g = groups.value.find((x) => x.id === groupId);
+  if (g) g.score += points;
+}
+
 // ==================== 教学档案筛选条件（新版）====================
 const isArchiveFilterExpanded = ref(false);
 const activeArchiveFilterGroups = ref(["basic", "type"]);
@@ -3401,20 +3626,438 @@ onUnmounted(() => {
         </section>
 
         <!-- 课堂互动面板 -->
-        <section v-else-if="activePanel === 'classroom'" class="panel">
-          <div class="placeholder-panel">
-            <div class="placeholder-icon">🎯</div>
-            <h2>课堂互动</h2>
-            <p>实时互动工具正在开发中，将支持：</p>
-            <ul class="feature-list">
-              <li>🗳️ 课堂投票与问卷</li>
-              <li>❓ 随堂问答与抢答</li>
-              <li>📊 实时答题数据统计</li>
-              <li>💬 学生弹幕与提问</li>
-            </ul>
-            <div class="placeholder-tip">
-              <span>💡</span>
-              提示：先生成课件和练习题，课堂互动功能将自动关联您的教学内容
+        <section
+          v-else-if="activePanel === 'classroom'"
+          class="panel classroom-activity-panel"
+        >
+          <div
+            class="panel-header panel-header--activity"
+            style="margin-bottom: 20px"
+          >
+            <h1
+              style="
+                margin: 0 0 6px 0;
+                font-size: 1.5rem;
+                background: linear-gradient(135deg, #667eea, #10b981);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+              "
+            >
+              🎮 课堂互动
+            </h1>
+            <p style="margin: 0; font-size: 0.85rem; color: #64748b">
+              随堂抢答 · 实时投票 · 随机抽选 · 小组积分
+            </p>
+          </div>
+
+          <div class="activity-tabs">
+            <button
+              v-for="tab in [
+                {
+                  id: 'quick-answer',
+                  icon: '👑',
+                  label: '随堂抢答',
+                  desc: '限时竞答',
+                },
+                { id: 'poll', icon: '📊', label: '实时投票', desc: '数据决策' },
+                {
+                  id: 'random-pick',
+                  icon: '🎲',
+                  label: '随机抽选',
+                  desc: '公平互动',
+                },
+                {
+                  id: 'group-score',
+                  icon: '🏆',
+                  label: '小组积分',
+                  desc: '团队竞赛',
+                },
+              ]"
+              :key="tab.id"
+              class="activity-tab"
+              :class="{ 'activity-tab--active': activityTab === tab.id }"
+              @click="activityTab = tab.id"
+            >
+              <span class="activity-tab__icon">{{ tab.icon }}</span>
+              <div class="activity-tab__text">
+                <span class="activity-tab__label">{{ tab.label }}</span>
+                <span class="activity-tab__desc">{{ tab.desc }}</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- 随堂抢答 -->
+          <div v-if="activityTab === 'quick-answer'" class="activity-section">
+            <div class="qa-control-bar">
+              <div class="qa-progress">
+                <span class="qa-progress__label"
+                  >题目 {{ qaCurrentQuestion + 1 }} /
+                  {{ quickAnswerQuestions.length }}</span
+                >
+                <div class="qa-progress__bar">
+                  <div
+                    class="qa-progress__fill"
+                    :style="{
+                      width:
+                        ((qaCurrentQuestion + 1) /
+                          quickAnswerQuestions.length) *
+                          100 +
+                        '%',
+                    }"
+                  />
+                </div>
+              </div>
+              <div
+                class="qa-timer"
+                :class="{
+                  'qa-timer--running': qaTimerRunning,
+                  'qa-timer--expired': qaTotalTimeLeft <= 0,
+                }"
+              >
+                <span class="qa-timer__icon">⏳</span>
+                <span class="qa-timer__value">{{ qaTotalTimeLeft }}s</span>
+              </div>
+            </div>
+            <div class="qa-question-card">
+              <div class="qa-question-card__header">
+                <span class="qa-question-card__num"
+                  >Q{{ qaCurrentQuestion + 1 }}</span
+                >
+                <span class="qa-question-card__type">⚡ 限时抢答</span>
+              </div>
+              <h3 class="qa-question-card__text">
+                {{ quickAnswerQuestions[qaCurrentQuestion].question }}
+              </h3>
+              <div class="qa-question-card__options">
+                <div
+                  v-for="(opt, idx) in quickAnswerQuestions[qaCurrentQuestion]
+                    .options"
+                  :key="idx"
+                  class="qa-option"
+                  :class="{
+                    'qa-option--selected': qaSelectedAnswer === idx,
+                    'qa-option--correct':
+                      quickAnswerQuestions[qaCurrentQuestion].answered &&
+                      idx === quickAnswerQuestions[qaCurrentQuestion].correct,
+                    'qa-option--wrong':
+                      quickAnswerQuestions[qaCurrentQuestion].answered &&
+                      quickAnswerQuestions[qaCurrentQuestion].selected >= 0 &&
+                      idx ===
+                        quickAnswerQuestions[qaCurrentQuestion].selected &&
+                      idx !== quickAnswerQuestions[qaCurrentQuestion].correct,
+                  }"
+                  @click="selectQAAnswer(idx)"
+                >
+                  <span class="qa-option__letter">{{
+                    ["A", "B", "C", "D"][idx]
+                  }}</span>
+                  <span class="qa-option__text">{{ opt }}</span>
+                </div>
+              </div>
+              <div
+                v-if="quickAnswerQuestions[qaCurrentQuestion].answered"
+                class="qa-explanation"
+              >
+                <span class="qa-explanation__icon">ℹ️</span>
+                <p>{{ quickAnswerQuestions[qaCurrentQuestion].explanation }}</p>
+              </div>
+            </div>
+            <div class="qa-actions">
+              <button
+                v-if="!qaStarted"
+                class="qa-action-btn qa-action-btn--primary"
+                @click="startQATimer"
+              >
+                ▶ 开始计时
+              </button>
+              <template v-if="qaStarted &amp;&amp; qaTimerRunning">
+                <button
+                  class="qa-action-btn qa-action-btn--secondary"
+                  @click="prevQAQuestion"
+                  :disabled="qaCurrentQuestion === 0"
+                >
+                  ← 上一题
+                </button>
+                <button
+                  v-if="qaCurrentQuestion < quickAnswerQuestions.length - 1"
+                  class="qa-action-btn qa-action-btn--secondary"
+                  @click="nextQAQuestion"
+                >
+                  下一题 →
+                </button>
+                <button
+                  v-if="qaCurrentQuestion >= quickAnswerQuestions.length - 1"
+                  class="qa-action-btn qa-action-btn--reveal"
+                  @click="submitQA"
+                >
+                  ✅ 提交
+                </button>
+                <button
+                  class="qa-action-btn qa-action-btn--reset"
+                  @click="resetQAQuestion"
+                >
+                  🔄 重新开始
+                </button>
+              </template>
+              <template v-if="qaStarted &amp;&amp; !qaTimerRunning">
+                <button
+                  class="qa-action-btn qa-action-btn--secondary"
+                  @click="prevQAQuestion"
+                  :disabled="qaCurrentQuestion === 0"
+                >
+                  ← 上一题
+                </button>
+                <button
+                  class="qa-action-btn qa-action-btn--reset"
+                  @click="resetQAQuestion"
+                >
+                  🔄 重新开始
+                </button>
+              </template>
+            </div>
+            <div class="qa-leaderboard">
+              <h3>🏅 抢答排行榜</h3>
+              <div class="qa-leaderboard-list">
+                <div
+                  v-for="(entry, idx) in qaLeaderboard"
+                  :key="entry.name"
+                  class="qa-leaderboard-item"
+                  :class="{ 'qa-leaderboard-item--top': idx < 3 }"
+                >
+                  <span class="qa-leaderboard-item__rank">{{ idx + 1 }}</span>
+                  <span class="qa-leaderboard-item__name">{{
+                    entry.name
+                  }}</span>
+                  <span class="qa-leaderboard-item__score"
+                    >{{ entry.score }}分</span
+                  >
+                  <span class="qa-leaderboard-item__time"
+                    >{{ entry.time }}s</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 实时投票 -->
+          <div v-if="activityTab === 'poll'" class="activity-section">
+            <div class="poll-selector">
+              <label>选择投票主题：</label>
+              <select v-model="activePollId">
+                <option v-for="p in polls" :key="p.id" :value="p.id">
+                  {{ p.title }}
+                </option>
+              </select>
+            </div>
+            <div
+              v-if="polls.find((p) => p.id === activePollId)"
+              class="poll-card"
+            >
+              <h3 class="poll-card__title">
+                {{ polls.find((p) => p.id === activePollId).title }}
+              </h3>
+              <div class="poll-card__stats">
+                <span class="poll-stat"
+                  >👥 已参与
+                  {{ polls.find((p) => p.id === activePollId).total }} 人</span
+                >
+              </div>
+              <div class="poll-results">
+                <div
+                  v-for="(opt, idx) in polls.find((p) => p.id === activePollId)
+                    .options"
+                  :key="idx"
+                  class="poll-bar-item"
+                >
+                  <div class="poll-bar-item__label">{{ opt.label }}</div>
+                  <div class="poll-bar-item__track">
+                    <div
+                      class="poll-bar-item__fill"
+                      :style="{
+                        width:
+                          (opt.votes /
+                            polls.find((p) => p.id === activePollId).total) *
+                            100 +
+                          '%',
+                        background: opt.color,
+                      }"
+                    />
+                  </div>
+                  <div class="poll-bar-item__meta">
+                    <span class="poll-bar-item__count">{{ opt.votes }}票</span>
+                    <span class="poll-bar-item__percent"
+                      >{{
+                        Math.round(
+                          (opt.votes /
+                            polls.find((p) => p.id === activePollId).total) *
+                            100,
+                        )
+                      }}%</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="poll-action-btn"><span>✏️</span> 创建新投票</button>
+          </div>
+
+          <!-- 随机抽选 -->
+          <div v-if="activityTab === 'random-pick'" class="activity-section">
+            <div class="pick-mode-switch">
+              <button
+                :class="{ 'pick-mode-btn--active': pickMode === 'single' }"
+                class="pick-mode-btn"
+                @click="pickMode = 'single'"
+              >
+                单人抽取
+              </button>
+              <button
+                :class="{ 'pick-mode-btn--active': pickMode === 'group' }"
+                class="pick-mode-btn"
+                @click="pickMode = 'group'"
+              >
+                小组抽取
+              </button>
+            </div>
+            <div class="pick-roulette">
+              <div
+                v-if="pickingStudent || pickHistory.length > 0"
+                class="pick-result"
+                :class="{ 'pick-result--spinning': isPicking }"
+              >
+                <span class="pick-result__avatar">{{
+                  (pickingStudent && pickingStudent.avatar) ||
+                  (pickHistory.length > 0 && pickHistory[0].avatar)
+                }}</span>
+                <span class="pick-result__name">{{
+                  (pickingStudent && pickingStudent.name) ||
+                  (pickHistory.length > 0 && pickHistory[0].name)
+                }}</span>
+              </div>
+              <div
+                v-if="!isPicking && pickHistory.length === 0"
+                class="pick-placeholder"
+              >
+                <span class="pick-placeholder__icon">🎲</span>
+                <span class="pick-placeholder__text">点击下方按钮开始抽选</span>
+              </div>
+            </div>
+            <button
+              class="pick-button"
+              :class="{ 'pick-button--running': isPicking }"
+              @click="startRandomPick"
+              :disabled="isPicking"
+            >
+              <span>{{ isPicking ? "🎰" : "🎯" }}</span>
+              {{ isPicking ? "抽取中..." : "随机抽选" }}
+            </button>
+            <div class="student-roster">
+              <h3>📋 学生名单（{{ students.length }}人）</h3>
+              <div class="roster-grid">
+                <div
+                  v-for="student in students"
+                  :key="student.id"
+                  class="roster-item"
+                >
+                  <span class="roster-item__avatar">{{ student.avatar }}</span>
+                  <span class="roster-item__name">{{ student.name }}</span>
+                  <button
+                    class="roster-item__remove"
+                    @click="removeStudent(student.id)"
+                    title="移除"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-if="pickHistory.length > 0" class="pick-history">
+              <h3>📝 抽选记录</h3>
+              <div class="pick-history-list">
+                <div
+                  v-for="(record, idx) in pickHistory.slice(0, 10)"
+                  :key="idx"
+                  class="pick-history-item"
+                >
+                  <span class="pick-history-item__idx">{{ idx + 1 }}</span>
+                  <span class="pick-history-item__avatar">{{
+                    record.avatar
+                  }}</span>
+                  <span class="pick-history-item__name">{{ record.name }}</span>
+                  <span class="pick-history-item__time">{{ record.time }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 小组积分 -->
+          <div v-if="activityTab === 'group-score'" class="activity-section">
+            <div class="group-scoreboard">
+              <div
+                v-for="group in [...groups].sort((a, b) => b.score - a.score)"
+                :key="group.id"
+                class="group-card"
+              >
+                <div class="group-card__rank" :style="{ color: group.color }">
+                  {{
+                    [...groups]
+                      .sort((a, b) => b.score - a.score)
+                      .indexOf(group) + 1
+                  }}
+                </div>
+                <div class="group-card__info">
+                  <h3 class="group-card__name" :style="{ color: group.color }">
+                    {{ group.name }}
+                  </h3>
+                  <div class="group-card__members">
+                    <span
+                      v-for="(member, idx) in group.members"
+                      :key="idx"
+                      class="group-card__member"
+                      >{{ member }}</span
+                    >
+                  </div>
+                </div>
+                <div class="group-card__score-area">
+                  <div
+                    class="group-card__score"
+                    :style="{ color: group.color }"
+                  >
+                    {{ group.score
+                    }}<span class="group-card__score-unit">分</span>
+                  </div>
+                  <div class="group-card__bar">
+                    <div
+                      class="group-card__bar-fill"
+                      :style="{
+                        width: (group.score / 100) * 100 + '%',
+                        background: group.color,
+                      }"
+                    />
+                  </div>
+                </div>
+                <div class="group-card__actions">
+                  <button
+                    class="group-score-btn group-score-btn--add"
+                    @click="addGroupScore(group.id, 5)"
+                  >
+                    +5
+                  </button>
+                  <button
+                    class="group-score-btn group-score-btn--add"
+                    @click="addGroupScore(group.id, 1)"
+                  >
+                    +1
+                  </button>
+                  <button
+                    class="group-score-btn group-score-btn--sub"
+                    @click="addGroupScore(group.id, -1)"
+                  >
+                    −1
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -7640,6 +8283,814 @@ onUnmounted(() => {
   .ct-legend-item {
     font-size: 0.72rem;
     gap: 4px;
+  }
+}
+/* ==================== 课堂互动样式 ==================== */
+.activity-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.activity-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+}
+
+.activity-tab:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
+}
+
+.activity-tab--active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #667eea;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+}
+
+.activity-tab__icon {
+  font-size: 1.6rem;
+}
+.activity-tab__text {
+  text-align: center;
+}
+.activity-tab__label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.activity-tab__desc {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.activity-section {
+  animation: fadeSlideIn 0.35s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 随堂抢答 */
+.qa-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.qa-progress {
+  flex: 1;
+}
+.qa-progress__label {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 6px;
+  display: block;
+}
+.qa-progress__bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.qa-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #10b981);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.qa-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+.qa-timer--running {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.qa-timer--expired {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  animation: timer-pulse 0.6s ease infinite;
+}
+@keyframes timer-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+.qa-timer__icon {
+  font-size: 1.2rem;
+}
+.qa-timer__value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.qa-question-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  margin-bottom: 20px;
+}
+.qa-question-card__header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.qa-question-card__num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+.qa-question-card__type {
+  font-size: 0.8rem;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.qa-question-card__text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+.qa-question-card__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.qa-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.6);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.qa-option:hover:not(.qa-option--correct):not(.qa-option--wrong) {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+.qa-option--selected {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+.qa-option--correct {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+.qa-option--wrong {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+  opacity: 0.6;
+}
+.qa-option__letter {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-shrink: 0;
+}
+.qa-option--correct .qa-option__letter {
+  background: #8b5cf6;
+  color: #fff;
+}
+.qa-option__text {
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.qa-explanation {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(102, 126, 234, 0.06);
+  border-radius: 10px;
+  border-left: 3px solid #667eea;
+}
+.qa-explanation__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.qa-explanation p {
+  font-size: 0.85rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.qa-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.qa-action-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.qa-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.qa-action-btn--primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+.qa-action-btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+}
+.qa-action-btn--secondary {
+  background: rgba(255, 255, 255, 0.8);
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.qa-action-btn--secondary:hover:not(:disabled) {
+  background: #f8fafc;
+}
+.qa-action-btn--danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+.qa-action-btn--reveal {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.qa-action-btn--reset {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+.qa-action-btn--reset:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.4);
+}
+
+.qa-leaderboard {
+  margin-top: 8px;
+}
+.qa-leaderboard h3 {
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+.qa-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qa-leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s ease;
+}
+.qa-leaderboard-item--top {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.08),
+    rgba(255, 255, 255, 0.6)
+  );
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.qa-leaderboard-item__rank {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+.qa-leaderboard-item--top:nth-child(1) .qa-leaderboard-item__rank {
+  background: #fbbf24;
+  color: #fff;
+}
+.qa-leaderboard-item--top:nth-child(2) .qa-leaderboard-item__rank {
+  background: #94a3b8;
+  color: #fff;
+}
+.qa-leaderboard-item--top:nth-child(3) .qa-leaderboard-item__rank {
+  background: #d97706;
+  color: #fff;
+}
+.qa-leaderboard-item__name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+.qa-leaderboard-item__score {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #667eea;
+}
+.qa-leaderboard-item__time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 实时投票 */
+.poll-selector {
+  margin-bottom: 24px;
+}
+.poll-selector label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-right: 10px;
+}
+.poll-selector select {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  color: #1e293b;
+  min-width: 320px;
+  cursor: pointer;
+}
+.poll-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  margin-bottom: 20px;
+}
+.poll-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+}
+.poll-card__stats {
+  margin-bottom: 20px;
+}
+.poll-stat {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.poll-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.poll-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.poll-bar-item__label {
+  width: 140px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155;
+  flex-shrink: 0;
+}
+.poll-bar-item__track {
+  flex: 1;
+  height: 12px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.poll-bar-item__fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 4px;
+}
+.poll-bar-item__meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 80px;
+  flex-shrink: 0;
+}
+.poll-bar-item__count {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.poll-bar-item__percent {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.poll-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.poll-action-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+/* 随机抽选 */
+.pick-mode-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+.pick-mode-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.pick-mode-btn--active {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.08);
+  color: #667eea;
+}
+.pick-roulette {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+  margin-bottom: 20px;
+}
+.pick-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.pick-result--spinning {
+  animation: pick-spin 0.06s linear infinite;
+}
+@keyframes pick-spin {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.pick-result__avatar {
+  font-size: 3.5rem;
+}
+.pick-result__name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+.pick-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.pick-placeholder__icon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+.pick-placeholder__text {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+.pick-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 28px;
+  padding: 14px 40px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+}
+.pick-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(245, 158, 11, 0.5);
+}
+.pick-button--running {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.35);
+}
+.student-roster {
+  margin-bottom: 24px;
+}
+.student-roster h3 {
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 12px;
+}
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.roster-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+.roster-item:hover {
+  border-color: #667eea;
+}
+.roster-item__avatar {
+  font-size: 1.1rem;
+}
+.roster-item__name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1e293b;
+  flex: 1;
+}
+.roster-item__remove {
+  opacity: 0;
+  transition: opacity 0.2s;
+  border: none;
+  background: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+}
+.roster-item:hover .roster-item__remove {
+  opacity: 1;
+}
+.pick-history h3 {
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 10px;
+}
+.pick-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pick-history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+.pick-history-item__idx {
+  color: #94a3b8;
+  width: 20px;
+}
+.pick-history-item__avatar {
+  font-size: 1rem;
+}
+.pick-history-item__name {
+  flex: 1;
+  font-weight: 500;
+  color: #1e293b;
+}
+.pick-history-item__time {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* 小组积分 */
+.group-scoreboard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.group-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.3s ease;
+}
+.group-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transform: translateX(4px);
+}
+.group-card__rank {
+  font-size: 1.8rem;
+  font-weight: 800;
+  width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.group-card__info {
+  min-width: 140px;
+}
+.group-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+.group-card__members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.group-card__member {
+  font-size: 0.72rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.group-card__score-area {
+  flex: 1;
+}
+.group-card__score {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.group-card__score-unit {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+.group-card__bar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.group-card__bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.group-card__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.group-score-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.group-score-btn:hover {
+  transform: scale(1.08);
+}
+.group-score-btn--add {
+  color: #10b981;
+  border-color: #10b981;
+}
+.group-score-btn--add:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+.group-score-btn--sub {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+.group-score-btn--sub:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+  .activity-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .qa-question-card__options {
+    grid-template-columns: 1fr;
+  }
+  .group-card {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .group-card__info {
+    min-width: auto;
+  }
+  .poll-bar-item {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .poll-bar-item__label {
+    width: 100%;
+  }
+  .poll-bar-item__meta {
+    width: 100%;
   }
 }
 </style>
