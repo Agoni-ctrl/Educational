@@ -19,6 +19,7 @@ const showcaseItems = [
     accent: "#7c5cff",
     shape: "ripple",
     route: "/assistant",
+    imageUrl: "/image/showcase/prepare.png",
   },
   {
     id: 2,
@@ -31,6 +32,7 @@ const showcaseItems = [
     accent: "#10b981",
     shape: "grid",
     route: "/lessons",
+    imageUrl: "/image/showcase/cources.png",
   },
   {
     id: 3,
@@ -43,6 +45,7 @@ const showcaseItems = [
     accent: "#f59e0b",
     shape: "dots",
     route: "/features",
+    imageUrl: "/image/showcase/analytics.png",
   },
   {
     id: 4,
@@ -55,6 +58,7 @@ const showcaseItems = [
     accent: "#06b6d4",
     shape: "wave",
     route: "/community",
+    imageUrl: "/image/showcase/community.png",
   },
 ];
 
@@ -245,66 +249,19 @@ onUnmounted(() => {
                   :class="{
                     'showcase-card--clickable': index === currentIndex,
                   }"
-                  :style="{ background: item.gradient }"
                   @click="index === currentIndex && navigateToFeature()"
                 >
-                  <!-- 背景图形 -->
-                  <div class="showcase-card__bg">
-                    <div v-if="item.shape === 'ripple'" class="shape-ripple">
-                      <span
-                        v-for="n in 3"
-                        :key="n"
-                        class="ripple-ring"
-                        :style="{
-                          animationDelay: n * 0.3 + 's',
-                          borderColor: item.accent,
-                        }"
-                      />
-                    </div>
-                    <div v-else-if="item.shape === 'grid'" class="shape-grid">
-                      <span
-                        v-for="n in 16"
-                        :key="n"
-                        class="grid-cell"
-                        :style="{
-                          background: item.accent,
-                          opacity: 0.03 + n * 0.003,
-                        }"
-                      />
-                    </div>
-                    <div v-else-if="item.shape === 'dots'" class="shape-dots">
-                      <span
-                        v-for="n in 20"
-                        :key="n"
-                        class="dot-orb"
-                        :style="{
-                          left: Math.sin(n * 1.7) * 40 + 50 + '%',
-                          top: Math.cos(n * 2.1) * 40 + 50 + '%',
-                          animationDelay: n * 0.15 + 's',
-                          background: item.accent,
-                        }"
-                      />
-                    </div>
-                    <div v-else-if="item.shape === 'wave'" class="shape-wave">
-                      <span
-                        v-for="n in 5"
-                        :key="n"
-                        class="wave-bar"
-                        :style="{
-                          animationDelay: n * 0.12 + 's',
-                          height: 12 + n * 6 + 'px',
-                          background: item.accent,
-                        }"
-                      />
-                    </div>
-                  </div>
-                  <!-- 图标区 -->
+                  <!-- 本地插图 -->
+                  <img
+                    class="showcase-card__bg-img"
+                    :src="item.imageUrl"
+                    :alt="item.title"
+                  />
+                  <!-- 渐变遮罩保证文字可读 -->
                   <div
-                    class="showcase-card__icon"
-                    :style="{ color: item.accent }"
-                  >
-                    {{ item.icon }}
-                  </div>
+                    class="showcase-card__overlay"
+                    :style="{ background: item.gradient }"
+                  />
                   <!-- 文字 -->
                   <div class="showcase-card__text">
                     <h3>{{ item.title }}</h3>
@@ -718,137 +675,25 @@ onUnmounted(() => {
   transition: all 0.35s ease;
 }
 
-.showcase-card--clickable:hover .showcase-card__icon {
-  transform: scale(1.08);
+.showcase-card--clickable:hover .showcase-card__overlay {
+  opacity: 0.35;
 }
 
-.showcase-card__bg {
+/* Background image */
+.showcase-card__bg-img {
   position: absolute;
   inset: 0;
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Shape: ripple (concentric rings) */
-.shape-ripple {
+/* Gradient overlay for text readability */
+.showcase-card__overlay {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ripple-ring {
-  position: absolute;
-  width: 60%;
-  height: 60%;
-  border: 1px solid;
-  border-radius: 50%;
-  opacity: 0.25;
-  animation: ripple-expand 4s ease-out infinite;
-}
-
-@keyframes ripple-expand {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.35;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-
-/* Shape: grid */
-.shape-grid {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  gap: 1px;
-  padding: 40px;
-}
-
-.grid-cell {
-  border-radius: 3px;
-  transition: all 0.4s ease;
-}
-
-/* Shape: dots */
-.shape-dots {
-  position: absolute;
-  inset: 0;
-}
-
-.dot-orb {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  opacity: 0.4;
-  animation: dot-float 3s ease-in-out infinite alternate;
-}
-
-@keyframes dot-float {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateY(-12px) scale(1.4);
-    opacity: 0.6;
-  }
-}
-
-/* Shape: wave */
-.shape-wave {
-  position: absolute;
-  bottom: 30%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.wave-bar {
-  width: 6px;
-  border-radius: 3px;
-  opacity: 0.45;
-  animation: wave-pulse 1.8s ease-in-out infinite alternate;
-}
-
-@keyframes wave-pulse {
-  0% {
-    opacity: 0.25;
-  }
-  100% {
-    opacity: 0.65;
-  }
-}
-
-/* Icon */
-.showcase-card__icon {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
-  z-index: 1;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-  transition: transform 0.4s ease;
-}
-
-.stack-card--active .showcase-card__icon {
-  animation: icon-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes icon-enter {
-  0% {
-    transform: scale(0.4) rotate(-10deg);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
+  opacity: 0.55;
+  transition: opacity 0.35s ease;
 }
 
 /* Text */
