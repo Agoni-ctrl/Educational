@@ -8705,7 +8705,7 @@ onUnmounted(() => {
   min-width: 200px;
 }
 .archive-table .col-subject {
-  width: 100px;
+  width: 130px;
 }
 .archive-table .col-type {
   width: 100px;
