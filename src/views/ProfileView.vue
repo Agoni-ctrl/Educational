@@ -1926,7 +1926,22 @@ onUnmounted(() => {
           <!-- 统计概览 - 更丰富的维度 -->
           <div class="usage-stats">
             <div class="stat-card stat-card--primary">
-              <div class="stat-icon">📊</div>
+              <div class="stat-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="14" width="4" height="6" rx="1" />
+                  <rect x="10" y="8" width="4" height="12" rx="1" />
+                  <rect x="16" y="3" width="4" height="17" rx="1" />
+                </svg>
+              </div>
               <div class="stat-info">
                 <div class="stat-value">
                   {{
@@ -2191,7 +2206,22 @@ onUnmounted(() => {
           <p class="panel-subtitle">来自社区的精选内容</p>
 
           <div v-if="favoritePosts.length === 0" class="favorites-empty">
-            <div class="empty-icon">⭐</div>
+            <div class="empty-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.1 8.5 22 9.3 17 14.1 18.1 21 12 17.8 5.9 21 7 14.1 2 9.3 8.9 8.5"
+                />
+              </svg>
+            </div>
             <h3>暂无收藏</h3>
             <p>去社区浏览精彩内容，点击收藏按钮即可保存到这里</p>
             <RouterLink to="/community" class="btn-primary">

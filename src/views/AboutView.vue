@@ -4,22 +4,22 @@ import SiteNav from "../components/layout/SiteNav.vue";
 
 const capabilities = [
   {
-    icon: "💬",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-12.4 8.3L3 22l1.7-5.6A9 9 0 1121 12z"/></svg>',
     title: "理解意图",
     desc: "通过语音或文字多轮对话，主动询问并确认教学目标、核心知识点、讲授逻辑、重难点与互动设计。",
   },
   {
-    icon: "📎",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20L18 8a3 3 0 00-4.2-4.2L4 13.5"/><path d="M14 6l-8 8"/></svg>',
     title: "融合多模态参考",
     desc: "支持 PDF 教案、Word 文档、参考视频与图片，提取知识结构、案例与排版风格并融入生成。",
   },
   {
-    icon: "✨",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>',
     title: "生成课件初稿",
     desc: "输出结构完整的 PPT 演示文稿、Word 教案，以及知识点动画创意、互动小游戏等多模态内容。",
   },
   {
-    icon: "🔄",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0115.4-3.4L23 10M1 14l4.1 4.4A9 9 0 0020.5 15"/></svg>',
     title: "支持迭代优化",
     desc: "形成「互动 → 生成 → 反馈 → 再生成」闭环，支持预览修改与下载后自行编辑细节。",
   },
@@ -112,7 +112,7 @@ const team = [
             :key="cap.title"
             class="cap-card"
           >
-            <span class="cap-card__icon">{{ cap.icon }}</span>
+            <span class="cap-card__icon" v-html="cap.icon"></span>
             <h3>{{ cap.title }}</h3>
             <p>{{ cap.desc }}</p>
           </article>

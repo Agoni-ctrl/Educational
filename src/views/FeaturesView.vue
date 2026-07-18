@@ -33,6 +33,33 @@ const expandedRecord = ref(null);
 // ==================== 课堂互动数据 ====================
 const activityTab = ref("quick-answer");
 
+const activityTabs = [
+  {
+    id: "quick-answer",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 10 14 10 22 20 10 14 10 14 2"/></svg>',
+    label: "随堂抢答",
+    desc: "限时竞答",
+  },
+  {
+    id: "poll",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>',
+    label: "实时投票",
+    desc: "数据决策",
+  },
+  {
+    id: "random-pick",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg>',
+    label: "随机抽选",
+    desc: "公平互动",
+  },
+  {
+    id: "group-score",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2 2 0 01-2-2V5a2 2 0 012-2H6"/><path d="M18 9h1.5a2 2 0 002-2V5a2 2 0 00-2-2H18"/><path d="M6 3h12v4a6 6 0 01-12 0V3z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>',
+    label: "小组积分",
+    desc: "团队竞赛",
+  },
+];
+
 const students = ref([
   { id: 1, name: "张三", avatar: "👦" },
   { id: 2, name: "李四", avatar: "👧" },
@@ -195,6 +222,11 @@ const activePollId = ref(1);
 const pickHistory = ref([]);
 const pickingStudent = ref(null);
 const isPicking = ref(false);
+const pickIcon = computed(() =>
+  isPicking.value
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="8" y1="4" x2="8" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+);
 const pickMode = ref("single");
 function startRandomPick() {
   if (isPicking.value) return;
@@ -2798,7 +2830,22 @@ onUnmounted(() => {
                       </div>
                     </div>
                     <div class="day-metric-card score">
-                      <div class="metric-icon">✨</div>
+                      <div class="metric-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"
+                          />
+                        </svg>
+                      </div>
                       <div class="metric-info">
                         <span class="metric-value">{{
                           selectedDay.avgScore
@@ -3152,7 +3199,23 @@ onUnmounted(() => {
               </label>
 
               <!-- 教学目标 -->
-              <label class="form-section-title">🎯 教学目标与重难点</label>
+              <label class="form-section-title"
+                ><svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
+                教学目标与重难点</label
+              >
               <label>
                 教学目标
                 <textarea
@@ -3187,7 +3250,21 @@ onUnmounted(() => {
                   @change="handlePptFileChange"
                 />
                 <div v-if="!pptForm.referenceFile" class="upload-placeholder">
-                  <span class="upload-icon">📁</span>
+                  <span class="upload-icon"
+                    ><svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                      /></svg
+                  ></span>
                   <p>点击或拖拽上传参考课件</p>
                   <small>支持 PPT、PPTX、PDF 格式</small>
                 </div>
@@ -3318,7 +3395,23 @@ onUnmounted(() => {
               </label>
 
               <!-- 教学目标 -->
-              <label class="form-section-title">🎯 教学目标与重难点</label>
+              <label class="form-section-title"
+                ><svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
+                教学目标与重难点</label
+              >
               <label>
                 教学目标
                 <textarea
@@ -3353,7 +3446,21 @@ onUnmounted(() => {
                   @change="handleDocFileChange"
                 />
                 <div v-if="!docForm.referenceFile" class="upload-placeholder">
-                  <span class="upload-icon">📁</span>
+                  <span class="upload-icon"
+                    ><svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                      /></svg
+                  ></span>
                   <p>点击或拖拽上传参考教案</p>
                   <small>支持 DOC、DOCX、PDF 格式</small>
                 </div>
@@ -3644,7 +3751,23 @@ onUnmounted(() => {
                 background-clip: text;
               "
             >
-              🎮 课堂互动
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="7" width="18" height="10" rx="3" />
+                <circle cx="8" cy="12" r="1.5" fill="currentColor" />
+                <circle cx="16" cy="12" r="1.5" fill="currentColor" />
+                <path d="M10 12h0" />
+                <path d="M12 10v4" />
+              </svg>
+              课堂互动
             </h1>
             <p style="margin: 0; font-size: 0.85rem; color: #64748b">
               随堂抢答 · 实时投票 · 随机抽选 · 小组积分
@@ -3653,33 +3776,13 @@ onUnmounted(() => {
 
           <div class="activity-tabs">
             <button
-              v-for="tab in [
-                {
-                  id: 'quick-answer',
-                  icon: '👑',
-                  label: '随堂抢答',
-                  desc: '限时竞答',
-                },
-                { id: 'poll', icon: '📊', label: '实时投票', desc: '数据决策' },
-                {
-                  id: 'random-pick',
-                  icon: '🎲',
-                  label: '随机抽选',
-                  desc: '公平互动',
-                },
-                {
-                  id: 'group-score',
-                  icon: '🏆',
-                  label: '小组积分',
-                  desc: '团队竞赛',
-                },
-              ]"
+              v-for="tab in activityTabs"
               :key="tab.id"
               class="activity-tab"
               :class="{ 'activity-tab--active': activityTab === tab.id }"
               @click="activityTab = tab.id"
             >
-              <span class="activity-tab__icon">{{ tab.icon }}</span>
+              <span class="activity-tab__icon" v-html="tab.icon"></span>
               <div class="activity-tab__text">
                 <span class="activity-tab__label">{{ tab.label }}</span>
                 <span class="activity-tab__desc">{{ tab.desc }}</span>
@@ -3724,7 +3827,21 @@ onUnmounted(() => {
                 <span class="qa-question-card__num"
                   >Q{{ qaCurrentQuestion + 1 }}</span
                 >
-                <span class="qa-question-card__type">⚡ 限时抢答</span>
+                <span class="qa-question-card__type"
+                  ><svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon points="13 2 4 14 10 14 10 22 20 10 14 10 14 2" />
+                  </svg>
+                  限时抢答</span
+                >
               </div>
               <h3 class="qa-question-card__text">
                 {{ quickAnswerQuestions[qaCurrentQuestion].question }}
@@ -3939,7 +4056,21 @@ onUnmounted(() => {
                 v-if="!isPicking && pickHistory.length === 0"
                 class="pick-placeholder"
               >
-                <span class="pick-placeholder__icon">🎲</span>
+                <span class="pick-placeholder__icon"
+                  ><svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="4" y="4" width="16" height="16" rx="3" />
+                    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+                    <circle cx="15" cy="15" r="1.5" fill="currentColor" /></svg
+                ></span>
                 <span class="pick-placeholder__text">点击下方按钮开始抽选</span>
               </div>
             </div>
@@ -3949,11 +4080,28 @@ onUnmounted(() => {
               @click="startRandomPick"
               :disabled="isPicking"
             >
-              <span>{{ isPicking ? "🎰" : "🎯" }}</span>
+              <span v-html="pickIcon"></span>
               {{ isPicking ? "抽取中..." : "随机抽选" }}
             </button>
             <div class="student-roster">
-              <h3>📋 学生名单（{{ students.length }}人）</h3>
+              <h3>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="3" width="16" height="18" rx="2" />
+                  <line x1="8" y1="9" x2="16" y2="9" />
+                  <line x1="8" y1="13" x2="14" y2="13" />
+                  <line x1="8" y1="17" x2="12" y2="17" />
+                </svg>
+                学生名单（{{ students.length }}人）
+              </h3>
               <div class="roster-grid">
                 <div
                   v-for="student in students"
@@ -3973,7 +4121,23 @@ onUnmounted(() => {
               </div>
             </div>
             <div v-if="pickHistory.length > 0" class="pick-history">
-              <h3>📝 抽选记录</h3>
+              <h3>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M17 3a2.85 2.85 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                  />
+                </svg>
+                抽选记录
+              </h3>
               <div class="pick-history-list">
                 <div
                   v-for="(record, idx) in pickHistory.slice(0, 10)"
@@ -4065,7 +4229,22 @@ onUnmounted(() => {
         <!-- 学情反馈面板 -->
         <section v-else-if="activePanel === 'feedback'" class="panel">
           <div class="placeholder-panel">
-            <div class="placeholder-icon">📊</div>
+            <div class="placeholder-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="4" y="14" width="4" height="6" rx="1" />
+                <rect x="10" y="8" width="4" height="12" rx="1" />
+                <rect x="16" y="3" width="4" height="17" rx="1" />
+              </svg>
+            </div>
             <h2>学情反馈</h2>
             <p>学情分析功能正在开发中，将支持：</p>
             <ul class="feature-list">
@@ -4075,7 +4254,25 @@ onUnmounted(() => {
               <li>📋 个性化学习建议生成</li>
             </ul>
             <div class="placeholder-tip">
-              <span>💡</span> 提示：使用课堂练习功能后，系统将自动收集学情数据
+              <span
+                ><svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M10 18h4" />
+                  <path d="M12 2v2" />
+                  <path d="M7 7l1.4 1.4" />
+                  <path d="M17 7l-1.4 1.4" />
+                  <circle cx="12" cy="10" r="5" />
+                  <path d="M10 14c0 .7.5 1 2 1s2-.3 2-1" /></svg
+              ></span>
+              提示：使用课堂练习功能后，系统将自动收集学情数据
             </div>
           </div>
         </section>
@@ -4172,7 +4369,20 @@ onUnmounted(() => {
             <!-- 搜索 + 操作行 -->
             <div class="archive-filter-actions">
               <div class="archive-search-wrapper">
-                <span class="archive-search-icon">🔍</span>
+                <span class="archive-search-icon"
+                  ><svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" /></svg
+                ></span>
                 <input
                   v-model="archiveFilters.searchQuery"
                   type="text"

@@ -14,7 +14,7 @@ const showcaseItems = [
     subtitle: "输入主题，一键生成完整教案",
     description:
       "告别繁琐备课，AI 自动撰写教案框架与课堂活动设计，大幅提升备课效率。",
-    icon: "✦",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/><circle cx="19" cy="19" r="3"/><path d="M17 19h4"/></svg>`,
     gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
     accent: "#7c5cff",
     shape: "ripple",
@@ -27,7 +27,7 @@ const showcaseItems = [
     subtitle: "海量模板，轻松打造精致课件",
     description:
       "覆盖全学科的 PPT 模板与素材库，在线编辑与云端同步，智能排版更专业。",
-    icon: "◈",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h6M8 16h4"/></svg>`,
     gradient: "linear-gradient(135deg, #0ba360 0%, #3cba92 50%, #00d2ff 100%)",
     accent: "#10b981",
     shape: "grid",
@@ -40,7 +40,7 @@ const showcaseItems = [
     subtitle: "教学趋势，可视化图表洞察",
     description:
       "自动汇总教学数据，图表展示创作趋势与学情变化，用数据驱动教学决策。",
-    icon: "⬡",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>`,
     gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #ffa751 100%)",
     accent: "#f59e0b",
     shape: "dots",
@@ -53,7 +53,7 @@ const showcaseItems = [
     subtitle: "分享经验，与全国教师互动交流",
     description:
       "汇聚一线教师分享教学心得与优质资源，找到同行，碰撞灵感，共同成长。",
-    icon: "◎",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20c0-3.3 2.2-6 5-6h2c2.8 0 5 2.7 5 6"/><path d="M14 14c2.8 0 5 2.7 5 6"/></svg>`,
     gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)",
     accent: "#06b6d4",
     shape: "wave",
@@ -266,9 +266,8 @@ onUnmounted(() => {
               <div
                 class="showcase-info__icon"
                 :style="{ color: showcaseItems[currentIndex].accent }"
-              >
-                {{ showcaseItems[currentIndex].icon }}
-              </div>
+                v-html="showcaseItems[currentIndex].icon"
+              />
               <div
                 class="showcase-info__title"
                 :style="{
@@ -703,6 +702,14 @@ onUnmounted(() => {
   margin-bottom: 6px;
   transition: color 0.5s ease;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.showcase-info__icon :deep(svg) {
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 .showcase-info__title {
   font-size: 1.15rem;

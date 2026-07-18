@@ -14,13 +14,43 @@ const courses = [
     difficulty: "中等偏难",
     // 能力模块分布（基于课程内容分析）
     abilityModules: [
-      { name: "概念理解", value: 25, color: "#3b82f6", description: "定律定义、物理意义理解" },
-      { name: "公式应用", value: 30, color: "#06b6d4", description: "F=ma公式变形与计算" },
-      { name: "图像分析", value: 15, color: "#8b5cf6", description: "a-F、a-m关系图像" },
-      { name: "实验探究", value: 20, color: "#22c55e", description: "控制变量法实验设计" },
-      { name: "综合解题", value: 10, color: "#f59e0b", description: "连接体、正交分解综合题" },
+      {
+        name: "概念理解",
+        value: 25,
+        color: "#3b82f6",
+        description: "定律定义、物理意义理解",
+      },
+      {
+        name: "公式应用",
+        value: 30,
+        color: "#06b6d4",
+        description: "F=ma公式变形与计算",
+      },
+      {
+        name: "图像分析",
+        value: 15,
+        color: "#8b5cf6",
+        description: "a-F、a-m关系图像",
+      },
+      {
+        name: "实验探究",
+        value: 20,
+        color: "#22c55e",
+        description: "控制变量法实验设计",
+      },
+      {
+        name: "综合解题",
+        value: 10,
+        color: "#f59e0b",
+        description: "连接体、正交分解综合题",
+      },
     ],
-    keyPoints: ["F=ma核心公式", "矢量性、瞬时性、独立性", "正交分解法", "连接体问题"],
+    keyPoints: [
+      "F=ma核心公式",
+      "矢量性、瞬时性、独立性",
+      "正交分解法",
+      "连接体问题",
+    ],
     teachingMethods: ["实验演示", "例题精讲", "互动问答", "归纳总结"],
   },
   {
@@ -32,13 +62,43 @@ const courses = [
     duration: "15分钟",
     difficulty: "基础",
     abilityModules: [
-      { name: "史实记忆", value: 20, color: "#ef4444", description: "时间、地点、人物记忆" },
-      { name: "因果分析", value: 25, color: "#f97316", description: "战争爆发原因分析" },
-      { name: "史料解读", value: 20, color: "#a855f7", description: "条约内容、史料分析" },
-      { name: "影响评价", value: 25, color: "#3b82f6", description: "历史影响与意义评价" },
-      { name: "时空观念", value: 10, color: "#14b8a6", description: "中外历史联系对比" },
+      {
+        name: "史实记忆",
+        value: 20,
+        color: "#ef4444",
+        description: "时间、地点、人物记忆",
+      },
+      {
+        name: "因果分析",
+        value: 25,
+        color: "#f97316",
+        description: "战争爆发原因分析",
+      },
+      {
+        name: "史料解读",
+        value: 20,
+        color: "#a855f7",
+        description: "条约内容、史料分析",
+      },
+      {
+        name: "影响评价",
+        value: 25,
+        color: "#3b82f6",
+        description: "历史影响与意义评价",
+      },
+      {
+        name: "时空观念",
+        value: 10,
+        color: "#14b8a6",
+        description: "中外历史联系对比",
+      },
     ],
-    keyPoints: ["贸易逆差与鸦片走私", "虎门销烟", "《南京条约》", "半殖民地半封建社会"],
+    keyPoints: [
+      "贸易逆差与鸦片走私",
+      "虎门销烟",
+      "《南京条约》",
+      "半殖民地半封建社会",
+    ],
     teachingMethods: ["动画演示", "史料展示", "时间轴梳理", "对比分析"],
   },
   {
@@ -50,11 +110,36 @@ const courses = [
     duration: "25分钟",
     difficulty: "基础",
     abilityModules: [
-      { name: "概念建构", value: 35, color: "#3b82f6", description: "加速度定义与物理意义" },
-      { name: "图像理解", value: 30, color: "#8b5cf6", description: "v-t图像斜率分析" },
-      { name: "计算应用", value: 20, color: "#06b6d4", description: "a=Δv/Δt计算" },
-      { name: "生活联系", value: 10, color: "#22c55e", description: "生活实例分析" },
-      { name: "易错辨析", value: 5, color: "#f59e0b", description: "速度与加速度区分" },
+      {
+        name: "概念建构",
+        value: 35,
+        color: "#3b82f6",
+        description: "加速度定义与物理意义",
+      },
+      {
+        name: "图像理解",
+        value: 30,
+        color: "#8b5cf6",
+        description: "v-t图像斜率分析",
+      },
+      {
+        name: "计算应用",
+        value: 20,
+        color: "#06b6d4",
+        description: "a=Δv/Δt计算",
+      },
+      {
+        name: "生活联系",
+        value: 10,
+        color: "#22c55e",
+        description: "生活实例分析",
+      },
+      {
+        name: "易错辨析",
+        value: 5,
+        color: "#f59e0b",
+        description: "速度与加速度区分",
+      },
     ],
     keyPoints: ["加速度定义式", "加速度与速度关系", "v-t图像斜率", "方向判断"],
     teachingMethods: ["生活实例", "图像教学", "概念辨析", "练习巩固"],
@@ -63,10 +148,26 @@ const courses = [
 
 // ==================== 能力模块图例说明 ====================
 const abilityLegend = [
-  { category: "认知理解类", items: ["概念理解", "概念建构", "史实记忆"], color: "#3b82f6" },
-  { category: "应用分析类", items: ["公式应用", "计算应用", "因果分析", "图像分析", "图像理解"], color: "#06b6d4" },
-  { category: "综合评价类", items: ["综合解题", "影响评价", "史料解读", "时空观念"], color: "#8b5cf6" },
-  { category: "实验探究类", items: ["实验探究", "生活联系", "易错辨析"], color: "#22c55e" },
+  {
+    category: "认知理解类",
+    items: ["概念理解", "概念建构", "史实记忆"],
+    color: "#3b82f6",
+  },
+  {
+    category: "应用分析类",
+    items: ["公式应用", "计算应用", "因果分析", "图像分析", "图像理解"],
+    color: "#06b6d4",
+  },
+  {
+    category: "综合评价类",
+    items: ["综合解题", "影响评价", "史料解读", "时空观念"],
+    color: "#8b5cf6",
+  },
+  {
+    category: "实验探究类",
+    items: ["实验探究", "生活联系", "易错辨析"],
+    color: "#22c55e",
+  },
 ];
 
 // ==================== 图表实例存储 ====================
@@ -101,7 +202,9 @@ function generatePieOption(course, index) {
     tooltip: {
       trigger: "item",
       formatter: function (params) {
-        const module = course.abilityModules.find((m) => m.name === params.name);
+        const module = course.abilityModules.find(
+          (m) => m.name === params.name,
+        );
         return `
           <div style="padding: 8px;">
             <div style="font-weight: bold; margin-bottom: 4px; color: ${params.color}">
@@ -122,7 +225,8 @@ function generatePieOption(course, index) {
       textStyle: {
         color: "#1e293b",
       },
-      extraCssText: "box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px;",
+      extraCssText:
+        "box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px;",
     },
     legend: {
       orient: "vertical",
@@ -247,10 +351,27 @@ const subjectDistribution = computed(() => {
     <!-- 报告头部 -->
     <header class="report-header">
       <div class="header-content">
-        <div class="header-icon">📊</div>
+        <div class="header-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4" y="14" width="4" height="6" rx="1" />
+            <rect x="10" y="8" width="4" height="12" rx="1" />
+            <rect x="16" y="3" width="4" height="17" rx="1" />
+          </svg>
+        </div>
         <div class="header-text">
           <h1>课程内容可视化分析报告</h1>
-          <p class="header-subtitle">AI智能分析 · 能力模块分布 · 教学重点洞察</p>
+          <p class="header-subtitle">
+            AI智能分析 · 能力模块分布 · 教学重点洞察
+          </p>
         </div>
       </div>
       <div class="header-actions">
@@ -282,14 +403,43 @@ const subjectDistribution = computed(() => {
         </div>
       </div>
       <div class="overview-card">
-        <div class="overview-icon">🎯</div>
+        <div class="overview-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+          </svg>
+        </div>
         <div class="overview-data">
           <span class="overview-number">15+</span>
           <span class="overview-label">能力维度</span>
         </div>
       </div>
       <div class="overview-card">
-        <div class="overview-icon">📈</div>
+        <div class="overview-icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
         <div class="overview-data">
           <span class="overview-number">100%</span>
           <span class="overview-label">数据覆盖</span>
@@ -300,16 +450,37 @@ const subjectDistribution = computed(() => {
     <!-- 能力模块图例 -->
     <section class="legend-section">
       <h2 class="section-title">
-        <span class="title-icon">🔍</span>
+        <span class="title-icon"
+          ><svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" /></svg
+        ></span>
         能力模块分类说明
       </h2>
       <div class="legend-grid">
-        <div v-for="(item, index) in abilityLegend" :key="index" class="legend-card">
+        <div
+          v-for="(item, index) in abilityLegend"
+          :key="index"
+          class="legend-card"
+        >
           <div class="legend-header" :style="{ background: item.color }">
             <span class="legend-category">{{ item.category }}</span>
           </div>
           <div class="legend-items">
-            <span v-for="(subItem, subIndex) in item.items" :key="subIndex" class="legend-item">
+            <span
+              v-for="(subItem, subIndex) in item.items"
+              :key="subIndex"
+              class="legend-item"
+            >
               {{ subItem }}
             </span>
           </div>
@@ -320,10 +491,26 @@ const subjectDistribution = computed(() => {
     <!-- 课程分析图表区 -->
     <section class="charts-section">
       <h2 class="section-title">
-        <span class="title-icon">📊</span>
+        <span class="title-icon"
+          ><svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4" y="14" width="4" height="6" rx="1" />
+            <rect x="10" y="8" width="4" height="12" rx="1" />
+            <rect x="16" y="3" width="4" height="17" rx="1" /></svg
+        ></span>
         课程能力模块分布分析
       </h2>
-      <p class="section-desc">以下图表展示了每门课程的能力模块占比分布，悬停可查看详细信息</p>
+      <p class="section-desc">
+        以下图表展示了每门课程的能力模块占比分布，悬停可查看详细信息
+      </p>
 
       <div class="charts-grid">
         <div v-for="course in courses" :key="course.id" class="chart-card">
@@ -333,31 +520,97 @@ const subjectDistribution = computed(() => {
           <!-- 课程信息 -->
           <div class="course-detail">
             <div class="detail-section">
-              <h4>🎯 核心知识点</h4>
+              <h4>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
+                核心知识点
+              </h4>
               <div class="tag-list">
-                <span v-for="(point, idx) in course.keyPoints" :key="idx" class="detail-tag">
+                <span
+                  v-for="(point, idx) in course.keyPoints"
+                  :key="idx"
+                  class="detail-tag"
+                >
                   {{ point }}
                 </span>
               </div>
             </div>
 
             <div class="detail-section">
-              <h4>📝 教学方法</h4>
+              <h4>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M17 3a2.85 2.85 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                  />
+                </svg>
+                教学方法
+              </h4>
               <div class="tag-list">
-                <span v-for="(method, idx) in course.teachingMethods" :key="idx" class="detail-tag method">
+                <span
+                  v-for="(method, idx) in course.teachingMethods"
+                  :key="idx"
+                  class="detail-tag method"
+                >
                   {{ method }}
                 </span>
               </div>
             </div>
 
             <div class="detail-section">
-              <h4>📊 难度分析</h4>
+              <h4>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="14" width="4" height="6" rx="1" />
+                  <rect x="10" y="8" width="4" height="12" rx="1" />
+                  <rect x="16" y="3" width="4" height="17" rx="1" />
+                </svg>
+                难度分析
+              </h4>
               <div class="difficulty-bar">
                 <div
                   class="difficulty-fill"
                   :style="{
-                    width: course.difficulty === '基础' ? '33%' : course.difficulty === '中等偏难' ? '66%' : '100%',
-                    background: course.difficulty === '基础' ? '#22c55e' : course.difficulty === '中等偏难' ? '#f59e0b' : '#ef4444'
+                    width:
+                      course.difficulty === '基础'
+                        ? '33%'
+                        : course.difficulty === '中等偏难'
+                          ? '66%'
+                          : '100%',
+                    background:
+                      course.difficulty === '基础'
+                        ? '#22c55e'
+                        : course.difficulty === '中等偏难'
+                          ? '#f59e0b'
+                          : '#ef4444',
                   }"
                 ></div>
                 <span class="difficulty-text">{{ course.difficulty }}</span>
@@ -371,29 +624,102 @@ const subjectDistribution = computed(() => {
     <!-- 分析总结 -->
     <section class="summary-section">
       <h2 class="section-title">
-        <span class="title-icon">💡</span>
+        <span class="title-icon"
+          ><svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M10 18h4" />
+            <path d="M12 2v2" />
+            <path d="M7 7l1.4 1.4" />
+            <path d="M17 7l-1.4 1.4" />
+            <circle cx="12" cy="10" r="5" />
+            <path d="M10 14c0 .7.5 1 2 1s2-.3 2-1" /></svg
+        ></span>
         分析洞察与建议
       </h2>
       <div class="summary-grid">
         <div class="summary-card">
-          <div class="summary-icon">🎯</div>
+          <div class="summary-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+            </svg>
+          </div>
           <h3>重点能力培养</h3>
-          <p>物理课程侧重"概念理解"与"公式应用"，占比达55%-65%；历史课程强调"因果分析"与"影响评价"，体现学科核心素养差异。</p>
+          <p>
+            物理课程侧重"概念理解"与"公式应用"，占比达55%-65%；历史课程强调"因果分析"与"影响评价"，体现学科核心素养差异。
+          </p>
         </div>
         <div class="summary-card">
-          <div class="summary-icon">📈</div>
+          <div class="summary-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+          </div>
           <h3>能力分布特点</h3>
-          <p>基础课程（加速度）概念建构占比35%，而进阶课程（牛顿定律）综合解题占比提升，体现能力培养的递进性。</p>
+          <p>
+            基础课程（加速度）概念建构占比35%，而进阶课程（牛顿定律）综合解题占比提升，体现能力培养的递进性。
+          </p>
         </div>
         <div class="summary-card">
-          <div class="summary-icon">🔧</div>
+          <div class="summary-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.8-3.8a1 1 0 000-1.4L19.9 2a1 1 0 00-1.4 0L14.7 6.3z"
+              />
+              <path
+                d="M6.3 14.7l-4.6 4.6a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l4.6-4.6"
+              />
+              <path d="M8 9l5 5-4 4-5-5 4-4z" />
+            </svg>
+          </div>
           <h3>教学方法匹配</h3>
-          <p>实验探究类模块配合"实验演示"方法，图像分析类配合"图像教学"，实现内容与方法的精准匹配。</p>
+          <p>
+            实验探究类模块配合"实验演示"方法，图像分析类配合"图像教学"，实现内容与方法的精准匹配。
+          </p>
         </div>
         <div class="summary-card">
           <div class="summary-icon">⚖️</div>
           <h3>难度梯度设计</h3>
-          <p>课程难度从基础到中等偏难合理分布，符合学生认知发展规律，建议增加高难度拓展课程。</p>
+          <p>
+            课程难度从基础到中等偏难合理分布，符合学生认知发展规律，建议增加高难度拓展课程。
+          </p>
         </div>
       </div>
     </section>
@@ -401,11 +727,49 @@ const subjectDistribution = computed(() => {
     <!-- 报告页脚 -->
     <footer class="report-footer">
       <div class="footer-info">
-        <p>📊 报告生成时间：{{ new Date().toLocaleString('zh-CN') }}</p>
-        <p>🔧 分析工具：ECharts 5.x | Vue 3 | AI智能分析引擎</p>
+        <p>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4" y="14" width="4" height="6" rx="1" />
+            <rect x="10" y="8" width="4" height="12" rx="1" />
+            <rect x="16" y="3" width="4" height="17" rx="1" />
+          </svg>
+          报告生成时间：{{ new Date().toLocaleString("zh-CN") }}
+        </p>
+        <p>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.8-3.8a1 1 0 000-1.4L19.9 2a1 1 0 00-1.4 0L14.7 6.3z"
+            />
+            <path
+              d="M6.3 14.7l-4.6 4.6a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l4.6-4.6"
+            />
+            <path d="M8 9l5 5-4 4-5-5 4-4z" />
+          </svg>
+          分析工具：ECharts 5.x | Vue 3 | AI智能分析引擎
+        </p>
       </div>
       <div class="footer-links">
-        <a href="https://echarts.apache.org/" target="_blank" rel="noopener">ECharts 官网</a>
+        <a href="https://echarts.apache.org/" target="_blank" rel="noopener"
+          >ECharts 官网</a
+        >
         <span>|</span>
         <a href="#" @click.prevent="printReport">打印报告</a>
         <span>|</span>
@@ -421,7 +785,9 @@ const subjectDistribution = computed(() => {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   padding: 40px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 /* ==================== 报告头部 ==================== */
@@ -445,7 +811,11 @@ const subjectDistribution = computed(() => {
   right: -20%;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.15) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 

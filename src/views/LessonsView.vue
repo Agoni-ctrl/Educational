@@ -14,24 +14,39 @@ const menuItems = [
   {
     id: "course-resource",
     label: "课程资源",
-    icon: "📚",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
     desc: "浏览所有课程",
   },
   {
     id: "course-analysis",
     label: "课程分析",
-    icon: "📊",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>',
     desc: "数据可视化分析",
   },
   {
     id: "classroom-activity",
     label: "课堂互动",
-    icon: "🎮",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="3"/><circle cx="8" cy="12" r="1.5" fill="currentColor"/><circle cx="16" cy="12" r="1.5" fill="currentColor"/><path d="M10 12h0"/><path d="M12 10v4"/></svg>',
     desc: "随堂活动管理",
   },
-  { id: "qa-session", label: "边问边答", icon: "💬", desc: "互动问答学习" },
-  { id: "after-class", label: "课后追问", icon: "🔍", desc: "深入探讨问题" },
-  { id: "ai-summary", label: "AI总结助手", icon: "🤖", desc: "智能学习总结" },
+  {
+    id: "qa-session",
+    label: "边问边答",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-12.4 8.3L3 22l1.7-5.6A9 9 0 1121 12z"/></svg>',
+    desc: "互动问答学习",
+  },
+  {
+    id: "after-class",
+    label: "课后追问",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    desc: "深入探讨问题",
+  },
+  {
+    id: "ai-summary",
+    label: "AI总结助手",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="14" rx="3"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><circle cx="14" cy="10" r="1.5" fill="currentColor"/><path d="M9 16c1 .7 2 1 3 1s2-.3 3-1"/><path d="M12 2v4"/><rect x="9" y="20" width="6" height="2" rx="1"/></svg>',
+    desc: "智能学习总结",
+  },
 ];
 
 // 主页卡片详细描述
@@ -322,7 +337,7 @@ const subjectStyleMap = {
   物理: {
     color: "#6c5ce7",
     bg: "linear-gradient(135deg, #f3f0ff 0%, #e8e5ff 50%, #dcd6ff 100%)",
-    icon: "⚛️",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(30 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)"/></svg>',
     symbol: "φ",
     label: "PHYSICS",
     image: "/image/物理.png",
@@ -330,7 +345,7 @@ const subjectStyleMap = {
   化学: {
     color: "#00b894",
     bg: "linear-gradient(135deg, #e6fff5 0%, #d4f8e8 50%, #bdf0d9 100%)",
-    icon: "🧪",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M12 2v7"/><path d="M6 21h12a2 2 0 002-2v-2l-7-11"/><path d="M4 19l7-11"/></svg>',
     symbol: "⚗",
     label: "CHEMISTRY",
     image: "/image/化学.png",
@@ -338,7 +353,7 @@ const subjectStyleMap = {
   数学: {
     color: "#0984e3",
     bg: "linear-gradient(135deg, #e8f4fd 0%, #d6ecfb 50%, #c4e2f8 100%)",
-    icon: "📐",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4a2 2 0 012-2h12a2 2 0 012 2v16"/><path d="M8 8v4"/><path d="M12 8v4"/><path d="M16 8v4"/></svg>',
     symbol: "∑",
     label: "MATH",
     image: "/image/数学.png",
@@ -346,7 +361,7 @@ const subjectStyleMap = {
   生物: {
     color: "#00cec9",
     bg: "linear-gradient(135deg, #e8faf8 0%, #d4f5f1 50%, #bdf0ea 100%)",
-    icon: "🔬",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M12 17v5"/><circle cx="12" cy="10" r="5"/><path d="M16 14l4 4"/></svg>',
     symbol: "🧬",
     label: "BIOLOGY",
     image: "/image/生物.png",
@@ -354,7 +369,7 @@ const subjectStyleMap = {
   历史: {
     color: "#d63031",
     bg: "linear-gradient(135deg, #fff0f0 0%, #ffe8e8 50%, #ffdbdb 100%)",
-    icon: "📜",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 002-2V5a2 2 0 00-2-2H8"/><path d="M4 21h4V3H4"/><path d="M8 9h8"/><path d="M8 13h6"/><path d="M8 17h4"/></svg>',
     symbol: "㊦",
     label: "HISTORY",
     image: "/image/历史.png",
@@ -362,7 +377,7 @@ const subjectStyleMap = {
   地理: {
     color: "#e17055",
     bg: "linear-gradient(135deg, #fff5f0 0%, #ffede5 50%, #ffe4d9 100%)",
-    icon: "🌍",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
     symbol: "◈",
     label: "GEOGRAPHY",
     image: "/image/地理.png",
@@ -374,7 +389,7 @@ function getSubjectStyle(subject) {
     subjectStyleMap[subject] || {
       color: "#4c7dff",
       bg: "linear-gradient(135deg, #f0f4ff 0%, #e4e9ff 50%, #d8deff 100%)",
-      icon: "📚",
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
       symbol: "✦",
       label: "COURSE",
       image: "/image/物理.png",
@@ -493,6 +508,33 @@ const aiSummaries = ref([
 // ==================== 课堂互动数据 ====================
 
 const activityTab = ref("quick-answer");
+
+const lessonActivityTabs = [
+  {
+    id: "quick-answer",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 4 14 10 14 10 22 20 10 14 10 14 2"/></svg>',
+    label: "随堂抢答",
+    desc: "限时竞答",
+  },
+  {
+    id: "poll",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>',
+    label: "实时投票",
+    desc: "数据决策",
+  },
+  {
+    id: "random-pick",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="15" cy="15" r="1.5" fill="currentColor"/></svg>',
+    label: "随机抽选",
+    desc: "公平互动",
+  },
+  {
+    id: "group-score",
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2 2 0 01-2-2V5a2 2 0 012-2H6"/><path d="M18 9h1.5a2 2 0 002-2V5a2 2 0 00-2-2H18"/><path d="M6 3h12v4a6 6 0 01-12 0V3z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>',
+    label: "小组积分",
+    desc: "团队竞赛",
+  },
+];
 
 const students = ref([
   { id: 1, name: "张三", avatar: "👦" },
@@ -1371,7 +1413,7 @@ watch(activeMenu, (newVal) => {
               :class="{ 'menu-item--active': activeMenu === item.id }"
               @click="switchMenu(item.id)"
             >
-              <span class="menu-item__icon">{{ item.icon }}</span>
+              <span class="menu-item__icon" v-html="item.icon"></span>
               <div class="menu-item__content">
                 <span class="menu-item__label">{{ item.label }}</span>
                 <span class="menu-item__desc">{{ item.desc }}</span>
@@ -1458,7 +1500,7 @@ watch(activeMenu, (newVal) => {
                   >
                     <div class="home-card-top">
                       <div class="home-card-icon-wrap">
-                        <span class="home-card-emoji">{{ item.icon }}</span>
+                        <span class="home-card-emoji" v-html="item.icon"></span>
                       </div>
                       <div class="home-card-top-right">
                         <span class="home-card-badge">{{
@@ -1591,9 +1633,10 @@ watch(activeMenu, (newVal) => {
                       }"
                     >
                       <div class="video-detail-title-wrap">
-                        <span class="video-detail-icon">{{
-                          getSubjectStyle(currentCourse?.subject).icon
-                        }}</span>
+                        <span
+                          class="video-detail-icon"
+                          v-html="getSubjectStyle(currentCourse?.subject).icon"
+                        ></span>
                         <div>
                           <h1 class="video-detail-course-name">
                             {{ currentCourse?.title }}
@@ -1632,9 +1675,10 @@ watch(activeMenu, (newVal) => {
                             .bg,
                         }"
                       >
-                        <div class="video-cover-icon">
-                          {{ getSubjectStyle(currentCourse?.subject).icon }}
-                        </div>
+                        <div
+                          class="video-cover-icon"
+                          v-html="getSubjectStyle(currentCourse?.subject).icon"
+                        ></div>
                         <div
                           class="video-cover-deco"
                           :style="{
@@ -1953,44 +1997,37 @@ watch(activeMenu, (newVal) => {
               class="content-panel classroom-activity-panel"
             >
               <div class="panel-header panel-header--activity">
-                <h1>🎮 课堂互动</h1>
+                <h1>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="7" width="18" height="10" rx="3" />
+                    <circle cx="8" cy="12" r="1.5" fill="currentColor" />
+                    <circle cx="16" cy="12" r="1.5" fill="currentColor" />
+                    <path d="M10 12h0" />
+                    <path d="M12 10v4" />
+                  </svg>
+                  课堂互动
+                </h1>
                 <p>随堂抢答 · 实时投票 · 随机抽选 · 小组积分</p>
               </div>
 
               <div class="activity-tabs">
                 <button
-                  v-for="tab in [
-                    {
-                      id: 'quick-answer',
-                      icon: '👑',
-                      label: '随堂抢答',
-                      desc: '限时竞答',
-                    },
-                    {
-                      id: 'poll',
-                      icon: '📊',
-                      label: '实时投票',
-                      desc: '数据决策',
-                    },
-                    {
-                      id: 'random-pick',
-                      icon: '🎲',
-                      label: '随机抽选',
-                      desc: '公平互动',
-                    },
-                    {
-                      id: 'group-score',
-                      icon: '🏆',
-                      label: '小组积分',
-                      desc: '团队竞赛',
-                    },
-                  ]"
+                  v-for="tab in lessonActivityTabs"
                   :key="tab.id"
                   class="activity-tab"
                   :class="{ 'activity-tab--active': activityTab === tab.id }"
                   @click="activityTab = tab.id"
                 >
-                  <span class="activity-tab__icon">{{ tab.icon }}</span>
+                  <span class="activity-tab__icon" v-html="tab.icon"></span>
                   <div class="activity-tab__text">
                     <span class="activity-tab__label">{{ tab.label }}</span>
                     <span class="activity-tab__desc">{{ tab.desc }}</span>
@@ -2526,7 +2563,7 @@ watch(activeMenu, (newVal) => {
                 :key="item.id"
                 @click="switchMenu(item.id)"
               >
-                {{ item.icon }} {{ item.label }}
+                <span v-html="item.icon"></span> {{ item.label }}
               </li>
             </ul>
           </div>
@@ -2709,6 +2746,21 @@ watch(activeMenu, (newVal) => {
 .menu-item__icon {
   font-size: 1.5rem;
   transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+.menu-item__icon svg {
+  width: 22px;
+  height: 22px;
+  transition:
+    stroke 0.3s ease,
+    filter 0.3s ease;
+}
+.menu-item--active .menu-item__icon svg {
+  filter: drop-shadow(0 1px 4px rgba(76, 125, 255, 0.35));
 }
 
 .menu-item__content {
@@ -3029,15 +3081,7 @@ watch(activeMenu, (newVal) => {
   overflow: hidden;
 }
 
-/* 最后两个居中 */
-.home-card:nth-child(4) {
-  grid-column: 2 / span 2;
-}
-
-.home-card:nth-child(5) {
-  grid-column: 4 / span 2;
-}
-
+/* 自然三列排列 */
 .home-card-glow {
   position: absolute;
   inset: 0;
@@ -3174,6 +3218,40 @@ watch(activeMenu, (newVal) => {
 
 .home-card-emoji {
   font-size: 1.8rem;
+}
+.home-card-emoji svg,
+.home-card-icon-wrap svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.6;
+  transition:
+    stroke 0.3s ease,
+    filter 0.3s ease,
+    transform 0.3s ease;
+}
+.home-card:hover .home-card-emoji svg,
+.home-card:hover .home-card-icon-wrap svg {
+  transform: scale(1.08);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+/* 模块颜色对应 SVG 描边色 */
+.home-card--course-resource .home-card-emoji svg {
+  stroke: #3b82f6;
+}
+.home-card--course-analysis .home-card-emoji svg {
+  stroke: #f59e0b;
+}
+.home-card--classroom-activity .home-card-emoji svg {
+  stroke: #8b5cf6;
+}
+.home-card--qa-session .home-card-emoji svg {
+  stroke: #10b981;
+}
+.home-card--after-class .home-card-emoji svg {
+  stroke: #8b5cf6;
+}
+.home-card--ai-summary .home-card-emoji svg {
+  stroke: #ef4444;
 }
 
 .home-card-badge {
@@ -3572,6 +3650,14 @@ watch(activeMenu, (newVal) => {
 .video-detail-icon {
   font-size: 2.5rem;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-detail-icon svg {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
 }
 
 .video-detail-course-name {
@@ -3631,10 +3717,27 @@ watch(activeMenu, (newVal) => {
 
 .video-cover-icon {
   font-size: 2.8rem;
-  opacity: 0.75;
+  opacity: 0.85;
   position: relative;
   z-index: 2;
   transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-cover-icon svg {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+.video-cover-icon svg line,
+.video-cover-icon svg path,
+.video-cover-icon svg circle,
+.video-cover-icon svg rect,
+.video-cover-icon svg ellipse,
+.video-cover-icon svg polyline,
+.video-cover-icon svg polygon {
+  stroke: white;
 }
 
 .video-card:hover .video-cover-icon {
