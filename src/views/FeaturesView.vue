@@ -4348,7 +4348,24 @@ onUnmounted(() => {
         <section v-else-if="activePanel === 'history'" class="panel">
           <!-- 教学档案标题 -->
           <div class="archive-section-header">
-            <h2>📂 教学档案</h2>
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="vertical-align: -3px; margin-right: 6px"
+              >
+                <path
+                  d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                />
+              </svg>
+              教学档案
+            </h2>
             <p>筛选和浏览您的教学创作记录</p>
           </div>
 
