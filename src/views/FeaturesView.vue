@@ -28,6 +28,12 @@ const toast = ref("");
 const historyQuery = ref("");
 const historyPage = ref(1);
 const iterateFeedback = ref({});
+const feedbackType = ref("");
+const feedbackTitle = ref("");
+const feedbackDesc = ref("");
+const feedbackContact = ref("");
+const feedbackFileName = ref("");
+const fileInputRef = ref(null);
 const expandedRecord = ref(null);
 
 // ==================== 课堂互动数据 ====================
@@ -1463,13 +1469,31 @@ const filteredHistory = computed(() => {
   return result;
 });
 
-const pageSize = 4;
+const pageSize = 8;
 const totalHistoryPages = computed(() =>
   Math.max(1, Math.ceil(filteredHistory.value.length / pageSize)),
 );
 const paginatedHistory = computed(() => {
   const start = (historyPage.value - 1) * pageSize;
   return filteredHistory.value.slice(start, start + pageSize);
+});
+const archivePageNumbers = computed(() => {
+  const total = totalHistoryPages.value;
+  const current = historyPage.value;
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = [];
+  if (current <= 3) {
+    for (let i = 1; i <= 4; i++) pages.push(i);
+    pages.push(total);
+  } else if (current >= total - 2) {
+    pages.push(1);
+    for (let i = total - 3; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+    pages.push(total);
+  }
+  return [...new Set(pages)];
 });
 
 // 筛选后的意见反馈列表
@@ -2477,6 +2501,50 @@ function submitFeedback(item) {
     [item.id]: "",
   };
   refresh();
+}
+
+function appendTag(tag) {
+  const prefix = feedbackDesc.value.trim() ? `；${tag}：` : `${tag}：`;
+  feedbackDesc.value += prefix;
+}
+
+function triggerFileInput() {
+  fileInputRef.value?.click();
+}
+
+function handleFileChange(e) {
+  const file = e.target.files?.[0];
+  if (file) {
+    if (file.size > 20 * 1024 * 1024) {
+      showToast("文件大小不能超过 20MB");
+      return;
+    }
+    feedbackFileName.value = file.name;
+  }
+}
+
+function removeFeedbackFile() {
+  feedbackFileName.value = "";
+  if (fileInputRef.value) fileInputRef.value.value = "";
+}
+
+function submitNewFeedback() {
+  if (!feedbackType.value) return showToast("请选择反馈类型");
+  if (!feedbackTitle.value?.trim()) return showToast("请填写反馈标题");
+  if (!feedbackDesc.value?.trim()) return showToast("请填写详细描述");
+  const contactInfo = feedbackContact.value?.trim()
+    ? `（联系方式：${feedbackContact.value}）`
+    : "";
+  const fileInfo = feedbackFileName.value
+    ? `[附件：${feedbackFileName.value}] `
+    : "";
+  showToast(`感谢您的反馈，已提交成功！${fileInfo}${contactInfo}`);
+  feedbackType.value = "";
+  feedbackTitle.value = "";
+  feedbackDesc.value = "";
+  feedbackContact.value = "";
+  feedbackFileName.value = "";
+  if (fileInputRef.value) fileInputRef.value.value = "";
 }
 
 // 添加快速提示到反馈
@@ -4402,469 +4470,524 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- 分页 -->
-          <div class="history-toolbar history-toolbar--compact">
-            <span class="toolbar-summary">
-              共 {{ filteredHistory.length }} 条记录
-              <template v-if="archiveFilters.searchQuery"
-                >，搜索 "<em>{{ archiveFilters.searchQuery }}</em
-                >"</template
-              >
-            </span>
-            <div class="pager">
-              <button :disabled="historyPage <= 1" @click="historyPage -= 1">
-                上一页
-              </button>
-              <span>{{ historyPage }} / {{ totalHistoryPages }}</span>
-              <button
-                :disabled="historyPage >= totalHistoryPages"
-                @click="historyPage += 1"
-              >
-                下一页
-              </button>
-            </div>
+          <!-- 统计信息 -->
+          <div class="archive-table-info">
+            共 <strong>{{ filteredHistory.length }}</strong> 条记录
+            <template v-if="archiveFilters.searchQuery"
+              >，搜索 "<em>{{ archiveFilters.searchQuery }}</em
+              >"</template
+            >
           </div>
 
-          <!-- 记录列表 -->
-          <div class="record-list">
-            <article
-              v-for="item in paginatedHistory"
-              :key="item.id"
-              class="record-card"
-              :class="{ expanded: expandedRecord === item.id }"
-              @click="toggleRecordExpand(item.id)"
-            >
-              <!-- 卡片头部 -->
-              <div class="record-card__header">
-                <div
-                  class="record-card__icon"
-                  :class="item.type"
-                  v-html="getTypeIcon(item.type)"
-                ></div>
-                <div class="record-card__info">
-                  <strong>{{ item.title }}</strong>
-                  <span class="record-meta">
-                    <span class="meta-item subject">{{ item.subject }}</span>
-                    <span class="meta-item type">{{
+          <!-- 数据表格 -->
+          <div class="archive-table-wrapper">
+            <table class="archive-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th class="col-name">名称</th>
+                  <th class="col-subject">学科</th>
+                  <th class="col-type">类型</th>
+                  <th class="col-status">状态</th>
+                  <th class="col-time">创建时间</th>
+                  <th class="col-actions">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in paginatedHistory"
+                  :key="item.id"
+                  class="archive-row"
+                >
+                  <td class="col-num">
+                    {{ (historyPage - 1) * pageSize + index + 1 }}
+                  </td>
+                  <td class="col-name">
+                    <div class="archive-name-cell">
+                      <span
+                        class="archive-type-icon"
+                        :class="item.type"
+                        v-html="getTypeIcon(item.type)"
+                      ></span>
+                      <span class="archive-name-text">{{ item.title }}</span>
+                    </div>
+                  </td>
+                  <td class="col-subject">
+                    <span class="archive-subject-tag">{{ item.subject }}</span>
+                  </td>
+                  <td class="col-type">
+                    <span class="archive-type-label">{{
                       TYPE_LABELS[item.type]
                     }}</span>
-                    <span class="meta-item time">{{
-                      formatFeatureTime(item.createdAt)
-                    }}</span>
-                  </span>
-                </div>
-                <div class="record-card__actions">
-                  <em class="status-badge" :data-status="item.status">{{
-                    STATUS_LABELS[item.status]
-                  }}</em>
-                  <button
-                    class="btn-expand"
-                    @click.stop="toggleRecordExpand(item.id)"
-                  >
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      class="expand-icon"
-                      :class="{ rotated: expandedRecord === item.id }"
+                  </td>
+                  <td class="col-status">
+                    <span
+                      class="archive-status-badge"
+                      :data-status="item.status"
                     >
-                      <path
-                        d="M5 8l5 5 5-5"
+                      <span class="archive-status-dot"></span>
+                      {{ STATUS_LABELS[item.status] }}
+                    </span>
+                  </td>
+                  <td class="col-time">
+                    {{ formatFeatureTime(item.createdAt) }}
+                  </td>
+                  <td class="col-actions">
+                    <div class="archive-actions">
+                      <button
+                        class="archive-action-btn"
+                        title="查看详情"
+                        @click="previewRecord(item)"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                          />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                      <button
+                        class="archive-action-btn"
+                        title="继续编辑"
+                        @click="editRecord(item)"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                          />
+                          <path
+                            d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="archive-action-btn archive-action-btn--delete"
+                        title="删除"
+                        @click="handleDelete(item.id)"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="3 6 5 6 21 6" />
+                          <path
+                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="!paginatedHistory.length">
+                  <td colspan="7">
+                    <div class="archive-empty">
+                      <svg
+                        width="36"
+                        height="36"
+                        viewBox="0 0 24 24"
+                        fill="none"
                         stroke="currentColor"
                         stroke-width="1.5"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- 展开详情 -->
-              <Transition name="slide-down">
-                <div
-                  v-if="expandedRecord === item.id"
-                  class="record-card__details"
-                  @click.stop
-                >
-                  <!-- 预览区域 -->
-                  <div class="record-preview">
-                    <h5>内容预览</h5>
-                    <div class="preview-content">
-                      <p>{{ getRecordPreview(item) }}</p>
+                      >
+                        <path
+                          d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+                        />
+                        <polyline points="13 2 13 9 20 9" />
+                      </svg>
+                      <p>暂无生成记录<br />快去体验 AI 创作吧</p>
                     </div>
-                  </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-                  <!-- 快捷操作 -->
-                  <div class="record-quick-actions">
-                    <button
-                      class="action-btn primary"
-                      @click="previewRecord(item)"
-                    >
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M10 4v8m0 0l-3-3m3 3l3-3M4 12v4h12"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      查看详情
-                    </button>
-                    <button class="action-btn" @click="editRecord(item)">
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M11 4h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M12 3l-2 2-2-2"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      继续编辑
-                    </button>
-                    <button class="action-btn" @click="downloadRecord(item)">
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M10 4v8m0 0l-3-3m3 3l3-3M4 12v4h12"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      下载文件
-                    </button>
-                    <button
-                      class="action-btn feedback"
-                      @click="feedbackRecord(item)"
-                    >
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M7 8h6M7 12h4m-2-8h6l3 3v10H6v-13z"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      提交反馈
-                    </button>
-                  </div>
-
-                  <!-- 底部操作栏 -->
-                  <div class="record-footer">
-                    <span class="record-id">ID: {{ item.id }}</span>
-                    <button
-                      class="btn-delete-text"
-                      @click="handleDelete(item.id)"
-                    >
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M6 5h8l-1 10H7L6 5z"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M4 5h12M8 3h4"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        />
-                      </svg>
-                      删除记录
-                    </button>
-                  </div>
-                </div>
-              </Transition>
-            </article>
-
-            <div
-              v-if="!paginatedHistory.length"
-              class="empty-state record-empty"
+          <!-- 分页 -->
+          <div class="archive-pagination">
+            <span class="archive-page-info"
+              >第 {{ historyPage }} / {{ totalHistoryPages }} 页，共
+              {{ filteredHistory.length }} 条</span
             >
-              <div class="empty-illustration">
-                <svg viewBox="0 0 100 100" fill="none">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="rgba(76,125,255,0.2)"
-                    stroke-width="2"
-                  />
-                  <path
-                    d="M35 50h30M50 35v30"
-                    stroke="rgba(76,125,255,0.3)"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
+            <div class="archive-page-btns">
+              <button
+                class="archive-page-btn"
+                :disabled="historyPage <= 1"
+                @click="historyPage -= 1"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="15 18 9 12 15 6" />
                 </svg>
-              </div>
-              <h4>暂无生成记录</h4>
-              <p>您还没有创建任何课件，快去体验 AI 生成吧！</p>
-              <button class="btn-primary" @click="activePanel = 'ppt'">
-                开始创作
+                上一页
+              </button>
+              <button
+                v-for="p in archivePageNumbers"
+                :key="p"
+                class="archive-page-btn"
+                :class="{ active: p === historyPage }"
+                @click="historyPage = p"
+              >
+                {{ p }}
+              </button>
+              <button
+                class="archive-page-btn"
+                :disabled="historyPage >= totalHistoryPages"
+                @click="historyPage += 1"
+              >
+                下一页
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </button>
             </div>
           </div>
         </section>
 
         <section v-else-if="activePanel === 'iterate'" class="panel">
-          <!-- 筛选器 -->
-          <div class="feedback-filter-bar">
-            <div class="feedback-filter-header">
-              <h3>筛选待反馈课件</h3>
-              <div class="feedback-stats">
-                <span class="stat-badge"
-                  >共 {{ feedbackStats.total }} 个待反馈</span
-                >
-                <span
-                  v-if="feedbackStats.byType.ppt"
-                  class="stat-badge type-ppt"
-                  >课件 {{ feedbackStats.byType.ppt }}</span
-                >
-                <span
-                  v-if="feedbackStats.byType.doc"
-                  class="stat-badge type-doc"
-                  >教案 {{ feedbackStats.byType.doc }}</span
-                >
-                <span
-                  v-if="feedbackStats.byType.interactive"
-                  class="stat-badge type-interactive"
-                  >教学题 {{ feedbackStats.byType.interactive }}</span
-                >
-              </div>
-            </div>
-            <div class="feedback-filters">
-              <div class="filter-group">
-                <label>搜索</label>
-                <input
-                  v-model="feedbackFilters.searchQuery"
-                  type="text"
-                  placeholder="搜索课件名称或学科..."
-                  class="filter-input search-input"
+          <!-- 页面标题 -->
+          <div class="reflect-page-title">
+            <h3 class="reflect-title">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
                 />
-              </div>
-              <div class="filter-group">
-                <label>学科</label>
-                <select v-model="feedbackFilters.subject" class="filter-select">
-                  <option value="">全部学科</option>
-                  <option
-                    v-for="subject in availableSubjects"
-                    :key="subject"
-                    :value="subject"
-                  >
-                    {{ subject }}
-                  </option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <label>课件类型</label>
-                <select v-model="feedbackFilters.type" class="filter-select">
-                  <option
-                    v-for="option in contentTypeOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <label>创作时间</label>
-                <select
-                  v-model="feedbackFilters.timeRange"
-                  class="filter-select"
-                >
-                  <option
-                    v-for="option in timeRangeOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-              <button class="btn-reset" @click="resetFeedbackFilters">
-                <svg viewBox="0 0 20 20" fill="none" class="reset-icon">
-                  <path
-                    d="M4 10a6 6 0 0 1 6-6m0 12a6 6 0 0 1-6-6m-2 0h4m4 0h4"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                重置
-              </button>
-            </div>
+              </svg>
+              教学反思
+            </h3>
+            <p class="reflect-desc">记录教学心得，持续优化内容质量</p>
           </div>
 
-          <!-- 反馈列表 -->
-          <div class="feedback-list">
-            <article
-              v-for="item in feedbackItems"
-              :key="item.id"
-              class="feedback-card"
-            >
-              <div class="feedback-card__head">
-                <div class="feedback-card__info">
-                  <div
-                    class="feedback-card__type-icon"
-                    :class="item.type"
-                    v-html="getTypeIcon(item.type)"
-                  ></div>
-                  <div class="feedback-card__title-group">
-                    <h3>{{ item.title }}</h3>
-                    <p class="feedback-card__meta">
-                      <span class="meta-tag subject-tag">{{
-                        item.subject
-                      }}</span>
-                      <span class="meta-tag type-tag">{{
-                        item.typeLabel
-                      }}</span>
-                      <span class="meta-tag time-tag">{{
-                        item.timeLabel
-                      }}</span>
-                    </p>
+          <div class="reflect-divider"></div>
+
+          <!-- 左右分栏：左 3/5 表单 | 右 2/5 历史记录 -->
+          <div class="reflect-layout">
+            <!-- ===== 左侧：提交新反馈表单 ===== -->
+            <div class="reflect-form-card">
+              <div class="reflect-form-card__header">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 5v14" />
+                  <path d="M5 12h14" />
+                </svg>
+                提交新反馈
+              </div>
+
+              <div class="reflect-form-body">
+                <div class="reflect-field">
+                  <label class="reflect-field__label"
+                    >反馈类型
+                    <span class="reflect-field__required">*</span></label
+                  >
+                  <select v-model="feedbackType" class="reflect-select">
+                    <option value="" disabled>请选择反馈类型</option>
+                    <option value="courseware">课件优化</option>
+                    <option value="lesson-plan">教案改进</option>
+                    <option value="activity">教学活动设计</option>
+                    <option value="ai-quality">AI 生成质量</option>
+                    <option value="platform">平台功能建议</option>
+                    <option value="other">其他</option>
+                  </select>
+                </div>
+
+                <div class="reflect-field">
+                  <label class="reflect-field__label"
+                    >反馈标题
+                    <span class="reflect-field__required">*</span></label
+                  >
+                  <input
+                    v-model="feedbackTitle"
+                    type="text"
+                    class="reflect-input"
+                    placeholder="例如：关于《二次函数》课件的修改建议"
+                  />
+                </div>
+
+                <div class="reflect-field">
+                  <label class="reflect-field__label"
+                    >详细描述
+                    <span class="reflect-field__required">*</span></label
+                  >
+                  <textarea
+                    v-model="feedbackDesc"
+                    class="reflect-textarea"
+                    rows="4"
+                    placeholder="请详细描述您的修改建议或遇到的问题..."
+                  />
+                </div>
+
+                <div class="reflect-field">
+                  <label class="reflect-field__label">附件上传</label>
+                  <div class="reflect-upload">
+                    <button
+                      class="reflect-upload__btn"
+                      @click="triggerFileInput"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      选择文件
+                    </button>
+                    <span class="reflect-upload__hint"
+                      >支持 .docx、.pptx、.pdf、.png、.jpg ≤20MB</span
+                    >
+                    <input
+                      ref="fileInputRef"
+                      type="file"
+                      class="reflect-upload__input"
+                      @change="handleFileChange"
+                      accept=".docx,.pptx,.pdf,.png,.jpg,.jpeg"
+                    />
+                    <div v-if="feedbackFileName" class="reflect-upload__file">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                        />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                      </svg>
+                      {{ feedbackFileName }}
+                      <button
+                        class="reflect-upload__remove"
+                        @click="removeFeedbackFile"
+                      >
+                        &times;
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <em class="status-badge" :data-status="item.status">{{
-                  item.statusLabel
-                }}</em>
-              </div>
 
-              <div class="feedback-card__preview">
-                <div class="preview-item">
-                  <span class="preview-label">生成内容预览</span>
-                  <p class="preview-content">
-                    {{
-                      item.contentPreview ||
-                      "该课件包含教学目标、重难点分析、教学过程设计等内容，点击提交反馈后系统将根据您的建议进行优化。"
-                    }}
-                  </p>
+                <div class="reflect-field">
+                  <label class="reflect-field__label">联系方式</label>
+                  <input
+                    v-model="feedbackContact"
+                    type="text"
+                    class="reflect-input"
+                    placeholder="邮箱或手机号（选填）"
+                  />
                 </div>
               </div>
 
-              <div class="feedback-card__tips">
-                <div class="tips-header">
-                  <svg viewBox="0 0 20 20" fill="none" class="tips-icon">
-                    <path
-                      d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                    />
-                    <path
-                      d="M10 14v-4M10 6h.01"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                  <span>建议反馈方向</span>
-                </div>
-                <div class="tips-tags">
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '结构调整')"
+              <div class="reflect-tips">
+                <span class="reflect-tips__label">快捷填入</span>
+                <div class="reflect-tips__tags">
+                  <span class="tip-tag" @click="appendTag('结构调整')"
                     >结构调整</span
                   >
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '讲授风格')"
+                  <span class="tip-tag" @click="appendTag('讲授风格')"
                     >讲授风格</span
                   >
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '题目难度')"
+                  <span class="tip-tag" @click="appendTag('题目难度')"
                     >题目难度</span
                   >
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '课堂互动')"
+                  <span class="tip-tag" @click="appendTag('课堂互动')"
                     >课堂互动</span
                   >
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '内容深度')"
+                  <span class="tip-tag" @click="appendTag('内容深度')"
                     >内容深度</span
                   >
-                  <span
-                    class="tip-tag"
-                    @click="addTipToFeedback(item.id, '视觉设计')"
+                  <span class="tip-tag" @click="appendTag('视觉设计')"
                     >视觉设计</span
                   >
                 </div>
               </div>
 
-              <textarea
-                v-model="iterateFeedback[item.id]"
-                :placeholder="`请描述您对《${item.title}》的修改建议，例如：希望导入更有情境感，减少概念堆砌，增加课堂追问和学生讨论环节...`"
-                class="feedback-textarea"
-              />
-
-              <div class="feedback-card__actions">
-                <button class="btn-secondary" @click="viewDetail(item)">
-                  <svg viewBox="0 0 20 20" fill="none" class="btn-icon">
-                    <path
-                      d="M10 4v8m0 0l-3-3m3 3l3-3M4 12v4h12"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  查看详情
-                </button>
-                <button class="btn-primary" @click="submitFeedback(item)">
-                  <svg viewBox="0 0 20 20" fill="none" class="btn-icon">
-                    <path
-                      d="M4 10h12m0 0l-4-4m4 4l-4 4"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
+              <div class="reflect-form-card__actions">
+                <button class="btn-primary" @click="submitNewFeedback">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M22 2L11 13" />
+                    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                   </svg>
                   提交反馈
                 </button>
               </div>
-            </article>
+            </div>
 
-            <div
-              v-if="!feedbackItems.length"
-              class="empty-state feedback-empty"
-            >
-              <div class="empty-illustration">
-                <svg viewBox="0 0 100 100" fill="none">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="rgba(76,125,255,0.2)"
-                    stroke-width="2"
-                  />
-                  <path
-                    d="M35 50h30M50 35v30"
-                    stroke="rgba(76,125,255,0.3)"
+            <!-- ===== 右侧：历史反馈记录 ===== -->
+            <div class="reflect-history-card">
+              <div class="reflect-history-card__head">
+                <span class="reflect-history-card__title">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
-                  />
-                </svg>
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  历史反馈记录
+                </span>
+                <span class="reflect-history-card__badge">{{
+                  feedbackItems.length
+                }}</span>
               </div>
-              <h4>暂无待反馈课件</h4>
-              <p>当前筛选条件下没有符合条件的课件，请尝试调整筛选条件</p>
-              <button class="btn-primary" @click="resetFeedbackFilters">
-                清除筛选条件
-              </button>
+
+              <div class="reflect-history-list">
+                <div
+                  v-for="item in feedbackItems.slice(0, 4)"
+                  :key="item.id"
+                  class="reflect-history-item"
+                >
+                  <div class="reflect-history-item__head">
+                    <div class="reflect-history-item__tags">
+                      <span class="rh-type" :class="item.type">{{
+                        item.typeLabel
+                      }}</span>
+                      <span class="rh-subject">{{ item.subject }}</span>
+                    </div>
+                    <span class="rh-status" :data-status="item.status">{{
+                      item.statusLabel
+                    }}</span>
+                  </div>
+                  <div class="reflect-history-item__title">
+                    {{ item.title }}
+                  </div>
+                  <div class="reflect-history-item__preview">
+                    {{ item.contentPreview || item.feedback || "暂无反馈内容" }}
+                  </div>
+                  <div class="reflect-history-item__time">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {{ item.timeLabel }}
+                  </div>
+                </div>
+
+                <div v-if="!feedbackItems.length" class="reflect-history-empty">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <p>暂无反馈记录<br />提交反馈后将在此展示</p>
+                </div>
+              </div>
+
+              <div class="reflect-history-card__foot">
+                <button class="view-all-btn" @click="resetFeedbackFilters">
+                  查看全部记录
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -5561,13 +5684,561 @@ onUnmounted(() => {
   grid-template-columns: 1fr 1fr;
 }
 
+/* =========================================================
+   教学反思 - 新排版
+   ========================================================= */
+.reflect-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 0;
+}
+.reflect-header__left {
+  flex-shrink: 0;
+}
+.reflect-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px;
+}
+.reflect-title svg {
+  color: #4c7dff;
+}
+.reflect-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+.reflect-header__right {
+  flex: 1;
+  max-width: 460px;
+  min-width: 0;
+}
+
+/* --- 最近反馈卡片块 --- */
+.recent-feedback-card {
+  background: rgba(248, 251, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+.recent-feedback-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.recent-feedback-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+.recent-feedback-card__title svg {
+  color: #4c7dff;
+}
+.recent-feedback-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(76, 125, 255, 0.1);
+  color: #4c7dff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.recent-feedback-card__foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(128, 151, 185, 0.08);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.recent-feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+}
+.recent-feedback-empty {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+.recent-feedback-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  border: 1px solid rgba(128, 151, 185, 0.1);
+  transition: background 0.2s;
+}
+.recent-feedback-item:hover {
+  background: #f1f4f9;
+}
+.recent-feedback__type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.recent-feedback__type.ppt {
+  background: rgba(76, 125, 255, 0.1);
+  color: #4c7dff;
+}
+.recent-feedback__type.doc {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.recent-feedback__type.interactive {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+.recent-feedback__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #475569;
+  font-weight: 500;
+}
+.recent-feedback__status {
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.recent-feedback__status[data-status="pending"] {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+.recent-feedback__status[data-status="iterating"] {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+.recent-feedback__status[data-status="done"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #4c7dff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-weight: 500;
+  margin-left: auto;
+}
+.view-all-btn:hover {
+  color: #3156d3;
+}
+.view-all-btn svg {
+  transition: transform 0.2s;
+}
+.view-all-btn:hover svg {
+  transform: translateX(2px);
+}
+
+/* --- 左右分栏布局 --- */
+.reflect-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .reflect-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reflect-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(128, 151, 185, 0.2),
+    rgba(128, 151, 185, 0.05)
+  );
+  margin: 20px 0 24px;
+}
+
+/* --- 表单卡片 --- */
+.reflect-form-card {
+  background: rgba(248, 251, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 22px 24px 20px;
+}
+.reflect-form-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(128, 151, 185, 0.1);
+}
+.reflect-form-card__header svg {
+  color: #4c7dff;
+}
+
+.reflect-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reflect-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reflect-field__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+.reflect-field__required {
+  color: #ef4444;
+}
+
+.reflect-select,
+.reflect-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(128, 151, 185, 0.2);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: white;
+  font-family: inherit;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+  box-sizing: border-box;
+}
+.reflect-select:focus,
+.reflect-input:focus {
+  outline: none;
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.1);
+}
+.reflect-select::placeholder,
+.reflect-input::placeholder {
+  color: #94a3b8;
+}
+
+.reflect-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(128, 151, 185, 0.2);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: white;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.6;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+  box-sizing: border-box;
+}
+.reflect-textarea:focus {
+  outline: none;
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.1);
+}
+.reflect-textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* 附件上传 */
+.reflect-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reflect-upload__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1px dashed rgba(76, 125, 255, 0.3);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+.reflect-upload__btn:hover {
+  background: rgba(76, 125, 255, 0.08);
+  border-color: #4c7dff;
+}
+.reflect-upload__hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.reflect-upload__input {
+  display: none;
+}
+.reflect-upload__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(76, 125, 255, 0.06);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #334155;
+  width: fit-content;
+}
+.reflect-upload__file svg {
+  color: #4c7dff;
+  flex-shrink: 0;
+}
+.reflect-upload__remove {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.reflect-upload__remove:hover {
+  color: #ef4444;
+}
+
+/* 快捷填入标签 */
+.reflect-tips {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(128, 151, 185, 0.08);
+}
+.reflect-tips__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+.reflect-tips__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.reflect-tips__tags .tip-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.07);
+  border: 1px solid rgba(76, 125, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reflect-tips__tags .tip-tag:hover {
+  background: rgba(76, 125, 255, 0.14);
+  border-color: rgba(76, 125, 255, 0.25);
+}
+
+/* 提交按钮 */
+.reflect-form-card__actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+.reflect-form-card__actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 32px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* --- 历史反馈记录卡片 --- */
+.reflect-history-card {
+  background: rgba(248, 251, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  max-height: 580px;
+  overflow-y: auto;
+}
+.reflect-history-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(128, 151, 185, 0.12);
+}
+.reflect-history-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.reflect-history-card__title svg {
+  color: #4c7dff;
+}
+.reflect-history-card__badge {
+  background: rgba(76, 125, 255, 0.1);
+  color: #4c7dff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.reflect-history-card__foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(128, 151, 185, 0.12);
+  text-align: center;
+}
+
+.reflect-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reflect-history-item {
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid rgba(128, 151, 185, 0.08);
+  transition: box-shadow 0.2s;
+}
+.reflect-history-item:hover {
+  box-shadow: 0 2px 12px rgba(76, 125, 255, 0.06);
+}
+.reflect-history-item__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.reflect-history-item__tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rh-type {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 500;
+  background: rgba(76, 125, 255, 0.08);
+  color: #4c7dff;
+}
+.rh-subject {
+  font-size: 0.7rem;
+  color: #738197;
+}
+.rh-status {
+  font-size: 0.68rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+.rh-status[data-status="pending"] {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+.rh-status[data-status="iterating"] {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+.rh-status[data-status="resolved"] {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+.reflect-history-item__title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reflect-history-item__preview {
+  font-size: 0.72rem;
+  color: #738197;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.reflect-history-item__time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+.reflect-history-item__time svg {
+  color: #94a3b8;
+}
+.reflect-history-empty {
+  text-align: center;
+  padding: 30px 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.reflect-history-empty svg {
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
 .dashboard-card,
 .form-card,
 .preview-card,
 .support-card,
 .viz-card,
 .feedback-card,
-.record-card,
 .summary-pill {
   border: 1px solid var(--border);
   border-radius: 22px;
@@ -7787,59 +8458,6 @@ onUnmounted(() => {
   margin-top: 16px;
 }
 
-.history-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-}
-
-.history-toolbar input {
-  max-width: 320px;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pager button,
-.record-card__delete {
-  padding: 9px 14px;
-  border-radius: 12px;
-  background: rgba(76, 125, 255, 0.08);
-  color: var(--accent-deep);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
-.pager button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.pager span {
-  color: var(--ink-muted);
-  font-size: 0.82rem;
-}
-
-.history-toolbar--compact {
-  margin-top: 0;
-  padding: 10px 0;
-}
-
-.history-toolbar--compact .toolbar-summary {
-  font-size: 0.82rem;
-  color: var(--ink-muted);
-}
-
-.history-toolbar--compact .toolbar-summary em {
-  color: var(--accent-deep);
-  font-style: normal;
-  font-weight: 500;
-}
-
 /* ==================== 教学档案面板标题 ==================== */
 .archive-section-header {
   margin-bottom: 20px;
@@ -7992,6 +8610,307 @@ onUnmounted(() => {
 
   .archive-filter-bar {
     padding: 16px;
+  }
+}
+
+/* ==================== 教学档案表格 ==================== */
+.archive-table-info {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.archive-table-info strong {
+  color: #1e293b;
+  font-weight: 700;
+}
+.archive-table-info em {
+  font-style: normal;
+  color: #4c7dff;
+  font-weight: 600;
+}
+
+.archive-table-wrapper {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid #eef2f6;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+  margin-bottom: 16px;
+}
+
+.archive-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.archive-table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #eef2f6;
+}
+
+.archive-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #64748b;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.archive-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.archive-table tbody tr {
+  transition: background 0.15s ease;
+}
+.archive-table tbody tr:hover {
+  background: #f8fafc;
+}
+.archive-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.archive-table .col-num {
+  width: 48px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.archive-table .col-name {
+  min-width: 200px;
+}
+.archive-table .col-subject {
+  width: 100px;
+}
+.archive-table .col-type {
+  width: 100px;
+}
+.archive-table .col-status {
+  width: 90px;
+}
+.archive-table .col-time {
+  width: 100px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.archive-table .col-actions {
+  width: 120px;
+  text-align: center;
+}
+
+.archive-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.archive-type-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.archive-type-icon.ppt {
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.1);
+}
+.archive-type-icon.doc {
+  color: #23c3b2;
+  background: rgba(35, 195, 178, 0.1);
+}
+.archive-type-icon.interactive {
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+.archive-type-icon :deep(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.archive-name-text {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archive-subject-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  background: rgba(76, 125, 255, 0.06);
+  color: #4c7dff;
+}
+
+.archive-type-label {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+/* 状态标签 - 参照参考图蓝/绿/橙配色 */
+.archive-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px 3px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.archive-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.archive-status-badge[data-status="completed"] {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+.archive-status-badge[data-status="completed"] .archive-status-dot {
+  background: #22c55e;
+}
+.archive-status-badge[data-status="draft"] {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+.archive-status-badge[data-status="draft"] .archive-status-dot {
+  background: #f59e0b;
+}
+.archive-status-badge[data-status="iterating"] {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+.archive-status-badge[data-status="iterating"] .archive-status-dot {
+  background: #3b82f6;
+}
+.archive-status-badge[data-status="failed"] {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+.archive-status-badge[data-status="failed"] .archive-status-dot {
+  background: #ef4444;
+}
+
+/* 操作按钮 */
+.archive-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.archive-action-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.archive-action-btn:hover {
+  background: rgba(76, 125, 255, 0.08);
+  color: #4c7dff;
+}
+.archive-action-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+/* 空状态 */
+.archive-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #94a3b8;
+}
+.archive-empty svg {
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+.archive-empty p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* 分页 */
+.archive-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.archive-page-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.archive-page-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.archive-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 34px;
+  justify-content: center;
+}
+.archive-page-btn:hover:not(:disabled) {
+  border-color: #4c7dff;
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.04);
+}
+.archive-page-btn.active {
+  border-color: #4c7dff;
+  background: #4c7dff;
+  color: white;
+}
+.archive-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .archive-table .col-time,
+  .archive-table .col-subject {
+    display: none;
+  }
+  .archive-table .col-type {
+    width: auto;
+  }
+  .archive-pagination {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
