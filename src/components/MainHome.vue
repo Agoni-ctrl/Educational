@@ -19,7 +19,7 @@ const showcaseItems = [
     accent: "#7c5cff",
     shape: "ripple",
     route: "/assistant",
-    imageUrl: "/image/showcase/prepare.png",
+    imageUrl: "/image/showcase/prepare.svg",
   },
   {
     id: 2,
