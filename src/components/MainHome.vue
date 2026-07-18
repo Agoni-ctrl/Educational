@@ -13,7 +13,7 @@ const showcaseItems = [
     title: "AI 智能备课",
     subtitle: "输入主题，一键生成完整教案",
     description:
-      "告别繁琐备课。AI 根据学科、年级、教学目标自动撰写教案框架，生成教学重难点、课堂活动设计和课后练习，大幅提升备课效率。",
+      "告别繁琐备课，AI 自动撰写教案框架与课堂活动设计，大幅提升备课效率。",
     icon: "✦",
     gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
     accent: "#7c5cff",
@@ -26,7 +26,7 @@ const showcaseItems = [
     title: "课件管理",
     subtitle: "海量模板，轻松打造精致课件",
     description:
-      "提供覆盖全学科的 PPT 模板与素材库，支持在线编辑与云端同步。智能排版让每一页课件都专业美观，减轻设计负担。",
+      "覆盖全学科的 PPT 模板与素材库，在线编辑与云端同步，智能排版更专业。",
     icon: "◈",
     gradient: "linear-gradient(135deg, #0ba360 0%, #3cba92 50%, #00d2ff 100%)",
     accent: "#10b981",
@@ -39,26 +39,26 @@ const showcaseItems = [
     title: "数据分析",
     subtitle: "教学趋势，可视化图表洞察",
     description:
-      "自动汇总教学数据，通过 ECharts 图表直观呈现创作趋势、资源使用分布和学情变化，帮助教师用数据驱动教学决策。",
+      "自动汇总教学数据，图表展示创作趋势与学情变化，用数据驱动教学决策。",
     icon: "⬡",
     gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #ffa751 100%)",
     accent: "#f59e0b",
     shape: "dots",
     route: "/features",
-    imageUrl: "/image/showcase/analytics.png",
+    imageUrl: "/image/showcase/analytics.svg",
   },
   {
     id: 4,
     title: "教学社区",
     subtitle: "分享经验，与全国教师互动交流",
     description:
-      "汇聚一线教师分享教学心得、优质资源和课堂实录。在这里找到同行、碰撞灵感、共同成长，让教学之路不再孤单。",
+      "汇聚一线教师分享教学心得与优质资源，找到同行，碰撞灵感，共同成长。",
     icon: "◎",
     gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)",
     accent: "#06b6d4",
     shape: "wave",
     route: "/community",
-    imageUrl: "/image/showcase/community.png",
+    imageUrl: "/image/showcase/community.svg",
   },
 ];
 
@@ -251,45 +251,42 @@ onUnmounted(() => {
                   }"
                   @click="index === currentIndex && navigateToFeature()"
                 >
-                  <!-- 本地插图 -->
+                  <!-- 仅展示图片，无任何文字叠加 -->
                   <img
                     class="showcase-card__bg-img"
                     :src="item.imageUrl"
                     :alt="item.title"
                   />
-                  <!-- 渐变遮罩保证文字可读 -->
-                  <div
-                    class="showcase-card__overlay"
-                    :style="{ background: item.gradient }"
-                  />
-                  <!-- 文字 -->
-                  <div class="showcase-card__text">
-                    <h3>{{ item.title }}</h3>
-                    <p class="showcase-card__subtitle">{{ item.subtitle }}</p>
-                    <p class="showcase-card__desc">{{ item.description }}</p>
-                  </div>
-                  <!-- 底部光条 -->
-                  <div
-                    class="showcase-card__glow"
-                    :style="{ background: item.accent }"
-                  />
                 </div>
               </div>
             </div>
 
-            <!-- 功能提示信息 -->
-            <div class="showcase-hint">
-              <div class="hint-icon">
+            <!-- 功能文字信息（图片下方） -->
+            <div class="showcase-info" :key="currentIndex">
+              <div
+                class="showcase-info__icon"
+                :style="{ color: showcaseItems[currentIndex].accent }"
+              >
                 {{ showcaseItems[currentIndex].icon }}
               </div>
-              <div class="hint-content">
-                <div class="hint-title">
-                  {{ showcaseItems[currentIndex].title }}
-                </div>
-                <div class="hint-desc">
-                  {{ showcaseItems[currentIndex].description }}
-                </div>
+              <div
+                class="showcase-info__title"
+                :style="{
+                  backgroundImage: showcaseItems[currentIndex].gradient,
+                }"
+              >
+                {{ showcaseItems[currentIndex].title }}
               </div>
+              <div class="showcase-info__subtitle">
+                {{ showcaseItems[currentIndex].subtitle }}
+              </div>
+              <div class="showcase-info__desc">
+                {{ showcaseItems[currentIndex].description }}
+              </div>
+              <div
+                class="showcase-info__bar"
+                :style="{ background: showcaseItems[currentIndex].accent }"
+              />
             </div>
 
             <!-- 简化的进度指示器 -->
@@ -454,8 +451,11 @@ onUnmounted(() => {
   margin-bottom: 28px;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--accent);
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .pulse {
@@ -490,6 +490,7 @@ onUnmounted(() => {
   line-height: 1.78;
   color: var(--ink-soft);
   margin-bottom: 26px;
+  position: relative;
 }
 
 .lesson-stats {
@@ -533,7 +534,10 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 1.25rem;
   line-height: 1;
-  color: var(--accent-deep);
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .lesson-stat span {
@@ -664,87 +668,79 @@ onUnmounted(() => {
   border-radius: 24px;
 }
 
+.showcase-card__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .showcase-card--clickable {
   cursor: pointer;
 }
 
-.showcase-card--clickable:hover .showcase-card__glow {
-  opacity: 0.8;
-  left: 10%;
-  right: 10%;
-  transition: all 0.35s ease;
-}
-
-.showcase-card--clickable:hover .showcase-card__overlay {
-  opacity: 0.35;
-}
-
-/* Background image */
-.showcase-card__bg-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Gradient overlay for text readability */
-.showcase-card__overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.55;
-  transition: opacity 0.35s ease;
-}
-
-/* Text */
-.showcase-card__text {
+/* Showcase info below the card */
+.showcase-info {
   text-align: center;
-  z-index: 1;
-  padding: 0 28px;
-  max-width: 100%;
+  margin-top: 28px;
+  padding: 0 8px;
+  position: relative;
+  animation: infoFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.showcase-card__text h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 6px 0;
-  letter-spacing: 0.03em;
+@keyframes infoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-
-.showcase-card__subtitle {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0 0 12px 0;
-  letter-spacing: 0.04em;
+.showcase-info__icon {
+  font-size: 2rem;
+  margin-bottom: 6px;
+  transition: color 0.5s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
-
-.showcase-card__desc {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0;
-  line-height: 1.55;
-  letter-spacing: 0.01em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.showcase-info__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 4px;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 100%;
+  transition: background-image 0.6s ease;
 }
-
-/* Bottom glow bar */
-.showcase-card__glow {
-  position: absolute;
-  bottom: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  border-radius: 2px;
+.showcase-info__subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #475569, #64748b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.showcase-info__desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  max-width: 380px;
+  margin: 0 auto;
+  position: relative;
+}
+.showcase-info__bar {
+  width: 40px;
+  height: 3px;
+  border-radius: 4px;
+  margin: 14px auto 0;
+  transition: background 0.5s ease;
   opacity: 0.5;
 }
 
-/* UI Mockup Base - Enhanced */
 .ui-mockup {
   height: 100%;
   display: flex;
@@ -2189,56 +2185,13 @@ onUnmounted(() => {
   transition: transform 0.05s linear;
 }
 
-/* Showcase Hint - 功能提示信息 */
-.showcase-hint {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 28px;
-  padding: 16px 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(248, 250, 252, 0.85) 100%
-  );
-  border-radius: 16px;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.03),
-    0 2px 4px -1px rgba(0, 0, 0, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.hint-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border-radius: 12px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-}
-
-.hint-content {
-  flex: 1;
-}
-
-.hint-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 4px;
-}
-
+/* Showcase Hint (unused) */
+.showcase-hint,
+.hint-icon,
+.hint-content,
+.hint-title,
 .hint-desc {
-  font-size: 0.85rem;
-  color: #64748b;
-  line-height: 1.4;
+  display: none;
 }
 
 /* Usage Guide - 使用引导 */
@@ -2268,22 +2221,24 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #3b82f6;
-  background: #dbeafe;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
 }
 
 .guide-text {
   font-size: 0.8rem;
-  color: #475569;
-  font-weight: 500;
+  color: #334155;
+  font-weight: 600;
 }
 
 .guide-arrow {
   font-size: 1rem;
-  color: #94a3b8;
-  opacity: 0.6;
+  color: #3b82f6;
+  opacity: 0.5;
+  font-weight: 700;
 }
 
 /* Old Float Styles */
@@ -2879,9 +2834,8 @@ onUnmounted(() => {
     max-width: 520px;
     padding: 20px;
   }
-  .showcase-hint {
-    margin-top: 24px;
-    padding: 14px 18px;
+  .showcase-info {
+    margin-top: 20px;
   }
   .hint-icon {
     width: 40px;
@@ -2954,10 +2908,8 @@ onUnmounted(() => {
   .mini-dot--active {
     width: 24px;
   }
-  .showcase-hint {
-    margin-top: 20px;
-    padding: 12px 14px;
-    gap: 10px;
+  .showcase-info {
+    margin-top: 16px;
   }
   .hint-icon {
     width: 36px;
