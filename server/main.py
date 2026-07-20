@@ -4,6 +4,13 @@ FastAPI 课件生成服务
 启动: uvicorn main:app --reload --port 8000
 """
 
+import sys
+import io
+
+# 修复 Windows 中文编码问题
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 import json
 import os
 import uuid
