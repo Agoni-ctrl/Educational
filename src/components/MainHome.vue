@@ -175,8 +175,8 @@ onUnmounted(() => {
         <div class="hero__copy">
           <p class="hero__eyebrow reveal" style="--i: 0">
             <span class="pulse" />
-            智启未来 · AI 赋能每一堂课
-          </p>
+            知启灵枢 · AI 赋能每一堂课
+          </p>  
 
           <h1 class="hero__title reveal" style="--i: 1">
             让每位教师都成为<br />
