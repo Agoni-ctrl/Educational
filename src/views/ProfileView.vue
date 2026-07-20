@@ -13,9 +13,11 @@ import { useCommunity, formatTime } from "../composables/useCommunity.js";
 import * as echarts from "echarts";
 
 // 用户信息
+import { useUserStore } from "../stores/userStore.js";
+const userStore = useUserStore();
 const userInfo = reactive({
-  name: "测试用户",
-  avatar: null,
+  name: userStore.getName() || "测试用户",
+  avatar: userStore.getAvatar(),
   email: "user@example.com",
   isVerified: false,
   realName: "",
@@ -1486,6 +1488,7 @@ function handleAvatarUpload(event) {
     const reader = new FileReader();
     reader.onload = (e) => {
       userInfo.avatar = e.target.result;
+      userStore.updateProfile({ avatar: userInfo.avatar });
     };
     reader.readAsDataURL(file);
   }

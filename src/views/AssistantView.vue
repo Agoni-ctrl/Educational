@@ -6,9 +6,11 @@ import {
   useAssistant,
   formatSessionTime,
 } from "../composables/useAssistant.js";
+import { useUserStore } from "../stores/userStore.js";
 
 const router = useRouter();
 const assistant = useAssistant();
+const userStore = useUserStore();
 
 const sessions = ref(assistant.getSessions());
 const activeId = ref(assistant.getActiveSession()?.id || null);
@@ -73,9 +75,7 @@ function ensureSessionExists() {
 }
 
 function handleNewChat() {
-  const session = assistant.createSession();
-  refresh();
-  activeId.value = session.id;
+  activeId.value = null;
   inputText.value = "";
   sidebarOpen.value = false;
 }
@@ -184,8 +184,12 @@ function handleInternalLink(e) {
 }
 
 onMounted(() => {
-  ensureSessionExists();
-  scrollToBottom();
+  // 如果已有未使用的空会话，切换到它显示欢迎页
+  const sessions = assistant.getSessions();
+  if (sessions.length && !activeId.value) {
+    activeId.value = sessions[0].id;
+    assistant.setActive(activeId.value);
+  }
   document.addEventListener("click", (e) => {
     const link = e.target.closest(".internal-link");
     if (link) {
@@ -453,54 +457,37 @@ watch(activeId, scrollToBottom);
             :class="`message--${msg.role}`"
           >
             <div class="message__avatar">
-              <template v-if="msg.role === 'assistant'">
-                <svg
-                  v-if="msg.rated === 'up'"
-                  class="avatar-icon"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <circle cx="10" cy="10" r="9" fill="#4CAF50" opacity="0.2" />
-                  <path
-                    d="M6 10l2.5 2.5L14 7"
-                    stroke="#4CAF50"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <svg
-                  v-else-if="msg.rated === 'down'"
-                  class="avatar-icon"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <circle cx="10" cy="10" r="9" fill="#FF9800" opacity="0.2" />
-                  <path
-                    d="M7 13l6-6M13 13l-6-6"
-                    stroke="#FF9800"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <svg v-else class="avatar-icon" viewBox="0 0 20 20" fill="none">
-                  <circle
-                    cx="10"
-                    cy="10"
-                    r="9"
-                    fill="url(#avatarGrad)"
-                    opacity="0.15"
-                  />
-                  <path
-                    d="M7 14l3-3 3 3M7 9l3-3 3 3"
-                    stroke="#4d98f4"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </template>
-              <template v-else> 师 </template>
+              <!-- AI 助手头像 -->
+              <svg
+                v-if="msg.role === 'assistant'"
+                viewBox="0 0 32 32"
+                fill="none"
+                class="avatar-icon"
+              >
+                <circle cx="16" cy="16" r="16" fill="url(#avatarGrad)" />
+                <path
+                  d="M10 19l4-8h2l4 8h-2l-.8-1.6H12.8L12 19h-2zm3.2-3.2h3.6L16 12.4l-2.8 3.4z"
+                  fill="white"
+                />
+                <path d="M21 11h2v8h-2V11z" fill="white" opacity="0.78" />
+              </svg>
+              <!-- 用户头像 -->
+              <img
+                v-else-if="userStore.getAvatar()"
+                :src="userStore.getAvatar()"
+                class="avatar-icon user-avatar-img"
+                alt="头像"
+              />
+              <!-- 默认用户头像 -->
+              <svg v-else viewBox="0 0 32 32" fill="none" class="avatar-icon">
+                <circle cx="16" cy="16" r="16" fill="#edf2f9" />
+                <circle cx="16" cy="12.5" r="4.5" fill="#6e8fb7" />
+                <path
+                  d="M5 27c0-6 5-10 11-10s11 4 11 10"
+                  fill="#6e8fb7"
+                  opacity="0.55"
+                />
+              </svg>
             </div>
             <div class="message__bubble">
               <div
@@ -592,21 +579,13 @@ watch(activeId, scrollToBottom);
 
           <div v-if="isLoading" class="message message--assistant">
             <div class="message__avatar">
-              <svg class="avatar-icon" viewBox="0 0 20 20" fill="none">
-                <circle
-                  cx="10"
-                  cy="10"
-                  r="9"
-                  fill="url(#avatarGrad)"
-                  opacity="0.15"
-                />
+              <svg viewBox="0 0 32 32" fill="none" class="avatar-icon">
+                <circle cx="16" cy="16" r="16" fill="url(#avatarGrad)" />
                 <path
-                  d="M7 14l3-3 3 3M7 9l3-3 3 3"
-                  stroke="#4d98f4"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  d="M10 19l4-8h2l4 8h-2l-.8-1.6H12.8L12 19h-2zm3.2-3.2h3.6L16 12.4l-2.8 3.4z"
+                  fill="white"
                 />
+                <path d="M21 11h2v8h-2V11z" fill="white" opacity="0.78" />
               </svg>
             </div>
             <div class="message__bubble message__bubble--typing">
@@ -667,11 +646,16 @@ watch(activeId, scrollToBottom);
   min-height: 100vh;
   background:
     radial-gradient(
-      circle at 0% 12%,
-      rgba(120, 185, 255, 0.16),
-      transparent 24%
+      ellipse at 0% 8%,
+      rgba(120, 185, 255, 0.1),
+      transparent 50%
     ),
-    linear-gradient(180deg, #edf5ff 0%, #f6faff 100%);
+    radial-gradient(
+      ellipse at 100% 92%,
+      rgba(120, 185, 255, 0.08),
+      transparent 50%
+    ),
+    linear-gradient(180deg, #f2f8ff 0%, #f8fbff 100%);
   color: var(--ink);
 }
 
@@ -970,13 +954,15 @@ watch(activeId, scrollToBottom);
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(155, 189, 231, 0.24);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(155, 189, 231, 0.16);
   border-radius: 28px;
   box-shadow:
-    0 18px 48px rgba(78, 127, 191, 0.08),
+    0 2px 12px rgba(0, 0, 0, 0.02),
+    0 24px 56px rgba(78, 127, 191, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.94);
   overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
 .welcome {
@@ -985,7 +971,7 @@ watch(activeId, scrollToBottom);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 32px 28px;
+  padding: 40px 32px 24px;
   text-align: center;
 }
 
@@ -1009,18 +995,25 @@ watch(activeId, scrollToBottom);
 }
 
 .welcome__title {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
   font-weight: 800;
-  letter-spacing: -0.05em;
-  color: #2867b9;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #1a4f8a 0%, #3579d6 45%, #5aa8ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .welcome__desc {
-  margin-top: 18px;
-  font-size: 1.04rem;
-  line-height: 1.8;
-  color: #7a9bc3;
+  margin-top: 14px;
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: #4e6f94;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .welcome__notes {
@@ -1045,14 +1038,16 @@ watch(activeId, scrollToBottom);
 
 .suggestions-block {
   width: min(900px, 100%);
-  margin-top: 44px;
+  margin-top: 40px;
 }
 
 .suggestions-block__label {
-  margin-bottom: 18px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #7295c2;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #8aa7c9;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .suggestions-grid {
@@ -1065,45 +1060,53 @@ watch(activeId, scrollToBottom);
   display: flex;
   align-items: center;
   gap: 14px;
-  min-height: 64px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  border: 1px solid rgba(166, 196, 233, 0.34);
-  background: #fff;
-  color: #27486f;
+  min-height: 60px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(166, 196, 233, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  color: #2b4d72;
   text-align: left;
   cursor: pointer;
   transition:
     transform 0.22s ease,
     box-shadow 0.22s ease,
-    border-color 0.22s ease;
+    border-color 0.22s ease,
+    background 0.22s ease;
   animation: fade-up 0.6s var(--ease-out) backwards;
   animation-delay: calc(var(--i) * 0.06s + 0.08s);
 }
 
 .suggestion-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(86, 149, 228, 0.42);
-  box-shadow: 0 16px 28px rgba(78, 127, 191, 0.1);
+  border-color: rgba(86, 149, 228, 0.4);
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(78, 127, 191, 0.08);
 }
 
 .suggestion-card__icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: rgba(228, 240, 255, 0.94);
+  background: linear-gradient(135deg, #e8f2ff, #dceaff);
   color: #3c86df;
-  font-size: 0.9rem;
-  font-weight: 800;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+
+.suggestion-card:hover .suggestion-card__icon {
+  transform: scale(1.05);
 }
 
 .suggestion-card__text {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   line-height: 1.55;
+  color: #3d5f87;
 }
 
 @keyframes fade-up {
@@ -1123,65 +1126,65 @@ watch(activeId, scrollToBottom);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 28px 32px;
+  gap: 8px;
+  padding: 32px 40px;
 }
 
 .message {
   display: flex;
   gap: 12px;
-  max-width: min(860px, 86%);
+  align-items: flex-start;
   animation: msg-in 0.28s var(--ease-out);
 }
 
 .message--assistant {
-  align-self: flex-start;
+  align-self: stretch;
+  max-width: 100%;
 }
 
 .message--user {
   align-self: flex-end;
   flex-direction: row-reverse;
+  max-width: min(560px, 70%);
+}
+
+.message--user .message__avatar {
+  margin-top: 8px;
 }
 
 .message__avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.message--assistant .message__avatar {
-  background: linear-gradient(135deg, #57a4ff, #2e79da);
-  color: #fff;
-}
-
-.message--user .message__avatar {
-  background: rgba(225, 237, 252, 0.96);
-  color: #2c5c95;
+  overflow: hidden;
 }
 
 .message__bubble {
-  padding: 14px 16px;
-  border-radius: 18px;
-  font-size: 0.94rem;
-  line-height: 1.7;
+  font-size: 0.9375rem;
+  line-height: 1.75;
 }
 
+/* AI 回复：直接排版，无气泡背景 */
 .message--assistant .message__bubble {
-  background: rgba(236, 244, 255, 0.96);
-  color: #355780;
-  border-bottom-left-radius: 6px;
+  padding: 0;
+  background: transparent;
+  color: #1f2e47;
+  border-radius: 0;
+  flex: 1;
+  min-width: 0;
 }
 
+/* 用户消息：气泡样式 */
 .message--user .message__bubble {
+  padding: 12px 18px;
+  border-radius: 18px;
   background: linear-gradient(135deg, #3d8eef, #2d79da);
   color: #fff;
   border-bottom-right-radius: 6px;
+  font-weight: 500;
 }
 
 .message__bubble--typing {
@@ -1470,7 +1473,7 @@ watch(activeId, scrollToBottom);
 .mode-bar {
   display: flex;
   gap: 4px;
-  padding: 10px 18px 0;
+  padding: 10px 24px 0;
   background: transparent;
 }
 
@@ -1478,7 +1481,7 @@ watch(activeId, scrollToBottom);
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border: 1px solid transparent;
   border-radius: 12px 12px 0 0;
   background: transparent;
@@ -1492,6 +1495,7 @@ watch(activeId, scrollToBottom);
     border-color 0.2s ease;
   position: relative;
   bottom: -1px;
+  letter-spacing: 0.01em;
 }
 
 .mode-btn:hover {
@@ -1500,10 +1504,11 @@ watch(activeId, scrollToBottom);
 }
 
 .mode-btn--active {
-  color: #2d7fe4;
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(155, 189, 231, 0.24);
-  border-bottom-color: rgba(255, 255, 255, 0.94);
+  color: #2b6cc4;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(155, 189, 231, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
 }
 
 .mode-btn__icon {
@@ -1520,10 +1525,14 @@ watch(activeId, scrollToBottom);
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-top: 6px;
-  padding-left: 48px;
+  margin-top: 4px;
+  margin-left: 48px;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.message--user .message__actions {
+  display: none;
 }
 
 .message:hover .message__actions {
@@ -1565,6 +1574,7 @@ watch(activeId, scrollToBottom);
   font-size: inherit;
   line-height: inherit;
   color: inherit;
+  letter-spacing: 0.01em;
 }
 
 .markdown-body h1,
@@ -1573,91 +1583,118 @@ watch(activeId, scrollToBottom);
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  margin: 0.6em 0 0.3em;
+  margin: 0.8em 0 0.35em;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.45;
+  color: #132130;
 }
 
 .markdown-body h1 {
-  font-size: 1.3em;
+  font-size: 1.35em;
+  margin-top: 0.4em;
 }
 .markdown-body h2 {
-  font-size: 1.15em;
+  font-size: 1.18em;
 }
 .markdown-body h3 {
-  font-size: 1.05em;
-}
-.markdown-body h4 {
-  font-size: 1em;
+  font-size: 1.08em;
 }
 
 .markdown-body p {
-  margin: 0.3em 0;
+  margin: 0.4em 0;
+}
+
+.markdown-body p + p {
+  margin-top: 0.6em;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  margin: 0.3em 0;
+  margin: 0.4em 0;
   padding-left: 1.5em;
 }
 
 .markdown-body li {
-  margin: 0.15em 0;
+  margin: 0.2em 0;
+  line-height: 1.75;
+}
+
+.markdown-body li::marker {
+  color: #4d98f4;
 }
 
 .markdown-body blockquote {
-  margin: 0.4em 0;
-  padding: 4px 12px;
+  margin: 0.5em 0;
+  padding: 6px 14px;
   border-left: 3px solid #4d98f4;
-  color: #6a8bb0;
+  color: #4b6f96;
   background: rgba(77, 152, 244, 0.04);
   border-radius: 0 6px 6px 0;
+  font-style: normal;
 }
 
 .markdown-body code {
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 5px;
   background: rgba(77, 152, 244, 0.08);
   color: #3d7ccf;
   font-size: 0.88em;
+  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
 }
 
 .markdown-body pre {
-  margin: 0.5em 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(44, 62, 88, 0.04);
+  margin: 0.6em 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #1a2538;
   overflow-x: auto;
+  font-size: 0.88em;
+  line-height: 1.55;
 }
 
 .markdown-body pre code {
   padding: 0;
   background: transparent;
-  color: inherit;
+  color: #dce5f0;
+  font-size: inherit;
 }
 
 .markdown-body table {
-  border-collapse: collapse;
-  margin: 0.5em 0;
   width: 100%;
-  font-size: 0.9em;
+  margin: 0.6em 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.92em;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .markdown-body th,
 .markdown-body td {
   padding: 8px 12px;
-  border: 1px solid rgba(155, 189, 231, 0.3);
   text-align: left;
+  border: 1px solid rgba(155, 189, 231, 0.18);
 }
 
 .markdown-body th {
   background: rgba(77, 152, 244, 0.06);
-  font-weight: 700;
+  font-weight: 600;
+  color: #1f3b5c;
+}
+
+.markdown-body td {
+  color: #2d4a6e;
 }
 
 .markdown-body a {
-  color: #4d98f4;
+  color: #3d7ccf;
   text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(61, 124, 207, 0.25);
+  transition: text-decoration-color 0.2s;
+}
+.markdown-body a:hover {
+  text-decoration-color: #3d7ccf;
 }
 
 .markdown-body a.internal-link {
@@ -1666,9 +1703,25 @@ watch(activeId, scrollToBottom);
   color: #4d98f4;
   cursor: pointer;
 }
-
 .markdown-body a.internal-link:hover {
   text-decoration: underline;
+}
+
+.markdown-body hr {
+  margin: 0.8em 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(155, 189, 231, 0.2),
+    rgba(155, 189, 231, 0.6),
+    rgba(155, 189, 231, 0.2)
+  );
+}
+
+.markdown-body strong {
+  font-weight: 650;
+  color: #0f2a42;
 }
 
 .markdown-body img {
@@ -1678,7 +1731,12 @@ watch(activeId, scrollToBottom);
 
 /* ---- Avatar Icon ---- */
 .avatar-icon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
+}
+
+.user-avatar-img {
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>
