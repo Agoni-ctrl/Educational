@@ -1,13 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useCommunity, formatTime } from '../../composables/useCommunity.js'
+import { ref, computed } from "vue";
+import { useCommunity, formatTime } from "../../composables/useCommunity.js";
 
 const props = defineProps({
   post: { type: Object, required: true },
   expanded: { type: Boolean, default: false },
-})
+});
 
-const emit = defineEmits(['toggle-expand', 'share', 'action'])
+const emit = defineEmits(["toggle-expand", "share", "action"]);
 
 const {
   isLiked,
@@ -17,57 +17,63 @@ const {
   toggleFavorite,
   toggleCommentLike,
   addComment,
-} = useCommunity()
+} = useCommunity();
 
-const commentText = ref('')
-const likePop = ref(false)
-const favPop = ref(false)
-const sharePop = ref(false)
+const commentText = ref("");
+const likePop = ref(false);
+const favPop = ref(false);
+const sharePop = ref(false);
 
-const liked = computed(() => isLiked(props.post.id))
-const favorited = computed(() => isFavorite(props.post.id))
-const media = computed(() => props.post.media || {})
-const visualShots = computed(() => media.value.shots || [])
-const visualChips = computed(() => media.value.chips || [])
-const visualScene = computed(() => media.value.scene || 'discussion')
+const liked = computed(() => isLiked(props.post.id));
+const favorited = computed(() => isFavorite(props.post.id));
+const media = computed(() => props.post.media || {});
+const visualShots = computed(() => media.value.shots || []);
+const visualChips = computed(() => media.value.chips || []);
+const visualScene = computed(() => media.value.scene || "discussion");
 const visualStyle = computed(() => {
-  const palette = media.value.palette || ['#edf5ff', '#dcecff', '#acc8f0']
+  const palette = media.value.palette || ["#edf5ff", "#dcecff", "#acc8f0"];
   return {
-    '--cover-1': palette[0],
-    '--cover-2': palette[1],
-    '--cover-3': palette[2],
-  }
-})
+    "--cover-1": palette[0],
+    "--cover-2": palette[1],
+    "--cover-3": palette[2],
+  };
+});
 
 function handleLike() {
-  toggleLike(props.post.id)
-  likePop.value = true
-  emit('action', 'like')
-  setTimeout(() => { likePop.value = false }, 400)
+  toggleLike(props.post.id);
+  likePop.value = true;
+  emit("action", "like");
+  setTimeout(() => {
+    likePop.value = false;
+  }, 400);
 }
 
 function handleFavorite() {
-  toggleFavorite(props.post.id)
-  favPop.value = true
-  emit('action', 'favorite')
-  setTimeout(() => { favPop.value = false }, 400)
+  toggleFavorite(props.post.id);
+  favPop.value = true;
+  emit("action", "favorite");
+  setTimeout(() => {
+    favPop.value = false;
+  }, 400);
 }
 
 function handleShare() {
-  sharePop.value = true
-  emit('share', props.post)
-  setTimeout(() => { sharePop.value = false }, 600)
+  sharePop.value = true;
+  emit("share", props.post);
+  setTimeout(() => {
+    sharePop.value = false;
+  }, 600);
 }
 
 function submitComment() {
-  if (!commentText.value.trim()) return
-  addComment(props.post.id, commentText.value)
-  commentText.value = ''
-  emit('action', 'comment')
+  if (!commentText.value.trim()) return;
+  addComment(props.post.id, commentText.value);
+  commentText.value = "";
+  emit("action", "comment");
 }
 
 function handleCommentLike(commentId) {
-  toggleCommentLike(commentId)
+  toggleCommentLike(commentId);
 }
 </script>
 
@@ -83,7 +89,9 @@ function handleCommentLike(commentId) {
         :aria-label="`查看 ${post.title}`"
         @click="emit('toggle-expand')"
       >
-        <span class="post-card__visual-badge">{{ media.badge || '真实案例' }}</span>
+        <span class="post-card__visual-badge">{{
+          media.badge || "真实案例"
+        }}</span>
 
         <div class="post-card__visual-frame">
           <div class="post-card__scene">
@@ -111,9 +119,15 @@ function handleCommentLike(commentId) {
 
             <template v-else-if="visualScene === 'document'">
               <div class="scene-document">
-                <span class="scene-document__sheet scene-document__sheet--back" />
-                <span class="scene-document__sheet scene-document__sheet--mid" />
-                <span class="scene-document__sheet scene-document__sheet--front" />
+                <span
+                  class="scene-document__sheet scene-document__sheet--back"
+                />
+                <span
+                  class="scene-document__sheet scene-document__sheet--mid"
+                />
+                <span
+                  class="scene-document__sheet scene-document__sheet--front"
+                />
                 <span class="scene-document__photo" />
                 <span class="scene-document__line scene-document__line--1" />
                 <span class="scene-document__line scene-document__line--2" />
@@ -133,18 +147,32 @@ function handleCommentLike(commentId) {
             <template v-else>
               <div class="scene-discussion">
                 <span class="scene-discussion__board" />
-                <span class="scene-discussion__card scene-discussion__card--1" />
-                <span class="scene-discussion__card scene-discussion__card--2" />
-                <span class="scene-discussion__avatar scene-discussion__avatar--1" />
-                <span class="scene-discussion__avatar scene-discussion__avatar--2" />
-                <span class="scene-discussion__line scene-discussion__line--1" />
-                <span class="scene-discussion__line scene-discussion__line--2" />
+                <span
+                  class="scene-discussion__card scene-discussion__card--1"
+                />
+                <span
+                  class="scene-discussion__card scene-discussion__card--2"
+                />
+                <span
+                  class="scene-discussion__avatar scene-discussion__avatar--1"
+                />
+                <span
+                  class="scene-discussion__avatar scene-discussion__avatar--2"
+                />
+                <span
+                  class="scene-discussion__line scene-discussion__line--1"
+                />
+                <span
+                  class="scene-discussion__line scene-discussion__line--2"
+                />
               </div>
             </template>
           </div>
 
           <div class="post-card__visual-meta">
-            <span class="post-card__visual-kicker">{{ media.kicker || '正在热议' }}</span>
+            <span class="post-card__visual-kicker">{{
+              media.kicker || "正在热议"
+            }}</span>
             <strong>{{ media.headline || post.title }}</strong>
           </div>
         </div>
@@ -152,15 +180,23 @@ function handleCommentLike(commentId) {
 
       <div class="post-card__main">
         <div class="post-card__head">
-          <span class="post-card__tag">{{ post.tag }}</span>
+          <span class="post-card__tag" :data-tag="post.tag">{{
+            post.tag
+          }}</span>
           <time class="post-card__time">{{ formatTime(post.createdAt) }}</time>
         </div>
 
-        <h3 class="post-card__title" @click="emit('toggle-expand')">{{ post.title }}</h3>
+        <h3 class="post-card__title" @click="emit('toggle-expand')">
+          {{ post.title }}
+        </h3>
         <p class="post-card__content">{{ post.content }}</p>
 
         <div v-if="visualShots.length" class="post-card__meta-strip">
-          <span v-for="shot in visualShots" :key="`${post.id}-${shot.label}-${shot.value}`" class="meta-pill">
+          <span
+            v-for="shot in visualShots"
+            :key="`${post.id}-${shot.label}-${shot.value}`"
+            class="meta-pill"
+          >
             <small>{{ shot.label }}</small>
             <strong>{{ shot.value }}</strong>
           </span>
@@ -175,7 +211,11 @@ function handleCommentLike(commentId) {
         </div>
 
         <div v-if="visualChips.length" class="post-card__chips">
-          <span v-for="chip in visualChips" :key="`${post.id}-${chip}`" class="post-card__chip">
+          <span
+            v-for="chip in visualChips"
+            :key="`${post.id}-${chip}`"
+            class="post-card__chip"
+          >
             {{ chip }}
           </span>
         </div>
@@ -212,7 +252,7 @@ function handleCommentLike(commentId) {
             stroke-width="1.5"
           />
         </svg>
-        <span>{{ favorited ? '已收藏' : '收藏' }}</span>
+        <span>{{ favorited ? "已收藏" : "收藏" }}</span>
       </button>
 
       <button class="action-btn" @click="emit('toggle-expand')">
@@ -227,7 +267,11 @@ function handleCommentLike(commentId) {
         <span>{{ post.comments.length }} 评论</span>
       </button>
 
-      <button class="action-btn" :class="{ 'action-btn--pop': sharePop }" @click="handleShare">
+      <button
+        class="action-btn"
+        :class="{ 'action-btn--pop': sharePop }"
+        @click="handleShare"
+      >
         <svg viewBox="0 0 20 20" fill="none">
           <path
             d="M14 4l4 4-4 4M18 8H8a4 4 0 0 0-4 4v1"
@@ -277,7 +321,13 @@ function handleCommentLike(commentId) {
             placeholder="写下你的经验或建议..."
             @keyup.enter="submitComment"
           />
-          <button class="btn-send" :disabled="!commentText.trim()" @click="submitComment">发送</button>
+          <button
+            class="btn-send"
+            :disabled="!commentText.trim()"
+            @click="submitComment"
+          >
+            发送
+          </button>
         </div>
       </div>
     </Transition>
@@ -291,13 +341,20 @@ function handleCommentLike(commentId) {
   border-radius: 26px;
   border: 1px solid rgba(167, 193, 225, 0.28);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(248, 251, 255, 0.92)
+    ),
     radial-gradient(circle at 0% 0%, rgba(76, 150, 255, 0.06), transparent 32%);
   box-shadow:
     0 18px 48px rgba(64, 116, 184, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   overflow: hidden;
-  transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out), border-color 0.35s var(--ease-out);
+  transition:
+    transform 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out);
 }
 
 .post-card:hover {
@@ -319,7 +376,11 @@ function handleCommentLike(commentId) {
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(117, 173, 255, 0.18), transparent 68%);
+  background: radial-gradient(
+    circle,
+    rgba(117, 173, 255, 0.18),
+    transparent 68%
+  );
   pointer-events: none;
 }
 
@@ -379,7 +440,7 @@ function handleCommentLike(commentId) {
 }
 
 .post-card__scene::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background-image:
@@ -412,7 +473,11 @@ function handleCommentLike(commentId) {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 50% -8%, rgba(255, 255, 255, 0.5), transparent 36%),
+    radial-gradient(
+      circle at 50% -8%,
+      rgba(255, 255, 255, 0.5),
+      transparent 36%
+    ),
     linear-gradient(180deg, #1a1f28 0%, #0e1116 72%, #050608 100%);
 }
 
@@ -424,7 +489,11 @@ function handleCommentLike(commentId) {
   height: 126px;
   border-radius: 50%;
   transform: translateX(-50%);
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.28), transparent 72%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.28),
+    transparent 72%
+  );
 }
 
 .scene-crowd__hand,
@@ -441,9 +510,20 @@ function handleCommentLike(commentId) {
   bottom: 34px;
 }
 
-.scene-crowd__head--1 { left: 36px; }
-.scene-crowd__head--2 { left: 102px; width: 20px; height: 20px; bottom: 28px; }
-.scene-crowd__head--3 { right: 42px; width: 16px; height: 16px; }
+.scene-crowd__head--1 {
+  left: 36px;
+}
+.scene-crowd__head--2 {
+  left: 102px;
+  width: 20px;
+  height: 20px;
+  bottom: 28px;
+}
+.scene-crowd__head--3 {
+  right: 42px;
+  width: 16px;
+  height: 16px;
+}
 
 .scene-crowd__hand {
   bottom: 40px;
@@ -473,8 +553,7 @@ function handleCommentLike(commentId) {
 .scene-interface {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(135deg, #f9fbff, #eef4ff 56%, #dde8f7);
+  background: linear-gradient(135deg, #f9fbff, #eef4ff 56%, #dde8f7);
 }
 
 .scene-interface__app {
@@ -490,7 +569,7 @@ function handleCommentLike(commentId) {
 
 .scene-interface__app::before,
 .scene-interface__app::after {
-  content: '';
+  content: "";
   position: absolute;
   background: #fff;
 }
@@ -531,9 +610,18 @@ function handleCommentLike(commentId) {
   background: rgba(16, 48, 92, 0.12);
 }
 
-.scene-interface__bar--1 { top: 76px; width: 84px; }
-.scene-interface__bar--2 { top: 98px; width: 70px; }
-.scene-interface__bar--3 { top: 120px; width: 58px; }
+.scene-interface__bar--1 {
+  top: 76px;
+  width: 84px;
+}
+.scene-interface__bar--2 {
+  top: 98px;
+  width: 70px;
+}
+.scene-interface__bar--3 {
+  top: 120px;
+  width: 58px;
+}
 
 .scene-document {
   position: absolute;
@@ -638,8 +726,13 @@ function handleCommentLike(commentId) {
   background: rgba(16, 48, 92, 0.12);
 }
 
-.scene-prompt__chip--1 { top: 58px; }
-.scene-prompt__chip--2 { top: 78px; width: 96px; }
+.scene-prompt__chip--1 {
+  top: 58px;
+}
+.scene-prompt__chip--2 {
+  top: 78px;
+  width: 96px;
+}
 
 .scene-prompt__cursor {
   right: 46px;
@@ -747,11 +840,41 @@ function handleCommentLike(commentId) {
 .post-card__tag {
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(64, 129, 215, 0.08);
   border: 1px solid rgba(64, 129, 215, 0.14);
   color: #2d66b8;
   font-size: 0.72rem;
   font-weight: 800;
+  background: rgba(64, 129, 215, 0.08);
+}
+
+.post-card__tag[data-tag="教学讨论"] {
+  background: rgba(64, 129, 215, 0.08);
+  border-color: rgba(64, 129, 215, 0.14);
+  color: #2d66b8;
+}
+
+.post-card__tag[data-tag="课件结构"] {
+  background: rgba(0, 194, 212, 0.08);
+  border-color: rgba(0, 194, 212, 0.14);
+  color: #0e8c96;
+}
+
+.post-card__tag[data-tag="互动设计"] {
+  background: rgba(24, 160, 109, 0.08);
+  border-color: rgba(24, 160, 109, 0.14);
+  color: #138a5e;
+}
+
+.post-card__tag[data-tag="多模态参考"] {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.14);
+  color: #b87a0a;
+}
+
+.post-card__tag[data-tag="AI 提示词"] {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.14);
+  color: #7c3aed;
 }
 
 .post-card__time {
@@ -904,7 +1027,11 @@ function handleCommentLike(commentId) {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.25s var(--ease-spring);
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.25s var(--ease-spring);
 }
 
 .action-btn svg {
@@ -929,9 +1056,15 @@ function handleCommentLike(commentId) {
 }
 
 @keyframes action-pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .post-card__comments {
@@ -991,7 +1124,9 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .comment-like svg {
@@ -1041,7 +1176,9 @@ function handleCommentLike(commentId) {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .btn-send:hover:not(:disabled) {
@@ -1055,7 +1192,9 @@ function handleCommentLike(commentId) {
 
 .comments-enter-active,
 .comments-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .comments-enter-from,
