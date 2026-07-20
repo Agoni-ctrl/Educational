@@ -1,5 +1,5 @@
 :root {
-  --font-display: 'Sora', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-display: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Sora", sans-serif;
   --font-body: 'IBM Plex Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 
   --ink: #0a0f1a;

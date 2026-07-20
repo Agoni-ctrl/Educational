@@ -176,7 +176,7 @@ onUnmounted(() => {
           <p class="hero__eyebrow reveal" style="--i: 0">
             <span class="pulse" />
             知启灵枢 · AI 赋能每一堂课
-          </p>  
+          </p>
 
           <h1 class="hero__title reveal" style="--i: 1">
             让每位教师都成为<br />
@@ -477,7 +477,7 @@ onUnmounted(() => {
 }
 
 .hero__title {
-  font-family: var(--font-display);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: clamp(2.625rem, 5.2vw, 4.125rem);
   font-weight: 800;
   line-height: 1.08;
