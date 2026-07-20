@@ -224,11 +224,7 @@ onUnmounted(() => {
         </div>
 
         <div class="hero__stage reveal" style="--i: 2">
-          <div
-            class="showcase-wrapper"
-            @mouseenter="stopAutoPlay"
-            @mouseleave="startAutoPlay"
-          >
+          <div class="showcase-wrapper">
             <!-- 扑克牌堆叠展示 -->
             <div class="card-stack">
               <div
