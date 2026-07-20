@@ -96,75 +96,906 @@ function handleCommentLike(commentId) {
         <div class="post-card__visual-frame">
           <div class="post-card__scene">
             <template v-if="visualScene === 'spotlight'">
-              <div class="scene-crowd">
-                <span class="scene-crowd__light" />
-                <span class="scene-crowd__hand scene-crowd__hand--1" />
-                <span class="scene-crowd__hand scene-crowd__hand--2" />
-                <span class="scene-crowd__hand scene-crowd__hand--3" />
-                <span class="scene-crowd__head scene-crowd__head--1" />
-                <span class="scene-crowd__head scene-crowd__head--2" />
-                <span class="scene-crowd__head scene-crowd__head--3" />
+              <div class="scene-svg-wrap">
+                <svg viewBox="0 0 200 150" fill="none">
+                  <!-- 大屏幕 -->
+                  <rect
+                    x="36"
+                    y="14"
+                    width="128"
+                    height="78"
+                    rx="8"
+                    fill="#fff"
+                    fill-opacity="0.2"
+                    stroke="#fff"
+                    stroke-opacity="0.3"
+                    stroke-width="1.5"
+                  />
+                  <!-- 幻灯片标题条 -->
+                  <rect
+                    x="50"
+                    y="28"
+                    width="100"
+                    height="8"
+                    rx="4"
+                    fill="#F59E0B"
+                    fill-opacity="0.7"
+                  />
+                  <!-- 幻灯片内容条 -->
+                  <rect
+                    x="50"
+                    y="44"
+                    width="80"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.5"
+                  />
+                  <rect
+                    x="50"
+                    y="56"
+                    width="90"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.4"
+                  />
+                  <rect
+                    x="50"
+                    y="68"
+                    width="60"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <!-- PPT页码圆点 -->
+                  <circle
+                    cx="90"
+                    cy="100"
+                    r="3"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <circle
+                    cx="102"
+                    cy="100"
+                    r="3"
+                    fill="#F59E0B"
+                    fill-opacity="0.8"
+                  />
+                  <circle
+                    cx="114"
+                    cy="100"
+                    r="3"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <!-- 讲台 -->
+                  <rect
+                    x="74"
+                    y="112"
+                    width="52"
+                    height="14"
+                    rx="4"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                    stroke="#fff"
+                    stroke-opacity="0.2"
+                    stroke-width="1.2"
+                  />
+                  <!-- 教师人物 -->
+                  <circle
+                    cx="160"
+                    cy="102"
+                    r="9"
+                    fill="#fff"
+                    fill-opacity="0.6"
+                  />
+                  <rect
+                    x="153"
+                    y="112"
+                    width="14"
+                    height="24"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.35"
+                  />
+                  <!-- 教师手臂指向屏幕 -->
+                  <line
+                    x1="153"
+                    y1="118"
+                    x2="130"
+                    y2="98"
+                    stroke="#fff"
+                    stroke-opacity="0.5"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                  <line
+                    x1="160"
+                    y1="118"
+                    x2="168"
+                    y2="132"
+                    stroke="#fff"
+                    stroke-opacity="0.25"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
               </div>
             </template>
 
             <template v-else-if="visualScene === 'interface'">
-              <div class="scene-interface">
-                <div class="scene-interface__app" />
-                <div class="scene-interface__label" />
-                <div class="scene-interface__bar scene-interface__bar--1" />
-                <div class="scene-interface__bar scene-interface__bar--2" />
-                <div class="scene-interface__bar scene-interface__bar--3" />
+              <div class="scene-svg-wrap">
+                <svg viewBox="0 0 200 150" fill="none">
+                  <!-- 教室黑板 -->
+                  <rect
+                    x="18"
+                    y="14"
+                    width="164"
+                    height="96"
+                    rx="8"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                    stroke="#fff"
+                    stroke-opacity="0.12"
+                    stroke-width="1.2"
+                  />
+                  <!-- 黑板上的文字 -->
+                  <rect
+                    x="60"
+                    y="24"
+                    width="80"
+                    height="7"
+                    rx="3.5"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="70"
+                    y="36"
+                    width="60"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                  />
+                  <!-- 老师 - 左侧 -->
+                  <circle
+                    cx="48"
+                    cy="70"
+                    r="10"
+                    fill="#fff"
+                    fill-opacity="0.6"
+                  />
+                  <rect
+                    x="40"
+                    y="81"
+                    width="16"
+                    height="26"
+                    rx="6"
+                    fill="#fff"
+                    fill-opacity="0.35"
+                  />
+                  <line
+                    x1="42"
+                    y1="87"
+                    x2="30"
+                    y2="78"
+                    stroke="#fff"
+                    stroke-opacity="0.4"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <line
+                    x1="54"
+                    y1="87"
+                    x2="66"
+                    y2="74"
+                    stroke="#fff"
+                    stroke-opacity="0.4"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <!-- 学生1 - 举手 -->
+                  <circle
+                    cx="90"
+                    cy="78"
+                    r="8"
+                    fill="#fff"
+                    fill-opacity="0.5"
+                  />
+                  <rect
+                    x="84"
+                    y="87"
+                    width="12"
+                    height="20"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <line
+                    x1="92"
+                    y1="85"
+                    x2="98"
+                    y2="68"
+                    stroke="#fff"
+                    stroke-opacity="0.5"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="99"
+                    cy="66"
+                    r="4"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <!-- 学生2 - 举手 -->
+                  <circle
+                    cx="120"
+                    cy="80"
+                    r="8"
+                    fill="#fff"
+                    fill-opacity="0.5"
+                  />
+                  <rect
+                    x="114"
+                    y="89"
+                    width="12"
+                    height="20"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <line
+                    x1="122"
+                    y1="87"
+                    x2="128"
+                    y2="70"
+                    stroke="#fff"
+                    stroke-opacity="0.5"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="129"
+                    cy="68"
+                    r="4"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <!-- 学生3 - 举手 -->
+                  <circle
+                    cx="150"
+                    cy="82"
+                    r="8"
+                    fill="#fff"
+                    fill-opacity="0.45"
+                  />
+                  <rect
+                    x="144"
+                    y="91"
+                    width="12"
+                    height="20"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <line
+                    x1="152"
+                    y1="89"
+                    x2="158"
+                    y2="72"
+                    stroke="#fff"
+                    stroke-opacity="0.45"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="159"
+                    cy="70"
+                    r="4"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <!-- 地面线 -->
+                  <line
+                    x1="18"
+                    y1="114"
+                    x2="182"
+                    y2="114"
+                    stroke="#fff"
+                    stroke-opacity="0.08"
+                    stroke-width="1"
+                    stroke-dasharray="3 4"
+                  />
+                </svg>
               </div>
             </template>
 
             <template v-else-if="visualScene === 'document'">
-              <div class="scene-document">
-                <span
-                  class="scene-document__sheet scene-document__sheet--back"
-                />
-                <span
-                  class="scene-document__sheet scene-document__sheet--mid"
-                />
-                <span
-                  class="scene-document__sheet scene-document__sheet--front"
-                />
-                <span class="scene-document__photo" />
-                <span class="scene-document__line scene-document__line--1" />
-                <span class="scene-document__line scene-document__line--2" />
+              <div class="scene-svg-wrap">
+                <svg viewBox="0 0 200 150" fill="none">
+                  <!-- 桌面 -->
+                  <rect
+                    x="14"
+                    y="100"
+                    width="172"
+                    height="10"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                    stroke="#fff"
+                    stroke-opacity="0.1"
+                    stroke-width="1.2"
+                  />
+                  <!-- 笔记本电脑底座 -->
+                  <rect
+                    x="44"
+                    y="86"
+                    width="86"
+                    height="16"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                    stroke="#fff"
+                    stroke-opacity="0.15"
+                    stroke-width="1.2"
+                  />
+                  <!-- 笔记本屏幕 -->
+                  <rect
+                    x="48"
+                    y="28"
+                    width="78"
+                    height="58"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.18"
+                    stroke="#fff"
+                    stroke-opacity="0.22"
+                    stroke-width="1.2"
+                  />
+                  <!-- 屏幕内容 - 文档标题 -->
+                  <rect
+                    x="60"
+                    y="38"
+                    width="54"
+                    height="6"
+                    rx="3"
+                    fill="#3B82F6"
+                    fill-opacity="0.5"
+                  />
+                  <rect
+                    x="60"
+                    y="50"
+                    width="40"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.35"
+                  />
+                  <rect
+                    x="60"
+                    y="60"
+                    width="48"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <rect
+                    x="60"
+                    y="70"
+                    width="30"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.18"
+                  />
+                  <!-- 右侧散落文档 -->
+                  <rect
+                    x="140"
+                    y="34"
+                    width="40"
+                    height="50"
+                    rx="4"
+                    fill="#fff"
+                    fill-opacity="0.1"
+                    stroke="#fff"
+                    stroke-opacity="0.14"
+                    stroke-width="1"
+                    transform="rotate(5, 160, 59)"
+                  />
+                  <rect
+                    x="146"
+                    y="42"
+                    width="28"
+                    height="5"
+                    rx="2.5"
+                    fill="#8B5CF6"
+                    fill-opacity="0.35"
+                    transform="rotate(5, 160, 44)"
+                  />
+                  <rect
+                    x="146"
+                    y="52"
+                    width="20"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.2"
+                    transform="rotate(5, 160, 54)"
+                  />
+                  <rect
+                    x="146"
+                    y="62"
+                    width="24"
+                    height="5"
+                    rx="2.5"
+                    fill="#10B981"
+                    fill-opacity="0.3"
+                    transform="rotate(5, 160, 64)"
+                  />
+                  <!-- 左侧照片卡片 -->
+                  <rect
+                    x="16"
+                    y="30"
+                    width="36"
+                    height="48"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.1"
+                    stroke="#fff"
+                    stroke-opacity="0.14"
+                    stroke-width="1"
+                  />
+                  <rect
+                    x="20"
+                    y="34"
+                    width="28"
+                    height="22"
+                    rx="4"
+                    fill="#F59E0B"
+                    fill-opacity="0.35"
+                  />
+                  <circle
+                    cx="34"
+                    cy="42"
+                    r="6"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <rect
+                    x="20"
+                    y="62"
+                    width="28"
+                    height="4"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="20"
+                    y="70"
+                    width="18"
+                    height="3"
+                    rx="1.5"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                  />
+                  <!-- 鼠标 -->
+                  <circle
+                    cx="140"
+                    cy="118"
+                    r="6"
+                    fill="#fff"
+                    fill-opacity="0.06"
+                    stroke="#fff"
+                    stroke-opacity="0.1"
+                    stroke-width="1"
+                  />
+                </svg>
               </div>
             </template>
 
             <template v-else-if="visualScene === 'prompt'">
-              <div class="scene-prompt">
-                <span class="scene-prompt__bubble scene-prompt__bubble--main" />
-                <span class="scene-prompt__bubble scene-prompt__bubble--sub" />
-                <span class="scene-prompt__chip scene-prompt__chip--1" />
-                <span class="scene-prompt__chip scene-prompt__chip--2" />
-                <span class="scene-prompt__cursor" />
+              <div class="scene-svg-wrap">
+                <svg viewBox="0 0 200 150" fill="none">
+                  <!-- 电脑屏幕 -->
+                  <rect
+                    x="26"
+                    y="16"
+                    width="108"
+                    height="80"
+                    rx="8"
+                    fill="#fff"
+                    fill-opacity="0.18"
+                    stroke="#fff"
+                    stroke-opacity="0.22"
+                    stroke-width="1.5"
+                  />
+                  <!-- AI 对话气泡 -->
+                  <rect
+                    x="38"
+                    y="28"
+                    width="84"
+                    height="20"
+                    rx="8"
+                    fill="#8B5CF6"
+                    fill-opacity="0.35"
+                  />
+                  <rect
+                    x="50"
+                    y="35"
+                    width="35"
+                    height="6"
+                    rx="3"
+                    fill="#fff"
+                    fill-opacity="0.4"
+                  />
+                  <!-- 用户输入框 -->
+                  <rect
+                    x="38"
+                    y="56"
+                    width="84"
+                    height="16"
+                    rx="6"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                    stroke="#fff"
+                    stroke-opacity="0.15"
+                    stroke-width="1.2"
+                  />
+                  <rect
+                    x="48"
+                    y="62"
+                    width="44"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <!-- 光标 -->
+                  <rect
+                    x="96"
+                    y="61"
+                    width="3"
+                    height="7"
+                    rx="1.5"
+                    fill="#F59E0B"
+                    fill-opacity="0.9"
+                  />
+                  <!-- 发送按钮 -->
+                  <rect
+                    x="130"
+                    y="56"
+                    width="18"
+                    height="16"
+                    rx="5"
+                    fill="#8B5CF6"
+                    fill-opacity="0.4"
+                  />
+                  <path
+                    d="M136 62l-4 4 4 4"
+                    stroke="#fff"
+                    stroke-opacity="0.6"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <!-- 底部提示条 -->
+                  <rect
+                    x="38"
+                    y="80"
+                    width="56"
+                    height="6"
+                    rx="3"
+                    fill="#fff"
+                    fill-opacity="0.1"
+                  />
+                  <!-- 键盘 -->
+                  <rect
+                    x="24"
+                    y="104"
+                    width="110"
+                    height="22"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                    stroke="#fff"
+                    stroke-opacity="0.12"
+                    stroke-width="1.2"
+                  />
+                  <!-- 键盘按键 -->
+                  <rect
+                    x="30"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="44"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="58"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="72"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#8B5CF6"
+                    fill-opacity="0.3"
+                  />
+                  <rect
+                    x="86"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="100"
+                    y="109"
+                    width="10"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                  />
+                  <rect
+                    x="114"
+                    y="109"
+                    width="14"
+                    height="8"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.08"
+                  />
+                  <!-- 使用者人物 -->
+                  <circle
+                    cx="164"
+                    cy="102"
+                    r="9"
+                    fill="#fff"
+                    fill-opacity="0.55"
+                  />
+                  <rect
+                    x="157"
+                    y="112"
+                    width="14"
+                    height="22"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.3"
+                  />
+                  <line
+                    x1="157"
+                    y1="118"
+                    x2="142"
+                    y2="112"
+                    stroke="#fff"
+                    stroke-opacity="0.3"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  />
+                  <!-- AI 星星 -->
+                  <circle
+                    cx="150"
+                    cy="28"
+                    r="4"
+                    fill="#F59E0B"
+                    fill-opacity="0.5"
+                  />
+                  <circle
+                    cx="158"
+                    cy="20"
+                    r="2.5"
+                    fill="#8B5CF6"
+                    fill-opacity="0.4"
+                  />
+                  <circle
+                    cx="144"
+                    cy="18"
+                    r="2"
+                    fill="#10B981"
+                    fill-opacity="0.4"
+                  />
+                </svg>
               </div>
             </template>
 
             <template v-else>
-              <div class="scene-discussion">
-                <span class="scene-discussion__board" />
-                <span
-                  class="scene-discussion__card scene-discussion__card--1"
-                />
-                <span
-                  class="scene-discussion__card scene-discussion__card--2"
-                />
-                <span
-                  class="scene-discussion__avatar scene-discussion__avatar--1"
-                />
-                <span
-                  class="scene-discussion__avatar scene-discussion__avatar--2"
-                />
-                <span
-                  class="scene-discussion__line scene-discussion__line--1"
-                />
-                <span
-                  class="scene-discussion__line scene-discussion__line--2"
-                />
+              <div class="scene-svg-wrap">
+                <svg viewBox="0 0 200 150" fill="none">
+                  <!-- 教师1 - 左侧 -->
+                  <circle
+                    cx="52"
+                    cy="46"
+                    r="10"
+                    fill="#fff"
+                    fill-opacity="0.65"
+                  />
+                  <rect
+                    x="44"
+                    y="57"
+                    width="16"
+                    height="28"
+                    rx="6"
+                    fill="#fff"
+                    fill-opacity="0.4"
+                  />
+                  <!-- 手势 -->
+                  <line
+                    x1="48"
+                    y1="64"
+                    x2="32"
+                    y2="55"
+                    stroke="#fff"
+                    stroke-opacity="0.4"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                  <line
+                    x1="56"
+                    y1="64"
+                    x2="72"
+                    y2="52"
+                    stroke="#fff"
+                    stroke-opacity="0.4"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                  <!-- 教师2 - 右侧 -->
+                  <circle
+                    cx="148"
+                    cy="46"
+                    r="10"
+                    fill="#fff"
+                    fill-opacity="0.6"
+                  />
+                  <rect
+                    x="140"
+                    y="57"
+                    width="16"
+                    height="28"
+                    rx="6"
+                    fill="#fff"
+                    fill-opacity="0.35"
+                  />
+                  <line
+                    x1="152"
+                    y1="64"
+                    x2="168"
+                    y2="55"
+                    stroke="#fff"
+                    stroke-opacity="0.35"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                  <line
+                    x1="144"
+                    y1="64"
+                    x2="128"
+                    y2="52"
+                    stroke="#fff"
+                    stroke-opacity="0.35"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                  <!-- 中间桌子 -->
+                  <rect
+                    x="74"
+                    y="84"
+                    width="52"
+                    height="10"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.12"
+                    stroke="#fff"
+                    stroke-opacity="0.16"
+                    stroke-width="1.2"
+                  />
+                  <!-- 咖啡杯 -->
+                  <rect
+                    x="88"
+                    y="74"
+                    width="20"
+                    height="13"
+                    rx="5"
+                    fill="#fff"
+                    fill-opacity="0.15"
+                  />
+                  <path
+                    d="M108 77 Q116 77 116 82 Q116 87 108 86"
+                    stroke="#fff"
+                    stroke-opacity="0.2"
+                    stroke-width="2"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                  <!-- 对话气泡 - 左 -->
+                  <rect
+                    x="18"
+                    y="12"
+                    width="60"
+                    height="26"
+                    rx="12"
+                    fill="#fff"
+                    fill-opacity="0.15"
+                    stroke="#fff"
+                    stroke-opacity="0.18"
+                    stroke-width="1.2"
+                  />
+                  <rect
+                    x="30"
+                    y="20"
+                    width="36"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <rect
+                    x="30"
+                    y="29"
+                    width="24"
+                    height="4"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.15"
+                  />
+                  <!-- 对话气泡 - 右 -->
+                  <rect
+                    x="122"
+                    y="12"
+                    width="60"
+                    height="26"
+                    rx="12"
+                    fill="#fff"
+                    fill-opacity="0.15"
+                    stroke="#fff"
+                    stroke-opacity="0.18"
+                    stroke-width="1.2"
+                  />
+                  <rect
+                    x="134"
+                    y="20"
+                    width="36"
+                    height="5"
+                    rx="2.5"
+                    fill="#fff"
+                    fill-opacity="0.25"
+                  />
+                  <rect
+                    x="134"
+                    y="29"
+                    width="24"
+                    height="4"
+                    rx="2"
+                    fill="#fff"
+                    fill-opacity="0.15"
+                  />
+                </svg>
               </div>
             </template>
           </div>
@@ -431,7 +1262,7 @@ function handleCommentLike(commentId) {
 
 .post-card__scene {
   position: relative;
-  min-height: 184px;
+  min-height: 160px;
   border-radius: 18px;
   overflow: hidden;
   background:
@@ -444,10 +1275,25 @@ function handleCommentLike(commentId) {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 0.25;
+    linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.2;
+}
+
+.scene-svg-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.scene-svg-wrap svg {
+  width: 100%;
+  height: 100%;
+  max-width: 180px;
 }
 
 .post-card__visual-meta {
@@ -467,362 +1313,6 @@ function handleCommentLike(commentId) {
   font-size: 0.98rem;
   line-height: 1.3;
   color: #11284c;
-}
-
-.scene-crowd {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      circle at 50% -8%,
-      rgba(255, 255, 255, 0.5),
-      transparent 36%
-    ),
-    linear-gradient(180deg, #1a1f28 0%, #0e1116 72%, #050608 100%);
-}
-
-.scene-crowd__light {
-  position: absolute;
-  left: 50%;
-  top: 18px;
-  width: 126px;
-  height: 126px;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.28),
-    transparent 72%
-  );
-}
-
-.scene-crowd__hand,
-.scene-crowd__head {
-  position: absolute;
-  display: block;
-  background: rgba(255, 255, 255, 0.95);
-}
-
-.scene-crowd__head {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  bottom: 34px;
-}
-
-.scene-crowd__head--1 {
-  left: 36px;
-}
-.scene-crowd__head--2 {
-  left: 102px;
-  width: 20px;
-  height: 20px;
-  bottom: 28px;
-}
-.scene-crowd__head--3 {
-  right: 42px;
-  width: 16px;
-  height: 16px;
-}
-
-.scene-crowd__hand {
-  bottom: 40px;
-  width: 12px;
-  border-radius: 999px;
-  transform-origin: bottom center;
-}
-
-.scene-crowd__hand--1 {
-  left: 58px;
-  height: 74px;
-  transform: rotate(-16deg);
-}
-
-.scene-crowd__hand--2 {
-  left: 126px;
-  height: 96px;
-  transform: rotate(10deg);
-}
-
-.scene-crowd__hand--3 {
-  right: 58px;
-  height: 82px;
-  transform: rotate(24deg);
-}
-
-.scene-interface {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #f9fbff, #eef4ff 56%, #dde8f7);
-}
-
-.scene-interface__app {
-  position: absolute;
-  left: 22px;
-  top: 38px;
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #42d84f, #25b93f);
-  box-shadow: 0 14px 26px rgba(43, 146, 71, 0.2);
-}
-
-.scene-interface__app::before,
-.scene-interface__app::after {
-  content: "";
-  position: absolute;
-  background: #fff;
-}
-
-.scene-interface__app::before {
-  left: 12px;
-  top: 20px;
-  width: 30px;
-  height: 24px;
-  border-radius: 6px;
-}
-
-.scene-interface__app::after {
-  right: 12px;
-  top: 24px;
-  width: 0;
-  height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 16px solid #fff;
-}
-
-.scene-interface__label {
-  position: absolute;
-  left: 108px;
-  top: 44px;
-  width: 92px;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(16, 48, 92, 0.16);
-}
-
-.scene-interface__bar {
-  position: absolute;
-  left: 108px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(16, 48, 92, 0.12);
-}
-
-.scene-interface__bar--1 {
-  top: 76px;
-  width: 84px;
-}
-.scene-interface__bar--2 {
-  top: 98px;
-  width: 70px;
-}
-.scene-interface__bar--3 {
-  top: 120px;
-  width: 58px;
-}
-
-.scene-document {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #edf3fb, #fdfefe);
-}
-
-.scene-document__sheet {
-  position: absolute;
-  display: block;
-  width: 116px;
-  height: 144px;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 12px 24px rgba(79, 115, 163, 0.14);
-}
-
-.scene-document__sheet--back {
-  left: 30px;
-  top: 24px;
-  transform: rotate(-8deg);
-}
-
-.scene-document__sheet--mid {
-  left: 76px;
-  top: 20px;
-  transform: rotate(4deg);
-}
-
-.scene-document__sheet--front {
-  left: 56px;
-  top: 36px;
-}
-
-.scene-document__photo {
-  position: absolute;
-  left: 74px;
-  top: 56px;
-  width: 80px;
-  height: 56px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #93b8e6, #d7e8fb);
-}
-
-.scene-document__line {
-  position: absolute;
-  left: 74px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(16, 48, 92, 0.12);
-}
-
-.scene-document__line--1 {
-  top: 122px;
-  width: 64px;
-}
-
-.scene-document__line--2 {
-  top: 138px;
-  width: 48px;
-}
-
-.scene-prompt {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #edf2ff, #fbfcff);
-}
-
-.scene-prompt__bubble,
-.scene-prompt__chip,
-.scene-prompt__cursor {
-  position: absolute;
-  display: block;
-}
-
-.scene-prompt__bubble {
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 12px 24px rgba(88, 108, 160, 0.14);
-}
-
-.scene-prompt__bubble--main {
-  left: 26px;
-  top: 42px;
-  width: 156px;
-  height: 58px;
-}
-
-.scene-prompt__bubble--sub {
-  right: 24px;
-  top: 106px;
-  width: 124px;
-  height: 46px;
-  background: linear-gradient(135deg, #4e81ff, #76a8ff);
-}
-
-.scene-prompt__chip {
-  left: 42px;
-  width: 72px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(16, 48, 92, 0.12);
-}
-
-.scene-prompt__chip--1 {
-  top: 58px;
-}
-.scene-prompt__chip--2 {
-  top: 78px;
-  width: 96px;
-}
-
-.scene-prompt__cursor {
-  right: 46px;
-  top: 120px;
-  width: 16px;
-  height: 16px;
-  border-right: 3px solid rgba(255, 255, 255, 0.96);
-  border-bottom: 3px solid rgba(255, 255, 255, 0.96);
-  transform: rotate(-45deg);
-}
-
-.scene-discussion {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #f7fbff, #edf3fb);
-}
-
-.scene-discussion__board,
-.scene-discussion__card,
-.scene-discussion__avatar,
-.scene-discussion__line {
-  position: absolute;
-  display: block;
-}
-
-.scene-discussion__board {
-  left: 24px;
-  top: 28px;
-  width: 92px;
-  height: 120px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #6fc4ff, #3980db);
-  box-shadow: 0 16px 32px rgba(56, 115, 187, 0.18);
-}
-
-.scene-discussion__card {
-  width: 72px;
-  height: 92px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 12px 24px rgba(91, 122, 174, 0.12);
-}
-
-.scene-discussion__card--1 {
-  left: 98px;
-  top: 36px;
-  transform: rotate(8deg);
-}
-
-.scene-discussion__card--2 {
-  left: 136px;
-  top: 76px;
-  width: 56px;
-  height: 72px;
-}
-
-.scene-discussion__avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fdcf94, #f08455);
-}
-
-.scene-discussion__avatar--1 {
-  left: 42px;
-  bottom: 22px;
-}
-
-.scene-discussion__avatar--2 {
-  right: 30px;
-  bottom: 28px;
-  background: linear-gradient(135deg, #7399ff, #3f64d8);
-}
-
-.scene-discussion__line {
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(16, 48, 92, 0.12);
-}
-
-.scene-discussion__line--1 {
-  left: 112px;
-  top: 56px;
-  width: 34px;
-}
-
-.scene-discussion__line--2 {
-  left: 112px;
-  top: 72px;
-  width: 46px;
 }
 
 .post-card__main {
@@ -1213,7 +1703,7 @@ function handleCommentLike(commentId) {
   }
 
   .post-card__scene {
-    min-height: 170px;
+    min-height: 160px;
   }
 }
 
