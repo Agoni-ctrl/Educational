@@ -14,37 +14,37 @@ const menuItems = [
   {
     id: "course-resource",
     label: "课程资源",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
     desc: "浏览所有课程",
   },
   {
     id: "course-analysis",
     label: "课程分析",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="3" height="7" rx="1.5"/><rect x="10.5" y="8" width="3" height="13" rx="1.5"/><rect x="15" y="3" width="3" height="18" rx="1.5"/></svg>',
     desc: "数据可视化分析",
   },
   {
     id: "classroom-activity",
     label: "课堂互动",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="3"/><circle cx="8" cy="12" r="1.5" fill="currentColor"/><circle cx="16" cy="12" r="1.5" fill="currentColor"/><path d="M10 12h0"/><path d="M12 10v4"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="12" rx="3"/><circle cx="12" cy="11" r="2"/><path d="M8 17v2h8v-2"/></svg>',
     desc: "随堂活动管理",
   },
   {
     id: "qa-session",
     label: "边问边答",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-12.4 8.3L3 22l1.7-5.6A9 9 0 1121 12z"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-9 9H3l3-3.5A9 9 0 1121 12z"/></svg>',
     desc: "互动问答学习",
   },
   {
     id: "after-class",
     label: "课后追问",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
     desc: "深入探讨问题",
   },
   {
     id: "ai-summary",
     label: "AI总结助手",
-    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="14" rx="3"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><circle cx="14" cy="10" r="1.5" fill="currentColor"/><path d="M9 16c1 .7 2 1 3 1s2-.3 3-1"/><path d="M12 2v4"/><rect x="9" y="20" width="6" height="2" rx="1"/></svg>',
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 5L18 8l-5 1.5L12 14l-1.5-5L6 8l5-1.5L12 2z"/><path d="M19 17l.5 1.5L21 19l-1.5.5-.5 1.5-.5-1.5L17 19l1.5-.5.5-1.5z"/></svg>',
     desc: "智能学习总结",
   },
 ];
@@ -2753,8 +2753,8 @@ watch(activeMenu, (newVal) => {
   height: 36px;
 }
 .menu-item__icon svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   transition:
     stroke 0.3s ease,
     filter 0.3s ease;
@@ -3221,8 +3221,8 @@ watch(activeMenu, (newVal) => {
 }
 .home-card-emoji svg,
 .home-card-icon-wrap svg {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   stroke-width: 1.6;
   transition:
     stroke 0.3s ease,
