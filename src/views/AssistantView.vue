@@ -184,12 +184,8 @@ function handleInternalLink(e) {
 }
 
 onMounted(() => {
-  // 如果已有未使用的空会话，切换到它显示欢迎页
-  const sessions = assistant.getSessions();
-  if (sessions.length && !activeId.value) {
-    activeId.value = sessions[0].id;
-    assistant.setActive(activeId.value);
-  }
+  // 进入页面先显示欢迎页，不自动加载历史会话
+  activeId.value = null;
   document.addEventListener("click", (e) => {
     const link = e.target.closest(".internal-link");
     if (link) {
@@ -458,19 +454,11 @@ watch(activeId, scrollToBottom);
           >
             <div class="message__avatar">
               <!-- AI 助手头像 -->
-              <svg
+              <span
                 v-if="msg.role === 'assistant'"
-                viewBox="0 0 32 32"
-                fill="none"
-                class="avatar-icon"
+                class="avatar-icon ai-avatar"
+                >AI</span
               >
-                <circle cx="16" cy="16" r="16" fill="url(#avatarGrad)" />
-                <path
-                  d="M10 19l4-8h2l4 8h-2l-.8-1.6H12.8L12 19h-2zm3.2-3.2h3.6L16 12.4l-2.8 3.4z"
-                  fill="white"
-                />
-                <path d="M21 11h2v8h-2V11z" fill="white" opacity="0.78" />
-              </svg>
               <!-- 用户头像 -->
               <img
                 v-else-if="userStore.getAvatar()"
@@ -579,14 +567,7 @@ watch(activeId, scrollToBottom);
 
           <div v-if="isLoading" class="message message--assistant">
             <div class="message__avatar">
-              <svg viewBox="0 0 32 32" fill="none" class="avatar-icon">
-                <circle cx="16" cy="16" r="16" fill="url(#avatarGrad)" />
-                <path
-                  d="M10 19l4-8h2l4 8h-2l-.8-1.6H12.8L12 19h-2zm3.2-3.2h3.6L16 12.4l-2.8 3.4z"
-                  fill="white"
-                />
-                <path d="M21 11h2v8h-2V11z" fill="white" opacity="0.78" />
-              </svg>
+              <span class="avatar-icon ai-avatar">AI</span>
             </div>
             <div class="message__bubble message__bubble--typing">
               <span /><span /><span />
@@ -629,15 +610,6 @@ watch(activeId, scrollToBottom);
       </div>
     </main>
   </div>
-
-  <svg width="0" height="0" style="position: absolute; visibility: hidden">
-    <defs>
-      <linearGradient id="avatarGrad" x1="0" y1="0" x2="20" y2="20">
-        <stop stop-color="#57a4ff" />
-        <stop offset="1" stop-color="#2e79da" />
-      </linearGradient>
-    </defs>
-  </svg>
 </template>
 
 <style scoped>
@@ -1153,8 +1125,8 @@ watch(activeId, scrollToBottom);
 }
 
 .message__avatar {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1731,11 +1703,26 @@ watch(activeId, scrollToBottom);
 
 /* ---- Avatar Icon ---- */
 .avatar-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.ai-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #57a4ff, #2e79da);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .user-avatar-img {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   object-fit: cover;
 }
