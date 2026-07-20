@@ -1461,7 +1461,10 @@ watch(activeMenu, (newVal) => {
               <div class="home-hero">
                 <div class="home-hero-badge">智能教学平台</div>
                 <h1 class="home-hero-title">
-                  课堂<span class="gradient-text">教程</span>
+                  <span class="float-cap">🎓</span> 课堂<span
+                    class="gradient-text"
+                    >教程</span
+                  >
                 </h1>
                 <p class="home-hero-subtitle">
                   集成课程资源、数据分析、互动问答与AI总结的一站式教学工具，<br />帮助教师高效备课，提升课堂质量。
@@ -2675,11 +2678,6 @@ watch(activeMenu, (newVal) => {
   text-align: center;
 }
 
-.menu-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-
 .menu-header h2 {
   font-size: 1.4rem;
   font-weight: 700;
@@ -2997,6 +2995,21 @@ watch(activeMenu, (newVal) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.float-cap {
+  display: inline-block;
+  animation: floatCap 3s ease-in-out infinite;
+}
+
+@keyframes floatCap {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .home-hero-subtitle {
