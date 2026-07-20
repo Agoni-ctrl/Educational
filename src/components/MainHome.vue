@@ -117,9 +117,9 @@ function stopAutoPlay() {
 }
 
 const lessonHighlights = [
-  { value: "4 步", label: "互动生成闭环" },
-  { value: "6 类", label: "多模态资料融合" },
-  { value: "1 份", label: "课件与教案同步产出" },
+  { value: "4 步", label: "从备课到反思" },
+  { value: "6 类", label: "多模态教学资源" },
+  { value: "1 份", label: "课件教案同步" },
 ];
 
 const materialCards = [
@@ -175,17 +175,18 @@ onUnmounted(() => {
         <div class="hero__copy">
           <p class="hero__eyebrow reveal" style="--i: 0">
             <span class="pulse" />
-            知启灵枢：多模态 AI 互动式教学智能体
+            智启未来 · AI 赋能每一堂课
           </p>
 
           <h1 class="hero__title reveal" style="--i: 1">
-            让教师回归<br />
+            让每位教师都成为<br />
             <em>教学设计师</em>
           </h1>
 
           <p class="hero__lead reveal" style="--i: 2">
-            告别熬夜做课件的繁琐。您只需告诉我们教学思路，即可为您生成专业的 PPT
-            与教案初稿。从素材搜集到排版美化，我们帮您搞定，让您专注于课堂本身。
+            告别熬夜做课件。您只需告诉我们教学思路，AI 即可生成专业 PPT
+            与教案初稿——<br />
+            从素材搜集到排版美化，一气呵成。把时间还给课堂，让每一分钟都值得。
           </p>
 
           <div
@@ -450,11 +451,20 @@ onUnmounted(() => {
   margin-bottom: 28px;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #4f7dff, #0bc5ea);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  position: relative;
+}
+.hero__eyebrow::after {
+  content: "";
+  margin-left: 4px;
+  width: 24px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #4f7dff, transparent);
+  border-radius: 2px;
 }
 
 .pulse {
@@ -470,25 +480,41 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: clamp(2.625rem, 5.2vw, 4.125rem);
   font-weight: 800;
-  line-height: 1.06;
-  letter-spacing: -0.045em;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
   margin-bottom: 28px;
+  color: #0a1628;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .hero__title em {
   font-style: normal;
-  background: linear-gradient(102deg, #0077e6 0%, #00c2d4 52%, #4da6ff 100%);
+  position: relative;
+  background: linear-gradient(102deg, #2b6ef0 0%, #0bc5ea 52%, #5b8fff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.hero__title em::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 4px;
+  background: linear-gradient(90deg, #2b6ef0, #0bc5ea, transparent);
+  border-radius: 4px;
+  opacity: 0.25;
+}
 
 .hero__lead {
-  max-width: 500px;
+  max-width: 520px;
   font-size: 1.0625rem;
-  line-height: 1.78;
+  line-height: 1.85;
   color: var(--ink-soft);
   margin-bottom: 26px;
+  padding-left: 20px;
+  border-left: 3px solid rgba(75, 125, 255, 0.15);
   position: relative;
 }
 
@@ -502,38 +528,49 @@ onUnmounted(() => {
 
 .lesson-stat {
   position: relative;
-  padding: 14px 14px 13px;
-  border: 1px solid rgba(10, 15, 26, 0.08);
+  padding: 16px 16px 14px;
+  border: 1px solid rgba(10, 15, 26, 0.06);
   border-radius: 18px;
   background:
     linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.92),
-      rgba(255, 255, 255, 0.54)
+      rgba(255, 255, 255, 0.95),
+      rgba(255, 255, 255, 0.6)
     ),
-    radial-gradient(circle at 15% 10%, rgba(0, 194, 212, 0.14), transparent 42%);
-  box-shadow: 0 14px 40px rgba(0, 87, 217, 0.07);
+    radial-gradient(circle at 15% 10%, rgba(0, 194, 212, 0.12), transparent 42%);
+  box-shadow:
+    0 8px 28px rgba(0, 87, 217, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(18px);
   overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.lesson-stat:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 36px rgba(0, 87, 217, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .lesson-stat::after {
   content: "";
   position: absolute;
-  inset: auto 12px 0;
+  inset: auto 14px 0;
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .lesson-stat strong {
   display: block;
   margin-bottom: 4px;
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  background: linear-gradient(135deg, #4f7dff, #0bc5ea);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -541,9 +578,10 @@ onUnmounted(() => {
 
 .lesson-stat span {
   display: block;
-  font-size: 0.76rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: var(--ink-muted);
+  font-weight: 500;
 }
 
 .hero__cta {
