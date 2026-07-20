@@ -7,6 +7,13 @@ import {
   formatFeatureTime,
   getTypeIcon,
 } from "../composables/useFeatures.js";
+import {
+  submitCoursewareTask,
+  subscribeProgress,
+  downloadFile,
+  getCoursewareHistory as fetchApiHistory,
+  deleteCoursewareTask as deleteApiTask,
+} from "../composables/useCoursewareApi.js";
 
 const {
   getHistory,
@@ -25,6 +32,14 @@ const stats = ref(getStats());
 const uploadFiles = ref([]);
 const isGenerating = ref(false);
 const toast = ref("");
+
+// 真实 API 生成任务状态
+const currentTaskId = ref(null);
+const currentTaskProgress = ref(0);
+const currentTaskStage = ref("");
+const showProgress = ref(false);
+const generatedFilename = ref("");
+
 const historyQuery = ref("");
 const historyPage = ref(1);
 const iterateFeedback = ref({});
@@ -2221,21 +2236,91 @@ function showToast(message) {
   }, 2600);
 }
 
-function simulateGenerate(type, title, subject, pages = 0) {
+// ── 真实 API 课件生成 ─────────────────────────────────
+const typeToApiType = {
+  ppt: "ppt",
+  doc: "doc",
+  interactive: "quiz",
+};
+
+async function callApiGenerate(apiType, params) {
   isGenerating.value = true;
-  setTimeout(() => {
-    addRecord({
-      type,
-      title,
-      subject,
-      pages,
-      status: type === "interactive" ? "draft" : "completed",
+  showProgress.value = true;
+  currentTaskProgress.value = 0;
+  currentTaskStage.value = "启动中…";
+  generatedFilename.value = "";
+
+  try {
+    const { taskId } = await submitCoursewareTask({
+      type: apiType,
+      ...params,
     });
-    refresh();
+    currentTaskId.value = taskId;
+
+    // 订阅 SSE 进度
+    subscribeProgress(taskId, {
+      onProgress: (data) => {
+        currentTaskProgress.value = data.progress;
+        currentTaskStage.value = data.stage;
+        if (data.status === "completed") {
+          generatedFilename.value = data.filename || "";
+        }
+      },
+      onComplete: (data) => {
+        isGenerating.value = false;
+        showToast(`✅ 生成完成：${data.filename}`);
+        activePanel.value = "history";
+        // 延迟隐藏进度条
+        setTimeout(() => {
+          showProgress.value = false;
+        }, 3000);
+      },
+      onError: (err) => {
+        isGenerating.value = false;
+        showProgress.value = false;
+        showToast(`❌ 生成失败：${err.message}`);
+      },
+    });
+  } catch (err) {
     isGenerating.value = false;
-    showToast("生成任务已加入记录，可继续查看与优化");
-    activePanel.value = "history";
-  }, 1000);
+    showProgress.value = false;
+    showToast(`❌ 提交失败：${err.message}`);
+  }
+}
+
+// 课件生成
+function handlePptGenerate() {
+  if (!pptForm.value.topic.trim()) return showToast("请先填写课题名称");
+  callApiGenerate("ppt", {
+    subject: pptForm.value.subject || "未分类",
+    topic: pptForm.value.topic,
+    grade: pptForm.value.duration || "45分钟",
+    style: pptForm.value.style || "实验探究型",
+    outline: pptForm.value.keyPoints || "",
+  });
+}
+
+// 教案生成
+function handleDocGenerate() {
+  if (!docForm.value.topic.trim()) return showToast("请先填写课题名称");
+  callApiGenerate("doc", {
+    subject: docForm.value.subject || "未分类",
+    topic: docForm.value.topic,
+    grade: "",
+    requirements: `${docForm.value.format || "标准教案"} | ${docForm.value.style || ""} | ${docForm.value.teachingGoals || ""}`,
+  });
+}
+
+// 教学题生成
+function handleQuestionGenerate() {
+  if (!questionForm.value.topic.trim())
+    return showToast("请先填写知识点或题组主题");
+  callApiGenerate("quiz", {
+    subject: questionForm.value.subject || "未分类",
+    topic: questionForm.value.topic,
+    grade: questionForm.value.stage || "高中",
+    difficulty: questionForm.value.difficulty || "适中",
+  });
 }
 
 // 课件文件上传处理
@@ -2293,16 +2378,6 @@ function removePptFile() {
   }
 }
 
-function handlePptGenerate() {
-  if (!pptForm.value.topic.trim()) return showToast("请先填写课题名称");
-  simulateGenerate(
-    "ppt",
-    `${pptForm.value.topic} · PPT课件`,
-    pptForm.value.subject || "未分类",
-    pptRecommendation.value.length * 2,
-  );
-}
-
 // 教案文件上传处理
 const docFileInput = ref(null);
 
@@ -2356,27 +2431,6 @@ function removeDocFile() {
   if (docFileInput.value) {
     docFileInput.value.value = "";
   }
-}
-
-function handleDocGenerate() {
-  if (!docForm.value.topic.trim()) return showToast("请先填写课题名称");
-  simulateGenerate(
-    "doc",
-    `${docForm.value.topic} · 教案`,
-    docForm.value.subject || "未分类",
-    docRecommendation.value.length,
-  );
-}
-
-function handleQuestionGenerate() {
-  if (!questionForm.value.topic.trim())
-    return showToast("请先填写知识点或题组主题");
-  simulateGenerate(
-    "interactive",
-    `${questionForm.value.topic} · 教学题生成`,
-    questionForm.value.subject || "未分类",
-    questionRecommendation.value.length,
-  );
 }
 
 function onFileChange(event) {
@@ -2479,10 +2533,14 @@ function editRecord(item) {
   // 这里可以跳转到对应生成页面并加载内容
 }
 
-// 下载记录
+// 下载记录 — 真实 API 文件下载
 function downloadRecord(item) {
-  showToast(`正在准备下载：${item.title}`);
-  // 这里触发文件下载
+  if (item.taskId) {
+    downloadFile(item.taskId, item.filename || item.title);
+    showToast(`正在下载：${item.filename || item.title}`);
+  } else {
+    showToast("该记录暂无可用文件");
+  }
 }
 
 // 提交反馈
@@ -3217,6 +3275,28 @@ onUnmounted(() => {
         </div>
 
         <section v-else-if="activePanel === 'ppt'" class="panel">
+          <!-- 生成进度条 -->
+          <div v-if="showProgress" class="progress-bar-wrap">
+            <div class="progress-bar__header">
+              <span class="progress-bar__stage">{{ currentTaskStage }}</span>
+              <span class="progress-bar__pct">{{ currentTaskProgress }}%</span>
+            </div>
+            <div class="progress-bar__track">
+              <div
+                class="progress-bar__fill"
+                :style="{ width: currentTaskProgress + '%' }"
+              />
+            </div>
+            <div v-if="generatedFilename" class="progress-bar__done">
+              ✅ 文件已生成：
+              <a
+                href="javascript:;"
+                @click="downloadFile(currentTaskId, generatedFilename)"
+                >{{ generatedFilename }}</a
+              >
+            </div>
+          </div>
+
           <div class="generator-layout">
             <article class="form-card">
               <div class="section-head">
@@ -3412,6 +3492,28 @@ onUnmounted(() => {
         </section>
 
         <section v-else-if="activePanel === 'doc'" class="panel">
+
+          <!-- 生成进度条 -->
+          <div v-if="showProgress" class="progress-bar-wrap">
+            <div class="progress-bar__header">
+              <span class="progress-bar__stage">{{ currentTaskStage }}</span>
+              <span class="progress-bar__pct">{{ currentTaskProgress }}%</span>
+            </div>
+            <div class="progress-bar__track">
+              <div
+                class="progress-bar__fill"
+                :style="{ width: currentTaskProgress + '%' }"
+              />
+            </div>
+            <div v-if="generatedFilename" class="progress-bar__done">
+              ✅ 文件已生成：
+              <a
+                href="javascript:;"
+                @click="downloadFile(currentTaskId, generatedFilename)"
+              >{{ generatedFilename }}</a>
+            </div>
+          </div>
+
           <div class="generator-layout">
             <article class="form-card">
               <div class="section-head">
@@ -8013,6 +8115,55 @@ onUnmounted(() => {
 .status-badge[data-status="iterating"] {
   color: var(--accent-deep);
   background: rgba(76, 125, 255, 0.12);
+}
+
+/* ── 生成进度条 ────────────────────────────── */
+.progress-bar-wrap {
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+  border: 1px solid #bfdbfe;
+  border-radius: 16px;
+}
+.progress-bar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.progress-bar__stage {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+.progress-bar__pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+.progress-bar__track {
+  width: 100%;
+  height: 8px;
+  background: #dbeafe;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #0bc5ea);
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.progress-bar__done {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #166534;
+}
+.progress-bar__done a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .generator-layout {

@@ -929,51 +929,51 @@ watch(activeId, scrollToBottom);
 }
 
 .welcome__brand {
-  max-width: 760px;
+  max-width: 580px;
 }
 
 .welcome__logo {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 24px;
-  border-radius: 28px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 22px;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 14px 28px rgba(66, 135, 223, 0.2));
+  filter: drop-shadow(0 12px 24px rgba(66, 135, 223, 0.15));
 }
 
 .welcome__logo-icon {
-  width: 96px;
-  height: 96px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 28px;
+  border-radius: 22px;
   background: linear-gradient(135deg, #57a4ff, #2e79da);
   color: #fff;
-  font-size: 2.2rem;
+  font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .welcome__title {
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #1a4f8a 0%, #3579d6 45%, #5aa8ff 100%);
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #1a4f8a 0%, #3579d6 50%, #5aa8ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .welcome__desc {
-  margin-top: 14px;
-  font-size: 1.02rem;
-  line-height: 1.85;
+  margin-top: 10px;
+  font-size: 0.88rem;
+  line-height: 1.65;
   color: #4e6f94;
-  max-width: 520px;
+  max-width: 440px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1334,12 +1334,20 @@ watch(activeId, scrollToBottom);
 
   .welcome__logo,
   .welcome__logo-icon {
-    width: 82px;
-    height: 82px;
+    width: 60px;
+    height: 60px;
   }
 
   .welcome__logo-icon {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
+  }
+
+  .welcome__logo {
+    border-radius: 18px;
+  }
+
+  .welcome__logo-icon {
+    border-radius: 18px;
   }
 
   .messages {

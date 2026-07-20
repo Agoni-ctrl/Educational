@@ -444,10 +444,11 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   background: linear-gradient(135deg, #4f7dff, #0bc5ea);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -474,13 +475,12 @@ onUnmounted(() => {
 
 .hero__title {
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: clamp(2.625rem, 5.2vw, 4.125rem);
+  font-size: clamp(2.125rem, 4.8vw, 3.5rem);
   font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
-  margin-bottom: 28px;
-  color: #0a1628;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+  color: #1e293b;
 }
 
 .hero__title em {
@@ -505,10 +505,10 @@ onUnmounted(() => {
 
 .hero__lead {
   max-width: 520px;
-  font-size: 1.0625rem;
-  line-height: 1.85;
+  font-size: 1rem;
+  line-height: 1.8;
   color: var(--ink-soft);
-  margin-bottom: 26px;
+  margin-bottom: 28px;
   padding-left: 20px;
   border-left: 3px solid rgba(75, 125, 255, 0.15);
   position: relative;
@@ -562,9 +562,9 @@ onUnmounted(() => {
 
 .lesson-stat strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   line-height: 1;
   background: linear-gradient(135deg, #4f7dff, #0bc5ea);
   -webkit-background-clip: text;
@@ -766,9 +766,9 @@ onUnmounted(() => {
   background-clip: text;
 }
 .showcase-info__desc {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: #94a3b8;
-  line-height: 1.6;
+  line-height: 1.65;
   max-width: 380px;
   margin: 0 auto;
   position: relative;
@@ -2270,7 +2270,7 @@ onUnmounted(() => {
 }
 
 .guide-text {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #334155;
   font-weight: 600;
 }
@@ -2888,7 +2888,7 @@ onUnmounted(() => {
     padding: 12px 16px;
   }
   .guide-text {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 }
 
