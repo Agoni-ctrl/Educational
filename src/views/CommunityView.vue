@@ -332,12 +332,12 @@ onMounted(() => {
                 <div class="post-form__head">
                   <h3>
                     <svg
-                      width="18"
-                      height="18"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="2"
+                      stroke-width="1.8"
                       stroke-linecap="round"
                     >
                       <path
@@ -358,46 +358,57 @@ onMounted(() => {
                     &times;
                   </button>
                 </div>
-                <div class="post-form__row">
-                  <label>
-                    分类
-                    <select v-model="newPost.tag">
-                      <option v-for="t in tags" :key="t" :value="t">
-                        {{ t }}
-                      </option>
-                    </select>
-                  </label>
-                  <label>
-                    昵称
-                    <input
-                      v-model="newPost.author"
-                      type="text"
-                      placeholder="您的称呼"
-                      maxlength="12"
-                    />
-                  </label>
+
+                <div class="post-form__body">
+                  <div class="post-form__main">
+                    <label class="field-label">
+                      <span class="field-label__text">标题</span>
+                      <input
+                        v-model="newPost.title"
+                        type="text"
+                        placeholder="简要描述您的问题"
+                        required
+                        maxlength="80"
+                      />
+                    </label>
+                    <label class="field-label field-label--grow">
+                      <span class="field-label__text">详细描述</span>
+                      <textarea
+                        v-model="newPost.content"
+                        rows="5"
+                        placeholder="详细说明教学场景、遇到的困难或想讨论的内容..."
+                        required
+                        maxlength="500"
+                      />
+                    </label>
+                  </div>
+
+                  <div class="post-form__side">
+                    <label class="field-label">
+                      <span class="field-label__text">分类</span>
+                      <select v-model="newPost.tag">
+                        <option v-for="t in tags" :key="t" :value="t">
+                          {{ t }}
+                        </option>
+                      </select>
+                    </label>
+                    <label class="field-label">
+                      <span class="field-label__text">昵称</span>
+                      <input
+                        v-model="newPost.author"
+                        type="text"
+                        placeholder="您的称呼"
+                        maxlength="12"
+                      />
+                    </label>
+                  </div>
                 </div>
-                <label>
-                  标题
-                  <input
-                    v-model="newPost.title"
-                    type="text"
-                    placeholder="简要描述您的问题"
-                    required
-                    maxlength="80"
-                  />
-                </label>
-                <label>
-                  详细描述
-                  <textarea
-                    v-model="newPost.content"
-                    rows="4"
-                    placeholder="详细说明教学场景、遇到的困难或想讨论的内容..."
-                    required
-                    maxlength="500"
-                  />
-                </label>
-                <button type="submit" class="btn btn--dark">发布到社区</button>
+
+                <div class="post-form__footer">
+                  <button type="submit" class="btn btn--primary">
+                    发布到社区
+                  </button>
+                </div>
               </form>
             </div>
           </Transition>
@@ -1025,31 +1036,127 @@ onMounted(() => {
 .post-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  border-radius: 22px;
-  border: 1px solid var(--border, #e2e8f0);
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 18px 60px rgba(0, 87, 217, 0.09);
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  border-radius: 24px;
+  border: 1px solid rgba(167, 193, 225, 0.28);
+  background: linear-gradient(
+    170deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(248, 251, 255, 0.96)
+  );
+  backdrop-filter: blur(24px);
+  box-shadow: 0 32px 80px rgba(0, 55, 140, 0.18);
+  overflow: hidden;
 }
 
-.post-form__row {
+.post-form__body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 180px;
+  gap: 0;
+  padding: 24px 28px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.post-form__main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label--grow {
+  flex: 1;
+}
+
+.field-label__text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4a6a8a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.post-form__side {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  padding-left: 24px;
+  border-left: 1px solid rgba(167, 193, 225, 0.18);
 }
 
 .post-form input,
 .post-form select,
 .post-form textarea {
-  padding: 12px 14px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 14px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid rgba(167, 193, 225, 0.28);
+  border-radius: 12px;
   font-size: 0.9375rem;
+  font-family: inherit;
   outline: none;
   background: #fff;
+  color: #0f172a;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.post-form input::placeholder,
+.post-form textarea::placeholder {
+  color: #a0b8d0;
+}
+
+.post-form input:focus,
+.post-form select:focus,
+.post-form textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.post-form textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.post-form__footer {
+  padding: 16px 28px 20px;
+  border-top: 1px solid rgba(167, 193, 225, 0.16);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background: rgba(248, 251, 255, 0.6);
+}
+
+.post-form__footer .btn--primary {
+  padding: 11px 36px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1a56f0, #0ea5e9);
+  color: #fff;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.post-form__footer .btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(26, 86, 240, 0.3);
+}
+
+.post-form__footer .btn--primary:active {
+  transform: translateY(0);
 }
 
 .post-list {
@@ -1385,24 +1492,17 @@ onMounted(() => {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(10, 15, 26, 0.38);
-  backdrop-filter: blur(6px);
-}
-
-.modal-overlay .post-form {
-  width: 100%;
-  max-width: 540px;
-  margin-bottom: 0;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: rgba(10, 15, 26, 0.42);
+  backdrop-filter: blur(8px);
 }
 
 .post-form__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border, #e2e8f0);
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid rgba(167, 193, 225, 0.18);
+  flex-shrink: 0;
 }
 
 .post-form__head h3 {
@@ -1411,7 +1511,14 @@ onMounted(() => {
   gap: 10px;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--ink, #0f172a);
+  background: linear-gradient(135deg, #1a56f0, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.post-form__head h3 svg {
+  stroke: #1a56f0;
 }
 
 .modal-close {
@@ -1424,14 +1531,14 @@ onMounted(() => {
   border-radius: 50%;
   background: transparent;
   font-size: 1.5rem;
-  color: var(--ink-muted, #94a3b8);
+  color: #8da6c5;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
   background: rgba(10, 15, 26, 0.06);
-  color: var(--ink, #0f172a);
+  color: #0f172a;
 }
 
 /* 模态过渡动画 */
@@ -1704,9 +1811,29 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .post-form__row {
+  .post-form__body {
     grid-template-columns: 1fr;
   }
+
+  .post-form__side {
+    padding-left: 0;
+    padding-top: 18px;
+    border-left: none;
+    border-top: 1px solid rgba(167, 193, 225, 0.18);
+  }
+
+  .post-form__head {
+    padding: 18px 20px 14px;
+  }
+
+  .post-form__body {
+    padding: 18px 20px;
+  }
+
+  .post-form__footer {
+    padding: 14px 20px 18px;
+  }
+
   .toolbar {
     flex-direction: column;
     align-items: stretch;
