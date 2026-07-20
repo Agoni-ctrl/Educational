@@ -396,26 +396,7 @@ watch(activeId, scrollToBottom);
         <div v-if="!hasMessages && !isLoading" class="welcome">
           <div class="welcome__brand">
             <div class="welcome__logo">
-              <svg viewBox="0 0 64 64" fill="none">
-                <circle cx="32" cy="32" r="32" fill="url(#assistantGrad)" />
-                <path
-                  d="M20 38L28 22h4l8 16h-4l-1.6-3.2H25.6L24 38h-4zm6.4-6.4h7.2L32 24.8l-5.6 6.8z"
-                  fill="white"
-                />
-                <path d="M42 22h4v16h-4V22z" fill="white" opacity="0.78" />
-                <defs>
-                  <linearGradient
-                    id="assistantGrad"
-                    x1="0"
-                    y1="0"
-                    x2="64"
-                    y2="64"
-                  >
-                    <stop stop-color="#5aa8ff" />
-                    <stop offset="1" stop-color="#2c79dd" />
-                  </linearGradient>
-                </defs>
-              </svg>
+              <span class="welcome__logo-icon">AI</span>
             </div>
 
             <h1 class="welcome__title">智课 AI 助手</h1>
@@ -961,9 +942,18 @@ watch(activeId, scrollToBottom);
   filter: drop-shadow(0 14px 28px rgba(66, 135, 223, 0.2));
 }
 
-.welcome__logo svg {
+.welcome__logo-icon {
   width: 96px;
   height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #57a4ff, #2e79da);
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .welcome__title {
@@ -1343,9 +1333,13 @@ watch(activeId, scrollToBottom);
   }
 
   .welcome__logo,
-  .welcome__logo svg {
+  .welcome__logo-icon {
     width: 82px;
     height: 82px;
+  }
+
+  .welcome__logo-icon {
+    font-size: 1.8rem;
   }
 
   .messages {
