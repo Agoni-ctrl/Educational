@@ -88,7 +88,7 @@ export function useFeatures() {
     }
   }
 
-  function addRecord({ type, title, subject, status = 'draft', pages = 0 }) {
+  function addRecord({ type, title, subject, status = 'draft', pages = 0, taskId }) {
     const record = {
       id: uid(),
       type,
@@ -97,6 +97,7 @@ export function useFeatures() {
       status,
       createdAt: Date.now(),
       pages,
+      taskId: taskId || null,
     }
     const list = loadHistory()
     list.unshift(record)

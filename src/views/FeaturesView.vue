@@ -2269,6 +2269,21 @@ async function callApiGenerate(apiType, params) {
       onComplete: (data) => {
         isGenerating.value = false;
         showToast(`✅ 生成完成：${data.filename}`);
+
+        // 将新记录写入历史列表（localStorage）
+        // API type 映射: quiz → interactive
+        const historyType = apiType === "quiz" ? "interactive" : apiType;
+        addRecord({
+          taskId,
+          type: historyType,
+          title: data.filename || "新生成的课件",
+          subject: params.subject || "未分类",
+          status: "completed",
+        });
+
+        history.value = getHistory();
+        stats.value = getStats();
+
         activePanel.value = "history";
         // 延迟隐藏进度条
         setTimeout(() => {
@@ -3492,7 +3507,6 @@ onUnmounted(() => {
         </section>
 
         <section v-else-if="activePanel === 'doc'" class="panel">
-
           <!-- 生成进度条 -->
           <div v-if="showProgress" class="progress-bar-wrap">
             <div class="progress-bar__header">
@@ -3510,7 +3524,8 @@ onUnmounted(() => {
               <a
                 href="javascript:;"
                 @click="downloadFile(currentTaskId, generatedFilename)"
-              >{{ generatedFilename }}</a>
+                >{{ generatedFilename }}</a
+              >
             </div>
           </div>
 
@@ -4672,6 +4687,27 @@ onUnmounted(() => {
                             d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
                           />
                           <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                      <button
+                        v-if="item.taskId && item.status === 'completed'"
+                        class="archive-action-btn archive-action-btn--download"
+                        title="下载课件"
+                        @click="downloadRecord(item)"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                       </button>
                       <button
