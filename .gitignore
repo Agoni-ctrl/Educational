@@ -38,6 +38,21 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
+# Python 后端
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 生成的课件文件（由 AI 生成，不应提交）
+server/output/
+
+# API Key 配置（含敏感信息）
+server/config.local.py
+
 # 防止其他项目混入
 .agents/
 .codex/
