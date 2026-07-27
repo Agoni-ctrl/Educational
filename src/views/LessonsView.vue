@@ -505,6 +505,220 @@ const aiSummaries = ref([
   },
 ]);
 
+// ==================== AI总结助手（课程分析中心） ====================
+
+// 视图状态
+const aiHubCourse = ref(null);
+const aiHubActiveTab = ref("analysis");
+const aiHubTabs = [
+  {
+    id: "analysis",
+    step: 1,
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="3" height="7" rx="1.5"/><rect x="10.5" y="8" width="3" height="13" rx="1.5"/><rect x="15" y="3" width="3" height="18" rx="1.5"/></svg>',
+    label: "课程分析",
+    desc: "AI能力画像评估",
+  },
+  {
+    id: "activity",
+    step: 2,
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="12" rx="3"/><circle cx="12" cy="11" r="2"/><path d="M8 17v2h8v-2"/></svg>',
+    label: "课堂互动",
+    desc: "随堂活动与抢答",
+  },
+  {
+    id: "qa",
+    step: 3,
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-9 9H3l3-3.5A9 9 0 1121 12z"/></svg>',
+    label: "边问边答",
+    desc: "互动问答巩固",
+  },
+  {
+    id: "afterclass",
+    step: 4,
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    label: "课后追问",
+    desc: "深入拓展探讨",
+  },
+];
+
+// 选择课程
+function selectAiHubCourse(course) {
+  aiHubCourse.value = course;
+  aiHubActiveTab.value = "analysis";
+  resetQAState();
+  nextTick(() => {
+    initAiHubCharts();
+  });
+}
+
+// 切换子标签
+function switchAiHubTab(tabId) {
+  aiHubActiveTab.value = tabId;
+  if (tabId === "analysis") {
+    nextTick(() => {
+      initAiHubCharts();
+    });
+  }
+}
+
+// 判断步骤是否已完成
+function getAiHubStepDone(tabId) {
+  const currentIdx = aiHubTabs.findIndex((t) => t.id === aiHubActiveTab.value);
+  const targetIdx = aiHubTabs.findIndex((t) => t.id === tabId);
+  return targetIdx <= currentIdx;
+}
+
+// ===== ECharts 图表 =====
+function initAiHubCharts() {
+  if (!aiHubCourse.value) return;
+
+  const course = aiHubCourse.value;
+  const radarDom = document.getElementById("ai-hub-radar");
+  const pieDom = document.getElementById("ai-hub-pie");
+  if (!radarDom || !pieDom) return;
+
+  // 雷达图
+  const dims = Object.keys(course.capabilities || {});
+  const vals = Object.values(course.capabilities || {});
+  if (charts.aiHubRadar) charts.aiHubRadar.dispose();
+  const radarChart = echarts.init(radarDom);
+  radarChart.setOption({
+    tooltip: { trigger: "item" },
+    radar: {
+      indicator: dims.map((d) => ({ name: d, max: 100 })),
+      radius: "65%",
+      center: ["50%", "50%"],
+      axisName: { color: "#64748b", fontSize: 11 },
+      splitArea: {
+        areaStyle: {
+          color: ["rgba(76,125,255,0.02)", "rgba(76,125,255,0.06)"],
+        },
+      },
+    },
+    series: [
+      {
+        type: "radar",
+        data: [
+          {
+            value: vals,
+            name: course.title,
+            areaStyle: { color: "rgba(76,125,255,0.2)" },
+            lineStyle: { color: "#4c7dff", width: 2 },
+            itemStyle: { color: "#4c7dff" },
+          },
+        ],
+      },
+    ],
+  });
+
+  // 饼图
+  const pieChart = echarts.init(pieDom);
+  const timeData = (course.timeAllocation || []).map((t) => ({
+    name: t.name,
+    value: t.value,
+  }));
+  pieChart.setOption({
+    tooltip: { trigger: "item", formatter: "{b}: {c}%" },
+    series: [
+      {
+        type: "pie",
+        radius: ["45%", "70%"],
+        center: ["50%", "50%"],
+        data: timeData,
+        label: { color: "#475569", fontSize: 11, formatter: "{b}\n{d}%" },
+        labelLine: { length: 8, length2: 10 },
+        itemStyle: { borderRadius: 4, borderColor: "white", borderWidth: 2 },
+        color: ["#4c7dff", "#6366f1", "#a78bfa", "#f472b6", "#fb923c"],
+        emphasis: {
+          itemStyle: { shadowBlur: 10, shadowColor: "rgba(0,0,0,0.1)" },
+        },
+      },
+    ],
+  });
+
+  charts.aiHubRadar = radarChart;
+  charts.aiHubPie = pieChart;
+  window.addEventListener("resize", () => {
+    radarChart.resize();
+    pieChart.resize();
+  });
+}
+
+// AI Hub 问答数据
+const aiHubCourseQA = ref([
+  {
+    id: 1,
+    question: "牛顿第二定律的适用条件是什么？",
+    answer:
+      "牛顿第二定律适用于惯性参考系中的宏观低速物体，研究对象可视为质点。当物体速度接近光速或进入微观领域时需使用相对论或量子力学。",
+    expanded: false,
+  },
+  {
+    id: 2,
+    question: "如何理解加速度与力的瞬时对应关系？",
+    answer:
+      "力是产生加速度的原因，力和加速度具有瞬时对应关系——有力即有加速度，力消失则加速度同时消失。这与速度不同，速度的改变需要时间积累。",
+    expanded: false,
+  },
+  {
+    id: 3,
+    question: "实验中如何减小误差？",
+    answer:
+      "可通过多次测量取平均值、使用更精密的仪器、控制变量保持实验条件一致等方法来减小实验误差。",
+    expanded: false,
+  },
+  {
+    id: 4,
+    question: "实验数据处理有哪些常用方法？",
+    answer:
+      "常用方法包括列表法、图像法（如v-t图像求加速度）、逐差法等。其中图像法能直观反映物理量关系并有效剔除异常数据点。",
+    expanded: false,
+  },
+]);
+
+// AI Hub 投票数据
+const currentVote = ref({
+  title: "本节课的教学节奏如何？",
+  options: [
+    { text: "偏快", count: 12 },
+    { text: "适中", count: 28 },
+    { text: "偏慢", count: 8 },
+    { text: "需要调整", count: 5 },
+  ],
+});
+const voteSelected = ref(null);
+const voteEnded = ref(false);
+function submitVote() {
+  if (voteSelected.value !== null) {
+    currentVote.value.options[voteSelected.value].count++;
+    voteEnded.value = true;
+  }
+}
+
+// 课堂互动区 QA 别名（兼容 AI Hub 子标签页调用）
+function qaSelectAnswer(idx) {
+  if (
+    !qaTimerRunning.value ||
+    quickAnswerQuestions.value[qaCurrentQuestion.value].answered
+  )
+    return;
+  qaSelectedAnswer.value = qaSelectedAnswer.value === idx ? -1 : idx;
+  quickAnswerQuestions.value[qaCurrentQuestion.value].selected =
+    qaSelectedAnswer.value === -1 ? undefined : qaSelectedAnswer.value;
+}
+function qaConfirmAnswer() {
+  if (qaSelectedAnswer.value === null) return;
+  if (quickAnswerQuestions.value[qaCurrentQuestion.value].answered) {
+    if (qaCurrentQuestion.value < quickAnswerQuestions.value.length - 1) {
+      qaSelectedAnswer.value = -1;
+      qaCurrentQuestion.value++;
+    }
+  } else {
+    quickAnswerQuestions.value[qaCurrentQuestion.value].answered = true;
+    qaSelectedAnswer.value = -1;
+  }
+}
+
 // ==================== 课堂互动数据 ====================
 
 const activityTab = ref("quick-answer");
@@ -549,36 +763,253 @@ const students = ref([
   { id: 10, name: "郑十二", avatar: "🧑‍🎓" },
 ]);
 
-// 1. 随堂抢答
-const quickAnswerQuestions = ref([
-  {
-    id: 1,
-    question: "光合作用的主要产物是什么？",
-    options: ["氧气", "二氧化碳", "葡萄糖", "水"],
-    correct: 2,
-    explanation: "光合作用的产物是葡萄糖和氧气。",
-    answered: false,
-    timer: 30,
-  },
-  {
-    id: 2,
-    question: "牛顿第二定律的公式是？",
-    options: ["P=MV", "F=ma", "E=mc²", "W=Fs"],
-    correct: 1,
-    explanation: "牛顿第二定律：物体加速度与合外力成正比，F=ma。",
-    answered: false,
-    timer: 30,
-  },
-  {
-    id: 3,
-    question: "细胞的基本结构不包括以下哪个？",
-    options: ["细胞膜", "细胞质", "细胞核", "细胞壁"],
-    correct: 3,
-    explanation: "动物细胞不含细胞壁，植物细胞才具有。",
-    answered: false,
-    timer: 20,
-  },
-]);
+// 1. 随堂抢答 - 按学科分类的题库
+const subjectQuestionBank = {
+  default: [
+    {
+      id: 1,
+      question: "本节课的核心概念是什么？",
+      options: ["概念A", "概念B", "概念C", "概念D"],
+      correct: 0,
+      explanation: "核心概念是需要重点掌握的基础知识。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 2,
+      question: "以下哪项是本课的重点内容？",
+      options: ["内容一", "内容二", "内容三", "内容四"],
+      correct: 1,
+      explanation: "重点内容需要反复练习来巩固。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 3,
+      question: "学习本课程后，最应该掌握的能力是？",
+      options: ["记忆能力", "理解应用", "分析推理", "创新创造"],
+      correct: 1,
+      explanation: "理解应用是学习的关键环节。",
+      answered: false,
+      timer: 25,
+    },
+  ],
+  物理: [
+    {
+      id: 1,
+      question: "牛顿第二定律的公式是？",
+      options: ["F=ma", "P=MV", "E=mc²", "W=Fs"],
+      correct: 0,
+      explanation: "牛顿第二定律：物体加速度与合外力成正比，F=ma。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 2,
+      question: "自由落体运动中，物体下落速度如何变化？",
+      options: ["匀速增大", "匀加速增大", "先快后慢", "保持不变"],
+      correct: 1,
+      explanation: "自由落体是匀加速直线运动，速度随时间均匀增大。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 3,
+      question: "在实验中，控制变量法的目的是什么？",
+      options: ["减少实验次数", "确保单一变量", "增加实验精度", "简化计算过程"],
+      correct: 1,
+      explanation: "控制变量法保证每次只改变一个变量，便于分析因果关系。",
+      answered: false,
+      timer: 25,
+    },
+  ],
+  化学: [
+    {
+      id: 1,
+      question: "影响化学反应速率的主要因素不包括？",
+      options: ["温度", "浓度", "颜色", "催化剂"],
+      correct: 2,
+      explanation: "颜色是物理性质，一般不直接改变反应速率。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 2,
+      question: "催化剂在化学反应中的作用是？",
+      options: ["改变反应平衡", "降低活化能", "增加产物量", "消耗反应物"],
+      correct: 1,
+      explanation: "催化剂通过降低反应的活化能来加快反应速率。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 3,
+      question: "升高温度对反应速率的影响是？",
+      options: ["加快", "减慢", "不变", "不确定"],
+      correct: 0,
+      explanation: "温度升高，分子运动加剧，有效碰撞增多，反应速率加快。",
+      answered: false,
+      timer: 20,
+    },
+  ],
+  数学: [
+    {
+      id: 1,
+      question: "函数单调递增的充要条件是？",
+      options: ["导数为正", "导数为负", "导数为零", "二阶导为正"],
+      correct: 0,
+      explanation: "可导函数单调递增的充要条件是在区间内导数大于等于零。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 2,
+      question: "判断函数单调性的最基本方法是？",
+      options: ["图像法", "定义法", "导数法", "复合函数法"],
+      correct: 1,
+      explanation: "定义法（作差比较）是判断函数单调性的最基本方法。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 3,
+      question: "复合函数求导的法则是什么？",
+      options: ["链式法则", "乘积法则", "商法则", "加法法则"],
+      correct: 0,
+      explanation: "链式法则是复合函数求导的核心法则。",
+      answered: false,
+      timer: 20,
+    },
+  ],
+  生物: [
+    {
+      id: 1,
+      question: "细胞膜的主要功能是？",
+      options: ["提供能量", "控制物质进出", "储存遗传信息", "合成蛋白质"],
+      correct: 1,
+      explanation: "细胞膜具有选择透过性，控制物质进出细胞。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 2,
+      question: "有丝分裂过程中染色体数目加倍发生在？",
+      options: ["前期", "中期", "后期", "末期"],
+      correct: 2,
+      explanation: "有丝分裂后期着丝粒分裂，姐妹染色单体分开，染色体数目加倍。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 3,
+      question: "线粒体被称为细胞的什么？",
+      options: ["遗传控制中心", "动力车间", "合成车间", "消化车间"],
+      correct: 1,
+      explanation: "线粒体是有氧呼吸的主要场所，被称为细胞的动力车间。",
+      answered: false,
+      timer: 20,
+    },
+  ],
+  历史: [
+    {
+      id: 1,
+      question: "关于虎门销烟，下列说法正确的是？",
+      options: [
+        "发生在鸦片战争之后",
+        "由林则徐领导",
+        "标志着近代史开端",
+        "属于洋务运动",
+      ],
+      correct: 1,
+      explanation: "1839年林则徐在广东虎门主持销烟，体现了中国人民的抗英决心。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 2,
+      question: "辛亥革命的历史意义主要是？",
+      options: [
+        "建立了社会主义制度",
+        "推翻了封建帝制",
+        "完成了反帝反封建任务",
+        "实现了民族独立",
+      ],
+      correct: 1,
+      explanation: "辛亥革命推翻了统治中国两千多年的封建君主专制制度。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 3,
+      question: "关于五四运动，以下哪项描述正确？",
+      options: [
+        "由工人阶层领导",
+        "爆发于1921年",
+        "是新民主主义革命的开端",
+        "以失败告终",
+      ],
+      correct: 2,
+      explanation: "五四运动标志着中国新民主主义革命的开端。",
+      answered: false,
+      timer: 25,
+    },
+  ],
+  地理: [
+    {
+      id: 1,
+      question: "大气环流的根本动力是？",
+      options: ["地球自转", "太阳辐射", "海陆分布", "地形起伏"],
+      correct: 1,
+      explanation: "太阳辐射的纬度差异是大气环流形成的根本原因。",
+      answered: false,
+      timer: 25,
+    },
+    {
+      id: 2,
+      question: "关于三圈环流，以下说法正确的是？",
+      options: [
+        "包含热力环流",
+        "只存在于北半球",
+        "形成信风带和西风带",
+        "不受地转偏向力影响",
+      ],
+      correct: 2,
+      explanation: "三圈环流形成了信风带、西风带和极地东风带。",
+      answered: false,
+      timer: 30,
+    },
+    {
+      id: 3,
+      question: "世界主要气候类型分布规律主要受什么影响？",
+      options: ["纬度位置", "海拔高度", "距海远近", "综合因素"],
+      correct: 3,
+      explanation: "气候类型分布受纬度、海陆位置、地形等多种因素综合影响。",
+      answered: false,
+      timer: 25,
+    },
+  ],
+};
+
+const quickAnswerQuestions = ref(
+  subjectQuestionBank.default.map((q) => ({ ...q })),
+);
+
+// 切换课程时更新题库并重置状态
+function resetQAState() {
+  const subject = aiHubCourse?.value?.subject || "default";
+  const bank = subjectQuestionBank[subject] || subjectQuestionBank.default;
+  quickAnswerQuestions.value = bank.map((q) => ({ ...q }));
+  qaCurrentQuestion.value = 0;
+  qaStarted.value = false;
+  qaTimerRunning.value = false;
+  if (qaTimerInterval) {
+    clearInterval(qaTimerInterval);
+    qaTimerInterval = null;
+  }
+  qaTotalTime.value = 0;
+  qaTotalTimeLeft.value = 0;
+  qaSelectedAnswer.value = -1;
+}
 const qaCurrentQuestion = ref(0);
 const qaTimerRunning = ref(false);
 const qaStarted = ref(false);
@@ -844,7 +1275,6 @@ const selectedCourse = computed(() =>
 
 // ==================== 课程资源——视频详情页 ====================
 const currentCourseId = ref(null); // null = 课程列表，数字 = 某课程的视频详情
-const playingVideo = ref(null); // 当前正在播放的视频对象
 
 // 每个课程的视频资源数据
 const courseVideos = {
@@ -988,10 +1418,22 @@ const currentVideos = computed(() =>
 
 function openCourseDetail(id) {
   currentCourseId.value = id;
+  playingVideo.value = null;
+}
+
+function backToVideoList() {
+  playingVideo.value = null;
+  biliIsPlaying.value = false;
+  if (biliVideoRef.value) {
+    biliVideoRef.value.pause();
+  }
+  if (biliHideTimer) clearTimeout(biliHideTimer);
+  if (biliCenterBtnTimer) clearTimeout(biliCenterBtnTimer);
 }
 
 function closeCourseDetail() {
   currentCourseId.value = null;
+  playingVideo.value = null;
 }
 
 function getVideoUrl(cover) {
@@ -1000,8 +1442,204 @@ function getVideoUrl(cover) {
 function getCoverUrl(cover) {
   return `/video/courses/covers/${cover}.jpg`;
 }
+
+// ===== B站风格播放器 =====
+const playingVideo = ref(null);
+const biliVideoRef = ref(null);
+const biliProgressRef = ref(null);
+const biliMoreRef = ref(null);
+const biliIsPlaying = ref(false);
+const biliIsFullscreen = ref(false);
+const biliCurrentTime = ref("0:00");
+const biliDuration = ref("0:00");
+const biliPlayedPercent = ref(0);
+const biliBufferPercent = ref(0);
+const biliVolume = ref(1);
+const biliPlaybackRate = ref(1);
+const biliControlsHidden = ref(false);
+const biliShowVolume = ref(false);
+const biliShowMore = ref(false);
+const biliShowCenterBtn = ref(true);
+const biliSpeedOptions = [0.5, 0.75, 1, 1.25, 1.5, 2];
+let biliHideTimer = null;
+let biliCenterBtnTimer = null;
+
 function playVideo(video) {
   playingVideo.value = video;
+  biliIsPlaying.value = false;
+  biliCurrentTime.value = "0:00";
+  biliDuration.value = "0:00";
+  biliPlayedPercent.value = 0;
+  biliBufferPercent.value = 0;
+  biliControlsHidden.value = false;
+  biliShowMore.value = false;
+  biliShowCenterBtn.value = true;
+  biliCenterBtnTimer = setTimeout(() => {
+    biliShowCenterBtn.value = false;
+  }, 3000);
+}
+
+function closePlayer() {
+  playingVideo.value = null;
+  biliIsPlaying.value = false;
+  if (biliVideoRef.value) {
+    biliVideoRef.value.pause();
+  }
+  if (biliHideTimer) clearTimeout(biliHideTimer);
+  if (biliCenterBtnTimer) clearTimeout(biliCenterBtnTimer);
+}
+
+function biliTogglePlay() {
+  const video = biliVideoRef.value;
+  if (!video) return;
+  if (video.paused) {
+    video.play();
+  } else {
+    video.pause();
+  }
+}
+
+function biliOnPlay() {
+  biliIsPlaying.value = true;
+  biliShowCenterBtn.value = false;
+  if (biliCenterBtnTimer) clearTimeout(biliCenterBtnTimer);
+}
+
+function biliOnPause() {
+  biliIsPlaying.value = false;
+  biliShowCenterBtn.value = true;
+}
+
+function biliOnEnded() {
+  biliIsPlaying.value = false;
+  biliShowCenterBtn.value = true;
+}
+
+function biliOnMetaLoaded() {
+  const video = biliVideoRef.value;
+  if (!video) return;
+  biliDuration.value = biliFormatTime(video.duration);
+  video.playbackRate = biliPlaybackRate.value;
+}
+
+function biliOnTimeUpdate() {
+  const video = biliVideoRef.value;
+  if (!video || !video.duration) return;
+  biliCurrentTime.value = biliFormatTime(video.currentTime);
+  biliPlayedPercent.value = (video.currentTime / video.duration) * 100;
+  // buffer
+  if (video.buffered.length > 0) {
+    biliBufferPercent.value =
+      (video.buffered.end(video.buffered.length - 1) / video.duration) * 100;
+  }
+}
+
+function biliFormatTime(s) {
+  const min = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return min + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+function biliSeek(e) {
+  const video = biliVideoRef.value;
+  const bar = biliProgressRef.value;
+  if (!video || !bar || !video.duration) return;
+  const rect = bar.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  video.currentTime = pct * video.duration;
+}
+
+function biliSetVolume(e) {
+  const v = parseFloat(e.target.value);
+  biliVolume.value = v;
+  const video = biliVideoRef.value;
+  if (video) video.volume = v;
+}
+
+function biliSetSpeed(rate) {
+  biliPlaybackRate.value = rate;
+  const video = biliVideoRef.value;
+  if (video) video.playbackRate = rate;
+}
+
+function biliToggleFullscreen() {
+  const container = document.querySelector(".bili-page-player");
+  if (!container) return;
+  if (!document.fullscreenElement) {
+    container
+      .requestFullscreen()
+      .then(() => {
+        biliIsFullscreen.value = true;
+      })
+      .catch(() => {});
+  } else {
+    document
+      .exitFullscreen()
+      .then(() => {
+        biliIsFullscreen.value = false;
+      })
+      .catch(() => {});
+  }
+  biliShowMore.value = false;
+}
+
+function biliDownload() {
+  if (!playingVideo.value) return;
+  const a = document.createElement("a");
+  a.href = getVideoUrl(playingVideo.value.cover);
+  a.download = playingVideo.value.title + ".mp4";
+  a.click();
+  biliShowMore.value = false;
+}
+
+function biliSwitchVideo(video) {
+  if (playingVideo.value?.id === video.id) return;
+  const wasPlaying = biliIsPlaying.value;
+  playingVideo.value = video;
+  biliShowMore.value = false;
+  biliShowCenterBtn.value = true;
+  // 重置播放状态
+  biliIsPlaying.value = false;
+  biliCurrentTime.value = "0:00";
+  biliPlayedPercent.value = 0;
+  biliBufferPercent.value = 0;
+  biliControlsHidden.value = false;
+  if (biliCenterBtnTimer) clearTimeout(biliCenterBtnTimer);
+  biliCenterBtnTimer = setTimeout(() => {
+    biliShowCenterBtn.value = false;
+  }, 3000);
+  // 如果之前正在播放，等 metadata 加载后自动播放
+  nextTick(() => {
+    const videoEl = biliVideoRef.value;
+    if (videoEl && wasPlaying) {
+      videoEl.play().catch(() => {});
+    }
+  });
+}
+
+function biliShowControls() {
+  biliControlsHidden.value = false;
+  biliCancelHideTimer();
+  if (biliIsPlaying.value) {
+    biliStartHideTimer();
+  }
+}
+
+function biliStartHideTimer() {
+  biliCancelHideTimer();
+  if (!biliIsPlaying.value) return;
+  biliHideTimer = setTimeout(() => {
+    if (!biliShowMore.value) {
+      biliControlsHidden.value = true;
+    }
+  }, 3000);
+}
+
+function biliCancelHideTimer() {
+  if (biliHideTimer) {
+    clearTimeout(biliHideTimer);
+    biliHideTimer = null;
+  }
 }
 
 const radarDimensions = [
@@ -1612,52 +2250,29 @@ watch(activeMenu, (newVal) => {
                 </div>
               </template>
 
-              <!-- ===== 视频详情视图 ===== -->
-              <template v-else>
-                <div class="video-detail-page">
-                  <!-- 顶部导航栏 -->
-                  <div class="video-detail-header">
+              <!-- ===== 课程视频列表（点击课程后显示） ===== -->
+              <template v-else-if="currentCourseId && !playingVideo">
+                <div class="video-list-page">
+                  <div class="video-list-header">
                     <button class="back-btn" @click="closeCourseDetail">
                       <span class="back-arrow">←</span>
                       <span>返回课程资源</span>
                     </button>
-                    <div
-                      class="video-detail-title-bar"
-                      :style="{
-                        borderLeftColor: getSubjectStyle(currentCourse?.subject)
-                          .color,
-                      }"
-                    >
-                      <div class="video-detail-title-wrap">
-                        <span
-                          class="video-detail-icon"
-                          v-html="getSubjectStyle(currentCourse?.subject).icon"
-                        ></span>
-                        <div>
-                          <h1 class="video-detail-course-name">
-                            {{ currentCourse?.title }}
-                          </h1>
-                          <span class="video-detail-meta">
-                            {{ currentCourse?.subject }} ·
-                            {{ currentCourse?.grade }} ·
-                            {{ currentVideos.length }}个教学视频
-                          </span>
-                        </div>
-                      </div>
+                    <div class="bili-page-course-info">
                       <span
-                        class="video-detail-subject-badge"
-                        :style="{
-                          background: getSubjectStyle(currentCourse?.subject)
-                            .color,
-                        }"
-                      >
-                        {{ getSubjectStyle(currentCourse?.subject).symbol }}
-                        {{ currentCourse?.subject }}
-                      </span>
+                        v-html="getSubjectStyle(currentCourse?.subject).icon"
+                      ></span>
+                      <div>
+                        <strong>{{ currentCourse?.title }}</strong>
+                        <span
+                          >{{ currentCourse?.subject }} ·
+                          {{ currentCourse?.grade }} ·
+                          {{ currentVideos.length }}个视频</span
+                        >
+                      </div>
                     </div>
                   </div>
 
-                  <!-- 视频网格 -->
                   <div class="video-grid">
                     <div
                       v-for="video in currentVideos"
@@ -1673,22 +2288,20 @@ watch(activeMenu, (newVal) => {
                           loading="lazy"
                         />
                         <div class="video-overlay">
-                          <div class="video-play-btn">
-                            <span>▶</span>
-                          </div>
+                          <div class="video-play-btn">▶</div>
                         </div>
                         <span class="video-duration-badge">{{
                           video.duration
                         }}</span>
                       </div>
                       <div class="video-info">
-                        <h3 class="video-title-text">{{ video.title }}</h3>
+                        <h4 class="video-title-text">{{ video.title }}</h4>
                         <div class="video-sub-info">
                           <span class="video-subject-label">{{
                             currentCourse?.subject
                           }}</span>
                           <span class="video-grade-label">{{
-                            currentCourse?.teacher
+                            currentCourse?.grade
                           }}</span>
                         </div>
                       </div>
@@ -1697,45 +2310,327 @@ watch(activeMenu, (newVal) => {
                 </div>
               </template>
 
-              <!-- 视频播放器弹窗 -->
-              <Transition name="player">
-                <div
-                  v-if="playingVideo"
-                  class="video-player-overlay"
-                  @click.self="playingVideo = null"
-                >
-                  <div class="video-player-dialog">
-                    <div class="video-player-header">
-                      <h3>{{ playingVideo.title }}</h3>
-                      <button
-                        class="video-player-close"
-                        @click="playingVideo = null"
-                      >
-                        <svg
-                          width="22"
-                          height="22"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+              <!-- ===== B站风格视频播放器 ===== -->
+              <template v-else>
+                <div class="bili-page">
+                  <!-- 顶部导航 -->
+                  <div class="bili-page-header">
+                    <button class="back-btn" @click="backToVideoList">
+                      <span class="back-arrow">←</span>
+                      <span>返回视频列表</span>
+                    </button>
+                    <div class="bili-page-course-info">
+                      <span
+                        v-html="getSubjectStyle(currentCourse?.subject).icon"
+                      ></span>
+                      <div>
+                        <strong>{{ currentCourse?.title }}</strong>
+                        <span
+                          >{{ currentCourse?.subject }} ·
+                          {{ currentCourse?.grade }} ·
+                          {{ currentVideos.length }}个视频</span
                         >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                      </div>
                     </div>
-                    <video
-                      :src="getVideoUrl(playingVideo.cover)"
-                      class="video-player-element"
-                      controls
-                      autoplay
-                      playsinline
-                    ></video>
+                  </div>
+
+                  <div class="bili-page-layout">
+                    <!-- 左侧：视频播放器 -->
+                    <div class="bili-page-player">
+                      <!-- 视频区域 -->
+                      <div
+                        class="bili-player-video-wrap"
+                        @click="biliTogglePlay"
+                        @mousemove="biliShowControls"
+                        @mouseleave="biliStartHideTimer"
+                      >
+                        <video
+                          ref="biliVideoRef"
+                          :src="
+                            getVideoUrl(
+                              playingVideo?.cover || currentVideos[0]?.cover,
+                            )
+                          "
+                          class="bili-player-video"
+                          @loadedmetadata="biliOnMetaLoaded"
+                          @timeupdate="biliOnTimeUpdate"
+                          @ended="biliOnEnded"
+                          @play="biliOnPlay"
+                          @pause="biliOnPause"
+                          playsinline
+                        ></video>
+
+                        <!-- 中央播放按钮 -->
+                        <div
+                          class="bili-center-play"
+                          :class="{ 'is-hidden': !biliShowCenterBtn }"
+                          @click.stop="biliTogglePlay"
+                        >
+                          <svg
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="white"
+                          >
+                            <polygon points="8,5 19,12 8,19" />
+                          </svg>
+                        </div>
+                        <!-- 底部控制栏（覆盖在视频底部） -->
+                        <div
+                          class="bili-controls"
+                          :class="{ 'is-hidden': biliControlsHidden }"
+                          @mouseenter="biliCancelHideTimer"
+                          @mouseleave="biliStartHideTimer"
+                        >
+                          <!-- 进度条 -->
+                          <div
+                            class="bili-progress-bar"
+                            @click="biliSeek"
+                            ref="biliProgressRef"
+                          >
+                            <div
+                              class="bili-progress-buffer"
+                              :style="{ width: biliBufferPercent + '%' }"
+                            ></div>
+                            <div
+                              class="bili-progress-played"
+                              :style="{ width: biliPlayedPercent + '%' }"
+                            >
+                              <div class="bili-progress-thumb"></div>
+                            </div>
+                          </div>
+
+                          <!-- 控制按钮行 -->
+                          <div class="bili-controls-row">
+                            <div class="bili-controls-left">
+                              <button
+                                class="bili-btn"
+                                @click="biliTogglePlay"
+                                title="播放/暂停"
+                              >
+                                <svg
+                                  v-if="!biliIsPlaying"
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <polygon points="8,5 19,12 8,19" />
+                                </svg>
+                                <svg
+                                  v-else
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
+                                  <rect
+                                    x="6"
+                                    y="4"
+                                    width="4"
+                                    height="16"
+                                    rx="1"
+                                  />
+                                  <rect
+                                    x="14"
+                                    y="4"
+                                    width="4"
+                                    height="16"
+                                    rx="1"
+                                  />
+                                </svg>
+                              </button>
+                              <span class="bili-time"
+                                >{{ biliCurrentTime }} /
+                                {{ biliDuration }}</span
+                              >
+                            </div>
+
+                            <div class="bili-controls-right">
+                              <!-- 音量 -->
+                              <div
+                                class="bili-volume-wrap"
+                                @mouseenter="biliShowVolume = true"
+                                @mouseleave="biliShowVolume = false"
+                              >
+                                <button class="bili-btn" title="音量">
+                                  <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                  >
+                                    <polygon
+                                      points="11,5 6,9 2,9 2,15 6,15 11,19"
+                                    />
+                                    <path
+                                      v-if="biliVolume > 0"
+                                      d="M15.54 8.46a5 5 0 010 7.07"
+                                      stroke="currentColor"
+                                      fill="none"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                    />
+                                    <path
+                                      v-if="biliVolume > 0.5"
+                                      d="M19.07 4.93a10 10 0 010 14.14"
+                                      stroke="currentColor"
+                                      fill="none"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                    />
+                                  </svg>
+                                </button>
+                                <div
+                                  v-show="biliShowVolume"
+                                  class="bili-volume-slider"
+                                >
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    :value="biliVolume"
+                                    @input="biliSetVolume"
+                                  />
+                                </div>
+                              </div>
+
+                              <!-- 三个点菜单 -->
+                              <div class="bili-more-wrap" ref="biliMoreRef">
+                                <button
+                                  class="bili-btn"
+                                  @click="biliShowMore = !biliShowMore"
+                                  title="更多"
+                                >
+                                  <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                  >
+                                    <circle cx="12" cy="5" r="1.5" />
+                                    <circle cx="12" cy="12" r="1.5" />
+                                    <circle cx="12" cy="19" r="1.5" />
+                                  </svg>
+                                </button>
+                                <Transition name="more-menu">
+                                  <div
+                                    v-if="biliShowMore"
+                                    class="bili-more-menu"
+                                    @click.stop
+                                  >
+                                    <div class="bili-menu-section">
+                                      <div class="bili-menu-label">
+                                        播放速度
+                                      </div>
+                                      <div class="bili-speed-list">
+                                        <button
+                                          v-for="rate in biliSpeedOptions"
+                                          :key="rate"
+                                          class="bili-speed-btn"
+                                          :class="{
+                                            active: biliPlaybackRate === rate,
+                                          }"
+                                          @click="biliSetSpeed(rate)"
+                                        >
+                                          {{ rate }}x
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div class="bili-menu-divider"></div>
+                                    <button
+                                      class="bili-menu-item"
+                                      @click="biliToggleFullscreen"
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+                                        <path
+                                          d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"
+                                        />
+                                      </svg>
+                                      <span>{{
+                                        biliIsFullscreen ? "退出全屏" : "全屏"
+                                      }}</span>
+                                    </button>
+                                    <button
+                                      class="bili-menu-item"
+                                      @click="biliDownload"
+                                    >
+                                      <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+                                        <path
+                                          d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                        />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                      </svg>
+                                      <span>下载视频</span>
+                                    </button>
+                                  </div>
+                                </Transition>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 右侧：播放列表 -->
+                    <div class="bili-page-playlist">
+                      <div class="bili-playlist-header">
+                        <span class="bili-playlist-title">播放列表</span>
+                        <span class="bili-playlist-count"
+                          >{{ currentVideos.length }}个视频</span
+                        >
+                      </div>
+                      <div class="bili-playlist-list">
+                        <div
+                          v-for="(video, idx) in currentVideos"
+                          :key="video.id"
+                          class="bili-playlist-item"
+                          :class="{ active: playingVideo?.id === video.id }"
+                          @click="biliSwitchVideo(video)"
+                        >
+                          <div class="bili-playlist-num">{{ idx + 1 }}</div>
+                          <div class="bili-playlist-cover">
+                            <img
+                              :src="getCoverUrl(video.cover)"
+                              :alt="video.title"
+                              loading="lazy"
+                            />
+                            <div class="bili-playlist-play-icon">▶</div>
+                          </div>
+                          <div class="bili-playlist-info">
+                            <span class="bili-playlist-name">{{
+                              video.title
+                            }}</span>
+                            <span class="bili-playlist-meta">{{
+                              video.duration
+                            }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </Transition>
+              </template>
             </div>
 
             <!-- 2. 课程分析 -->
@@ -3879,6 +4774,50 @@ watch(activeMenu, (newVal) => {
   font-weight: 400;
 }
 
+/* ===== 视频列表页面（课程→选择视频） ===== */
+.video-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.video-list-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(76, 125, 255, 0.06);
+}
+
+.video-list-header .back-btn,
+.bili-page-header .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgba(76, 125, 255, 0.15);
+  border-radius: 10px;
+  background: white;
+  color: #4c7dff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.video-list-header .back-btn:hover,
+.bili-page-header .back-btn:hover {
+  background: rgba(76, 125, 255, 0.06);
+  border-color: #4c7dff;
+}
+
+.video-list-header .back-arrow,
+.bili-page-header .back-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .video-detail-title-bar {
@@ -3906,6 +4845,498 @@ watch(activeMenu, (newVal) => {
 
   .video-detail-course-name {
     font-size: 1.15rem;
+  }
+}
+
+/* ==================== B站风格视频详情页 ==================== */
+.bili-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 顶部导航 */
+.bili-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(76, 125, 255, 0.06);
+}
+.bili-page-course-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #475569;
+}
+.bili-page-course-info strong {
+  color: #1e293b;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.bili-page-course-info span {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+/* 左右布局 */
+.bili-page-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* 左侧播放器 */
+.bili-page-player {
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  position: sticky;
+  top: 16px;
+}
+.bili-page-player .bili-player-video-wrap {
+  aspect-ratio: 16 / 9;
+  background: #000;
+  cursor: pointer;
+  position: relative;
+}
+.bili-page-player .bili-player-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* 右侧播放列表 */
+.bili-page-playlist {
+  background: white;
+  border: 1px solid rgba(76, 125, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.bili-playlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(76, 125, 255, 0.06);
+  flex-shrink: 0;
+}
+.bili-playlist-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.bili-playlist-count {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.bili-playlist-list {
+  overflow-y: auto;
+  max-height: 480px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bili-playlist-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid transparent;
+}
+.bili-playlist-item:hover {
+  background: rgba(76, 125, 255, 0.04);
+}
+.bili-playlist-item.active {
+  background: rgba(76, 125, 255, 0.07);
+  border-color: rgba(76, 125, 255, 0.18);
+}
+.bili-playlist-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(76, 125, 255, 0.06);
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+.bili-playlist-item.active .bili-playlist-num {
+  background: #4c7dff;
+  color: white;
+}
+.bili-playlist-cover {
+  width: 120px;
+  height: 67px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  position: relative;
+}
+.bili-playlist-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bili-playlist-play-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  color: white;
+  font-size: 1.2rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.bili-playlist-item:hover .bili-playlist-play-icon {
+  opacity: 1;
+}
+.bili-playlist-item.active .bili-playlist-play-icon {
+  opacity: 0;
+}
+.bili-playlist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.bili-playlist-name {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #334155;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bili-playlist-item.active .bili-playlist-name {
+  color: #4c7dff;
+}
+.bili-playlist-meta {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+/* 播放器弹窗过渡（保留但不使用） */
+.player-enter-active {
+  transition: opacity 0.25s;
+}
+.player-leave-active {
+  transition: opacity 0.2s;
+}
+.player-enter-from {
+  opacity: 0;
+}
+.player-leave-to {
+  opacity: 0;
+}
+
+/* ===== 播放器控制栏样式 ===== */
+
+/* 控制按钮行 - 左右分布 */
+.bili-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bili-controls-left,
+.bili-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 通用按钮 */
+.bili-btn {
+  background: none;
+  border: none;
+  color: #ddd;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.12s;
+}
+.bili-btn:hover {
+  color: #fff;
+}
+
+/* 时间显示 */
+.bili-time {
+  font-size: 0.78rem;
+  color: #bbb;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+/* 进度条 */
+.bili-progress-bar {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 0 0 10px;
+  top: -4px;
+  transition: height 0.12s;
+}
+.bili-progress-bar:hover {
+  height: 8px;
+}
+.bili-progress-buffer {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.bili-progress-played {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(90deg, #4c7dff, #7c9fff);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+.bili-progress-thumb {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.bili-progress-bar:hover .bili-progress-thumb {
+  opacity: 1;
+}
+
+/* 中央播放按钮 */
+.bili-center-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.18);
+  transition: opacity 0.35s;
+  z-index: 1;
+}
+.bili-center-play.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.bili-center-play svg {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+  opacity: 0.85;
+}
+
+/* 音量控件 */
+.bili-volume-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.bili-volume-slider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 30, 0.95);
+  padding: 8px 4px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+.bili-volume-slider input[type="range"] {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  height: 70px;
+  width: 4px;
+  cursor: pointer;
+  appearance: slider-vertical;
+  accent-color: #4c7dff;
+}
+
+/* 三点菜单 */
+.bili-more-wrap {
+  position: relative;
+}
+.bili-more-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: rgba(30, 30, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px;
+  min-width: 180px;
+  margin-bottom: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+.bili-menu-section {
+  padding: 4px 0;
+}
+.bili-menu-label {
+  font-size: 0.7rem;
+  color: #999;
+  padding: 4px 10px 6px;
+  font-weight: 500;
+}
+.bili-speed-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 0 4px;
+}
+.bili-speed-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #ccc;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.bili-speed-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.bili-speed-btn.active {
+  background: #4c7dff;
+  border-color: #4c7dff;
+  color: #fff;
+}
+.bili-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 6px 0;
+}
+.bili-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #ccc;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.bili-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+/* 菜单动画 */
+.more-menu-enter-active {
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
+}
+.more-menu-leave-active {
+  transition:
+    opacity 0.1s,
+    transform 0.1s;
+}
+.more-menu-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.more-menu-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* 播放器控制栏 - 绝对覆盖在视频底部 */
+.bili-page-player .bili-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.75) 60%,
+    transparent 100%
+  );
+  padding: 32px 16px 10px;
+  transition: opacity 0.3s;
+  z-index: 10;
+}
+.bili-page-player .bili-controls.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 响应式 - 播放器布局 */
+@media (max-width: 1100px) {
+  .bili-page-layout {
+    grid-template-columns: 1fr 240px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .bili-page-layout {
+    grid-template-columns: 1fr;
+  }
+  .bili-page-player {
+    position: static;
+  }
+  .bili-playlist-list {
+    max-height: 300px;
+  }
+  .bili-playlist-cover {
+    width: 100px;
+    height: 56px;
+  }
+  /* 视频列表页面的网格适配 */
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+  .video-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
 
