@@ -167,58 +167,39 @@ onMounted(() => {
     <SiteNav />
 
     <main class="main">
-      <div class="hero-block">
-        <div class="hero-block__copy">
-          <p class="eyebrow">Teacher Community</p>
+      <div class="hero-compact">
+        <div class="hero-compact__copy">
           <h1>教师共创社区</h1>
-          <p class="lead">
-            把备课难题、课件结构、互动创意和多模态资料处理经验沉淀下来，与同行一起把
-            <strong>AI 教学</strong>从<span class="lead-em">“会用”</span
-            >推进到<span class="lead-em">“用好”</span>。
+          <p class="hero-compact__lead">
+            与同行一起把
+            <strong>AI 教学</strong>从<span>"会用"</span>推进到<span
+              >"用好"</span
+            >
           </p>
-          <div class="hero-actions">
+          <div class="hero-compact__actions">
             <button class="btn btn--dark" @click="showForm = true">
               发布教研话题
             </button>
             <button class="btn btn--ghost" @click="filter = 'hot'">
-              查看热门经验
+              热门经验
             </button>
           </div>
         </div>
-
-        <div class="community-orbit" aria-label="社区活跃概览">
-          <div class="orbit-card">
-            <span class="orbit-card__label">今日教研热度</span>
-            <strong>92%</strong>
-            <p>课件生成、互动设计与资料融合正在被集中讨论</p>
+        <div class="hero-compact__stats">
+          <div
+            v-for="item in communityStats"
+            :key="item.label"
+            class="stats-pill"
+          >
+            <strong>{{ item.value }}</strong>
+            <span>{{ item.label }}</span>
           </div>
-          <div class="orbit-ring orbit-ring--one" />
-          <div class="orbit-ring orbit-ring--two" />
-          <div class="orbit-dot orbit-dot--one">问</div>
-          <div class="orbit-dot orbit-dot--two">案</div>
-          <div class="orbit-dot orbit-dot--three">评</div>
+          <div class="stats-pill stats-pill--heat">
+            <strong>92%</strong>
+            <span>今日热度</span>
+          </div>
         </div>
       </div>
-
-      <section class="community-strip" aria-label="社区数据">
-        <article
-          v-for="item in communityStats"
-          :key="item.label"
-          class="stat-card"
-        >
-          <strong>{{ item.value }}</strong>
-          <span>{{ item.label }}</span>
-        </article>
-        <article
-          v-for="lane in topicLanes"
-          :key="lane.title"
-          class="topic-lane"
-          :data-tone="lane.tone"
-        >
-          <strong>{{ lane.title }}</strong>
-          <span>{{ lane.desc }}</span>
-        </article>
-      </section>
 
       <div class="layout-container">
         <div class="main-content">
@@ -239,85 +220,17 @@ onMounted(() => {
             </button>
           </div>
 
-          <!-- 内容类型导航 -->
-          <nav class="content-nav" aria-label="内容分类">
+          <!-- 内容分类 - 药丸式分段控件 -->
+          <nav class="pill-tabs" aria-label="内容分类">
             <button
               v-for="tab in contentTabs"
               :key="tab.key"
-              class="content-nav__btn"
-              :class="{ 'content-nav__btn--active': activeTab === tab.key }"
+              class="pill-tab"
+              :class="{ 'pill-tab--active': activeTab === tab.key }"
               :data-key="tab.key"
               @click="activeTab = tab.key"
             >
-              <span class="content-nav__icon">
-                <svg
-                  v-if="tab.key === 'discuss'"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path
-                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                  />
-                  <line x1="9" y1="10" x2="15" y2="10" />
-                  <line x1="12" y1="7" x2="12" y2="13" />
-                </svg>
-                <svg
-                  v-else-if="tab.key === 'resource'"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path
-                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                  />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-                <svg
-                  v-else-if="tab.key === 'qa'"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-                <svg
-                  v-else-if="tab.key === 'case'"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polygon
-                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                  />
-                </svg>
-              </span>
-              <span class="content-nav__label">{{ tab.label }}</span>
-              <span class="content-nav__desc">{{ tab.desc }}</span>
+              <span class="pill-tab__label">{{ tab.label }}</span>
             </button>
           </nav>
 
@@ -587,7 +500,48 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- ④ 活跃教师 -->
+          <!-- ④ 热门推荐 -->
+          <div class="sidebar-card recommend-card">
+            <div class="card-title">
+              <svg
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+                width="18"
+                height="18"
+              >
+                <path
+                  d="M3 10a7 7 0 1 1 14 0A7 7 0 0 1 3 10z"
+                  stroke="currentColor"
+                  stroke-width="1.35"
+                />
+                <path
+                  d="M8 7l2 6M12 7l-2 6"
+                  stroke="currentColor"
+                  stroke-width="1.35"
+                  stroke-linecap="round"
+                />
+              </svg>
+              热门推荐
+            </div>
+            <div class="recommend-list">
+              <div
+                v-for="(item, idx) in hotRecommendations"
+                :key="item.id"
+                class="recommend-item"
+              >
+                <div class="recommend-left">
+                  <span class="rank-num" :class="'rank-' + (idx + 1)">{{
+                    idx + 1
+                  }}</span>
+                  <span class="item-title">{{ item.title }}</span>
+                </div>
+                <span class="item-reads">{{ item.reads }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⑤ 活跃教师 -->
           <div class="sidebar-card teacher-card">
             <div class="card-title">
               <svg
@@ -713,229 +667,154 @@ onMounted(() => {
   padding: 104px 24px 72px;
 }
 
-.hero-block {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) 380px;
-  gap: 34px;
+.hero-compact {
+  display: flex;
   align-items: center;
-  margin-bottom: 22px;
-  padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 34px;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 24px 28px;
+  border-radius: 22px;
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.82),
-      rgba(255, 255, 255, 0.46)
+      rgba(255, 255, 255, 0.88),
+      rgba(255, 255, 255, 0.56)
     ),
-    radial-gradient(circle at 20% 0%, rgba(0, 194, 212, 0.16), transparent 42%);
-  box-shadow: 0 28px 90px rgba(0, 87, 217, 0.11);
-  backdrop-filter: blur(24px) saturate(1.25);
+    radial-gradient(circle at 0% 0%, rgba(0, 119, 230, 0.08), transparent 40%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 32px rgba(0, 87, 217, 0.08);
+  backdrop-filter: blur(18px);
 }
 
-.eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent, #0077e6);
-  margin-bottom: 12px;
-}
-
-.hero-block h1 {
+.hero-compact__copy h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5vw, 4.6rem);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.055em;
-  margin-bottom: 18px;
-  background: linear-gradient(135deg, #0072ff 0%, #00c2d4 50%, #0072ff 100%);
-  background-size: 200% auto;
+  letter-spacing: -0.04em;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #0072ff 0%, #00c2d4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: heroShine 6s ease-in-out infinite;
 }
 
-@keyframes heroShine {
-  0%,
-  100% {
-    background-position: 0% center;
-  }
-  50% {
-    background-position: 100% center;
-  }
+.hero-compact__lead {
+  font-size: 0.92rem;
+  color: #4b5563;
+  margin-bottom: 14px;
 }
 
-.lead {
-  max-width: 660px;
-  font-size: 1.03rem;
-  line-height: 1.7;
-  color: var(--ink-soft, #4b5563);
-}
-
-.lead strong {
+.hero-compact__lead strong {
   color: #0072ff;
   font-weight: 700;
 }
 
-.lead-em {
-  color: #00a8b8;
+.hero-compact__lead span {
+  color: #0e8c96;
   font-weight: 700;
 }
 
-.hero-actions {
+.hero-compact__actions {
   display: flex;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
 }
 
-.community-orbit {
-  position: relative;
-  min-height: 300px;
-  display: grid;
-  place-items: center;
+.hero-compact__stats {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.orbit-card {
-  position: relative;
-  z-index: 2;
-  width: 220px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 24px 70px rgba(0, 87, 217, 0.16);
-  text-align: center;
-}
-
-.orbit-card__label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--ink-muted);
-}
-
-.orbit-card strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 3rem;
-  line-height: 1;
-  color: var(--accent-deep);
-}
-
-.orbit-card p {
-  margin-top: 12px;
-  font-size: 0.78rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-}
-
-.orbit-ring {
-  position: absolute;
-  inset: 36px;
-  border: 1px dashed rgba(0, 119, 230, 0.24);
-  border-radius: 50%;
-}
-
-.orbit-ring--two {
-  inset: 78px;
-  border-style: solid;
-  border-color: rgba(0, 194, 212, 0.18);
-}
-
-.orbit-dot {
-  position: absolute;
-  z-index: 3;
-  display: inline-flex;
+.stats-pill {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
+  min-width: 80px;
+  padding: 10px 16px;
   border-radius: 16px;
-  background: #fff;
-  color: var(--accent-deep);
-  font-family: var(--font-display);
-  font-weight: 800;
-  box-shadow: 0 14px 34px rgba(0, 87, 217, 0.14);
-}
-
-.orbit-dot--one {
-  top: 34px;
-  right: 82px;
-  animation: float-one 5s ease-in-out infinite;
-}
-.orbit-dot--two {
-  left: 42px;
-  bottom: 76px;
-  animation: float-two 6s ease-in-out infinite;
-}
-.orbit-dot--three {
-  right: 42px;
-  bottom: 46px;
-  animation: float-one 5.4s ease-in-out infinite 0.5s;
-}
-
-.community-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 0.62fr) repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.stat-card,
-.topic-lane {
-  padding: 16px;
-  border: 1px solid rgba(10, 15, 26, 0.07);
-  border-radius: 20px;
   background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(18px);
+  border: 1px solid rgba(10, 15, 26, 0.06);
 }
 
-.stat-card strong {
-  display: block;
+.stats-pill strong {
   font-family: var(--font-display);
-  font-size: 1.7rem;
+  font-size: 1.3rem;
   background: linear-gradient(135deg, #0072ff, #00c2d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.stats-pill span {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stats-pill--heat strong {
+  background: linear-gradient(135deg, #f97316, #ef4444);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.stat-card span,
-.topic-lane span {
-  display: block;
-  font-size: 0.78rem;
-  line-height: 1.48;
-  color: var(--ink-muted);
+/* ===== 药丸式 Tab ===== */
+.pill-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(10, 15, 26, 0.05);
+  overflow-x: auto;
 }
 
-.topic-lane {
-  position: relative;
-  overflow: hidden;
+.pill-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
 }
 
-.topic-lane::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--accent);
+.pill-tab:hover {
+  color: #334155;
+  background: rgba(255, 255, 255, 0.6);
 }
 
-.topic-lane[data-tone="cyan"]::before {
-  background: var(--cyan);
-}
-.topic-lane[data-tone="green"]::before {
-  background: #18a06d;
+.pill-tab--active {
+  background: #fff;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 87, 217, 0.12);
 }
 
-.topic-lane strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.92rem;
+.pill-tab--active[data-key="discuss"] {
+  background: linear-gradient(135deg, #0072ff, #4facfe);
+}
+.pill-tab--active[data-key="resource"] {
+  background: linear-gradient(135deg, #00c2d4, #22d3ee);
+}
+.pill-tab--active[data-key="qa"] {
+  background: linear-gradient(135deg, #18a06d, #34d399);
+}
+.pill-tab--active[data-key="case"] {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.pill-tab__label {
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .layout-container {
@@ -1162,7 +1041,7 @@ onMounted(() => {
 .post-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .sidebar {
@@ -1188,34 +1067,42 @@ onMounted(() => {
 
 .search-card {
   background:
-    radial-gradient(circle at 18% 0%, rgba(0, 194, 212, 0.18), transparent 42%),
+    linear-gradient(135deg, rgba(0, 194, 212, 0.08), rgba(0, 114, 255, 0.06)),
     rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 194, 212, 0.12);
 }
 
 .card-kicker {
-  margin-bottom: 12px;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--accent-deep);
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0e8c96;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .search-box {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .search-box input {
   flex: 1;
-  padding: 10px 16px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 14px;
-  font-size: 0.875rem;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(171, 194, 225, 0.3);
+  border-radius: 12px;
+  font-size: 0.825rem;
   outline: none;
-  transition: border-color 0.2s;
+  background: rgba(245, 248, 255, 0.5);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .search-box input:focus {
-  border-color: #0077e6;
+  border-color: #00c2d4;
+  box-shadow: 0 0 0 3px rgba(0, 194, 212, 0.1);
+  background: #fff;
 }
 
 .search-btn {
@@ -1382,106 +1269,6 @@ onMounted(() => {
 .rank-3 {
   background: #fef9c3;
   color: #eab308;
-}
-
-/* ===== 内容导航 ===== */
-.content-nav {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding: 6px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.58);
-  border: 1px solid rgba(10, 15, 26, 0.05);
-  overflow-x: auto;
-}
-
-.content-nav__btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--ink-soft, #4b5563);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.content-nav__btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--ink, #0f172a);
-}
-
-.content-nav__btn--active {
-  background: #fff;
-  color: var(--accent-deep, #005cb3);
-  box-shadow: 0 4px 16px rgba(0, 87, 217, 0.1);
-  position: relative;
-}
-
-.content-nav__btn--active::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-}
-
-.content-nav__btn[data-key="discuss"].content-nav__btn--active::after {
-  background: #0072ff;
-}
-.content-nav__btn[data-key="resource"].content-nav__btn--active::after {
-  background: #00c2d4;
-}
-.content-nav__btn[data-key="qa"].content-nav__btn--active::after {
-  background: #18a06d;
-}
-.content-nav__btn[data-key="case"].content-nav__btn--active::after {
-  background: #f59e0b;
-}
-
-.content-nav__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.content-nav__icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.content-nav__label {
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.content-nav__desc {
-  font-size: 0.72rem;
-  color: var(--ink-muted, #94a3b8);
-  display: none;
-}
-
-.content-nav__btn--active .content-nav__desc {
-  display: inline;
-}
-
-@media (min-width: 560px) {
-  .content-nav__desc {
-    display: inline;
-  }
 }
 
 /* ===== 模态弹窗 ===== */
@@ -1679,6 +1466,16 @@ onMounted(() => {
     rgba(255, 255, 255, 0.88);
 }
 
+.recommend-card {
+  background:
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(245, 158, 11, 0.1),
+      transparent 40%
+    ),
+    rgba(255, 255, 255, 0.88);
+}
+
 .teacher-card {
   background:
     radial-gradient(circle at 0% 80%, rgba(0, 194, 212, 0.12), transparent 42%),
@@ -1750,37 +1547,19 @@ onMounted(() => {
   box-shadow: 0 12px 40px rgba(10, 15, 26, 0.2);
 }
 
-@keyframes float-one {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes float-two {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(8px, -8px);
-  }
-}
-
 @media (max-width: 968px) {
-  .hero-block {
-    grid-template-columns: 1fr;
+  .hero-compact {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px;
   }
-
-  .community-orbit {
-    min-height: 240px;
+  .hero-compact__stats {
+    flex-wrap: wrap;
   }
-
-  .community-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .stats-pill {
+    flex: 1;
+    min-width: 60px;
   }
 
   .layout-container {
