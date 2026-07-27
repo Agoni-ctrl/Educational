@@ -40,6 +40,10 @@ const currentTaskStage = ref("");
 const showProgress = ref(false);
 const generatedFilename = ref("");
 
+// 预览弹窗
+const showPreview = ref(false);
+const previewItem = ref(null);
+
 const historyQuery = ref("");
 const historyPage = ref(1);
 const iterateFeedback = ref({});
@@ -498,6 +502,28 @@ const panelTitles = {
   feedback: "学情反馈",
   history: "教学档案",
   iterate: "教学反思",
+};
+
+const panelSubtitles = {
+  overview: "概览任务状态与创作节奏，快速进入工作流",
+  ppt: "输入教学意图，AI 自动生成可下载的课件",
+  doc: "描述教学目标，AI 辅助编写完整教案",
+  interactive: "根据知识点智能出题，支持分层练习",
+  classroom: "投屏互动、实时反馈，让课堂「活」起来",
+  feedback: "学情数据可视化，精准定位薄弱环节",
+  history: "查看历史生成记录，支持复用与迭代",
+  iterate: "记录教学心得，持续优化内容质量",
+};
+
+const panelChips = {
+  overview: "知启灵枢 · AI 教学创作台",
+  ppt: "知启灵枢 · 智能课件生成",
+  doc: "知启灵枢 · AI 教案编写",
+  interactive: "知启灵枢 · 智能出题",
+  classroom: "知启灵枢 · 课堂互动",
+  feedback: "知启灵枢 · 学情分析",
+  history: "知启灵枢 · 教学档案",
+  iterate: "知启灵枢 · 教学反思",
 };
 
 const featureIcons = {
@@ -2538,8 +2564,8 @@ function getRecordPreview(item) {
 
 // 查看记录详情
 function previewRecord(item) {
-  showToast(`正在打开：${item.title}`);
-  // 这里可以打开详情弹窗或跳转详情页
+  previewItem.value = item;
+  showPreview.value = true;
 }
 
 // 继续编辑记录
@@ -2817,12 +2843,7 @@ onUnmounted(() => {
           </svg>
         </button>
         <div>
-          <span class="header-chip">知启灵枢 · 多模态 AI 互动式教学</span>
-          <h1>{{ panelTitles[activePanel] }}</h1>
-          <p class="main__subtitle">
-            把教学意图、课件生成、教案输出、教学题设计和反馈优化，串成一条真正可视化的
-            AI 教学创作工作流。
-          </p>
+          <span class="header-chip">{{ panelChips[activePanel] }}</span>
         </div>
       </header>
 
@@ -3289,7 +3310,11 @@ onUnmounted(() => {
           </section>
         </div>
 
-        <section v-else-if="activePanel === 'ppt'" class="panel">
+        <section
+          v-else-if="activePanel === 'ppt'"
+          class="panel"
+          data-panel="ppt"
+        >
           <!-- 生成进度条 -->
           <div v-if="showProgress" class="progress-bar-wrap">
             <div class="progress-bar__header">
@@ -3317,12 +3342,12 @@ onUnmounted(() => {
               <div class="section-head">
                 <div>
                   <span class="section-tag">Prompt Workspace</span>
-                  <h2>课件生成</h2>
+                  <h2>智能课件生成</h2>
+                  <p class="section-annotation">
+                    AI 根据教学意图自动生成可下载的 PPT 课件
+                  </p>
                 </div>
               </div>
-              <p class="form-card__desc">
-                用更轻的输入方式配置课题、学科和讲授风格，右侧目录会根据选择实时联动刷新。
-              </p>
 
               <label>
                 学科
@@ -3506,7 +3531,11 @@ onUnmounted(() => {
           </div>
         </section>
 
-        <section v-else-if="activePanel === 'doc'" class="panel">
+        <section
+          v-else-if="activePanel === 'doc'"
+          class="panel"
+          data-panel="doc"
+        >
           <!-- 生成进度条 -->
           <div v-if="showProgress" class="progress-bar-wrap">
             <div class="progress-bar__header">
@@ -3534,12 +3563,12 @@ onUnmounted(() => {
               <div class="section-head">
                 <div>
                   <span class="section-tag">Prompt Workspace</span>
-                  <h2>教案生成</h2>
+                  <h2>智能教案编写</h2>
+                  <p class="section-annotation">
+                    AI 辅助编写完整教案，支持多种教学风格
+                  </p>
                 </div>
               </div>
-              <p class="form-card__desc">
-                让教案结构跟着教学风格和模板同步变化，避免左边改了参数、右边还是旧目录的割裂感。
-              </p>
 
               <label>
                 学科
@@ -3724,18 +3753,22 @@ onUnmounted(() => {
           </div>
         </section>
 
-        <section v-else-if="activePanel === 'interactive'" class="panel">
+        <section
+          v-else-if="activePanel === 'interactive'"
+          class="panel"
+          data-panel="interactive"
+        >
           <div class="generator-layout">
             <article class="form-card">
               <div class="section-head">
                 <div>
                   <span class="section-tag">Teaching Question Flow</span>
-                  <h2>教学题生成</h2>
+                  <h2>智能教学题</h2>
+                  <p class="section-annotation">
+                    根据知识点智能出题，支持分层训练与课堂检测
+                  </p>
                 </div>
               </div>
-              <p class="form-card__desc">
-                把原来的互动设计改成更实用的教学题工作区，适合做导入题、分层训练、课堂检测和探究任务。
-              </p>
 
               <label>
                 学科
@@ -4412,7 +4445,11 @@ onUnmounted(() => {
         </section>
 
         <!-- 学情反馈面板 -->
-        <section v-else-if="activePanel === 'feedback'" class="panel">
+        <section
+          v-else-if="activePanel === 'feedback'"
+          class="panel"
+          data-panel="feedback"
+        >
           <div class="placeholder-panel">
             <div class="placeholder-icon">
               <svg
@@ -4462,7 +4499,11 @@ onUnmounted(() => {
           </div>
         </section>
 
-        <section v-else-if="activePanel === 'history'" class="panel">
+        <section
+          v-else-if="activePanel === 'history'"
+          class="panel"
+          data-panel="history"
+        >
           <!-- 教学档案标题 -->
           <div class="archive-section-header">
             <h2>
@@ -5149,6 +5190,81 @@ onUnmounted(() => {
       </div>
     </main>
 
+    <!-- 预览弹窗 -->
+    <Transition name="modal">
+      <div
+        v-if="showPreview && previewItem"
+        class="preview-overlay"
+        @click.self="showPreview = false"
+      >
+        <div class="preview-dialog">
+          <div class="preview-dialog__header">
+            <div
+              class="preview-dialog__icon"
+              v-html="getTypeIcon(previewItem.type)"
+            ></div>
+            <div>
+              <h3>{{ previewItem.title }}</h3>
+              <span class="preview-dialog__meta"
+                >{{ TYPE_LABELS[previewItem.type] }} ·
+                {{ previewItem.subject }}</span
+              >
+            </div>
+            <button class="preview-dialog__close" @click="showPreview = false">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div class="preview-dialog__body">
+            <div class="preview-dialog__status">
+              <span
+                class="archive-status-badge"
+                :data-status="previewItem.status"
+              >
+                <span class="archive-status-dot"></span>
+                {{ STATUS_LABELS[previewItem.status] }}
+              </span>
+              <span class="preview-dialog__time">{{
+                formatFeatureTime(previewItem.createdAt)
+              }}</span>
+            </div>
+            <p class="preview-dialog__desc">
+              {{ getRecordPreview(previewItem) }}
+            </p>
+          </div>
+          <div class="preview-dialog__footer">
+            <button
+              class="preview-btn preview-btn--secondary"
+              @click="showPreview = false"
+            >
+              关闭
+            </button>
+            <button
+              v-if="previewItem.taskId && previewItem.status === 'completed'"
+              class="preview-btn preview-btn--primary"
+              @click="
+                downloadRecord(previewItem);
+                showPreview = false;
+              "
+            >
+              下载课件
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <Transition name="toast">
       <div v-if="toast" class="toast">{{ toast }}</div>
     </Transition>
@@ -5450,7 +5566,7 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .header-chip {
@@ -5498,6 +5614,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 22px;
+  margin-top: 12px;
 }
 
 .section-head {
@@ -5516,9 +5633,48 @@ onUnmounted(() => {
   letter-spacing: -0.03em;
 }
 
+/* ── 各面板标题独立配色 ── */
+.panel[data-panel="ppt"] .section-head h2 {
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel[data-panel="doc"] .section-head h2 {
+  background: linear-gradient(135deg, #0d9488, #5eead4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel[data-panel="interactive"] .section-head h2 {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel[data-panel="history"] .archive-section-header h2 {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel[data-panel="feedback"] .placeholder-panel h2 {
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .section-head small {
   color: var(--ink-muted);
   font-size: 0.76rem;
+}
+
+.section-annotation {
+  margin: 4px 0 16px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
 }
 
 .section-tag,
@@ -8670,7 +8826,6 @@ onUnmounted(() => {
 .archive-section-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
   margin: 0 0 4px 0;
 }
 
@@ -10425,5 +10580,139 @@ onUnmounted(() => {
   .poll-bar-item__meta {
     width: 100%;
   }
+}
+
+/* ═══════════════ 预览弹窗 ═══════════ */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+}
+.preview-dialog {
+  width: min(520px, 90vw);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+.preview-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.preview-dialog__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: var(--accent-deep);
+  flex-shrink: 0;
+}
+.preview-dialog__icon svg {
+  width: 22px;
+  height: 22px;
+}
+.preview-dialog__header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.preview-dialog__meta {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.preview-dialog__close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.preview-dialog__close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.preview-dialog__body {
+  padding: 20px 24px;
+}
+.preview-dialog__status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.preview-dialog__time {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.preview-dialog__desc {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #475569;
+}
+.preview-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+}
+.preview-btn {
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preview-btn--secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+.preview-btn--secondary:hover {
+  background: #e2e8f0;
+}
+.preview-btn--primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+}
+.preview-btn--primary:hover {
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+/* 弹窗过渡动画 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-enter-active .preview-dialog,
+.modal-leave-active .preview-dialog {
+  transition: transform 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .preview-dialog {
+  transform: scale(0.92) translateY(12px);
+}
+.modal-leave-to .preview-dialog {
+  transform: scale(0.95);
 }
 </style>

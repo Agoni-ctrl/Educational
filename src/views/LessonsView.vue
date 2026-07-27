@@ -844,6 +844,7 @@ const selectedCourse = computed(() =>
 
 // ==================== 课程资源——视频详情页 ====================
 const currentCourseId = ref(null); // null = 课程列表，数字 = 某课程的视频详情
+const playingVideo = ref(null); // 当前正在播放的视频对象
 
 // 每个课程的视频资源数据
 const courseVideos = {
@@ -872,12 +873,6 @@ const courseVideos = {
       duration: "18:10",
       cover: "physics-4",
     },
-    {
-      id: "v5",
-      title: "实验数据分析与误差处理",
-      duration: "10:55",
-      cover: "physics-5",
-    },
   ],
   2: [
     {
@@ -898,12 +893,6 @@ const courseVideos = {
       duration: "09:15",
       cover: "chem-3",
     },
-    {
-      id: "v9",
-      title: "压强对气体反应的影响实验",
-      duration: "13:40",
-      cover: "chem-4",
-    },
   ],
   3: [
     {
@@ -913,83 +902,77 @@ const courseVideos = {
       cover: "math-1",
     },
     {
-      id: "v11",
-      title: "单调递增与递减定义",
-      duration: "08:50",
-      cover: "math-2",
-    },
-    {
       id: "v12",
       title: "定义法证明函数单调性",
       duration: "16:00",
-      cover: "math-3",
+      cover: "math-2",
     },
     {
       id: "v13",
       title: "复合函数单调性判断技巧",
       duration: "12:35",
-      cover: "math-4",
-    },
-    {
-      id: "v14",
-      title: "单调性综合习题精讲",
-      duration: "20:10",
-      cover: "math-5",
+      cover: "math-3",
     },
   ],
   4: [
-    { id: "v15", title: "细胞膜结构与功能", duration: "11:40", cover: "bio-1" },
     {
-      id: "v16",
-      title: "线粒体与叶绿体对比",
-      duration: "09:55",
-      cover: "bio-2",
+      id: "v15",
+      title: "细胞膜结构与功能",
+      duration: "11:40",
+      cover: "biology-1",
     },
     {
-      id: "v17",
-      title: "显微镜操作规范演示",
-      duration: "14:30",
-      cover: "bio-3",
+      id: "v16",
+      title: "有丝分裂过程详解",
+      duration: "10:50",
+      cover: "biology-2",
     },
     {
       id: "v18",
       title: "细胞器协调工作机制",
       duration: "13:15",
-      cover: "bio-4",
+      cover: "biology-3",
     },
   ],
   5: [
     {
-      id: "v19",
-      title: "鸦片贸易的历史背景",
-      duration: "15:00",
-      cover: "hist-1",
+      id: "v20",
+      title: "林则徐虎门销烟",
+      duration: "12:20",
+      cover: "history-1",
     },
-    { id: "v20", title: "林则徐虎门销烟", duration: "12:20", cover: "hist-2" },
     {
       id: "v21",
-      title: "《南京条约》内容解读",
-      duration: "10:45",
-      cover: "hist-3",
+      title: "辛亥革命与帝制终结",
+      duration: "14:30",
+      cover: "history-2",
     },
     {
       id: "v22",
-      title: "鸦片战争历史意义",
-      duration: "13:50",
-      cover: "hist-4",
+      title: "五四运动与新民主主义开端",
+      duration: "15:10",
+      cover: "history-3",
     },
   ],
   6: [
-    { id: "v23", title: "大气环流基本概念", duration: "10:30", cover: "geo-1" },
-    { id: "v24", title: "三圈环流模型解析", duration: "14:15", cover: "geo-2" },
     {
-      id: "v25",
-      title: "全球气压带与风带分布",
-      duration: "12:00",
-      cover: "geo-3",
+      id: "v23",
+      title: "大气环流基本概念",
+      duration: "10:30",
+      cover: "geography-1",
     },
-    { id: "v26", title: "气候类型识别技巧", duration: "16:40", cover: "geo-4" },
-    { id: "v27", title: "季风气候专题复习", duration: "11:25", cover: "geo-5" },
+    {
+      id: "v24",
+      title: "三圈环流模型解析",
+      duration: "14:15",
+      cover: "geography-2",
+    },
+    {
+      id: "v26",
+      title: "世界气候类型分布与判读",
+      duration: "16:40",
+      cover: "geography-3",
+    },
   ],
 };
 
@@ -1009,6 +992,16 @@ function openCourseDetail(id) {
 
 function closeCourseDetail() {
   currentCourseId.value = null;
+}
+
+function getVideoUrl(cover) {
+  return `/video/courses/${cover}.mp4`;
+}
+function getCoverUrl(cover) {
+  return `/video/courses/covers/${cover}.jpg`;
+}
+function playVideo(video) {
+  playingVideo.value = video;
 }
 
 const radarDimensions = [
@@ -1670,27 +1663,15 @@ watch(activeMenu, (newVal) => {
                       v-for="video in currentVideos"
                       :key="video.id"
                       class="video-card"
+                      @click="playVideo(video)"
                     >
-                      <div
-                        class="video-cover"
-                        :style="{
-                          background: getSubjectStyle(currentCourse?.subject)
-                            .bg,
-                        }"
-                      >
-                        <div
-                          class="video-cover-icon"
-                          v-html="getSubjectStyle(currentCourse?.subject).icon"
-                        ></div>
-                        <div
-                          class="video-cover-deco"
-                          :style="{
-                            color: getSubjectStyle(currentCourse?.subject)
-                              .color,
-                          }"
-                        >
-                          {{ getSubjectStyle(currentCourse?.subject).label }}
-                        </div>
+                      <div class="video-cover">
+                        <img
+                          :src="getCoverUrl(video.cover)"
+                          :alt="video.title"
+                          class="video-cover-img"
+                          loading="lazy"
+                        />
                         <div class="video-overlay">
                           <div class="video-play-btn">
                             <span>▶</span>
@@ -1715,6 +1696,46 @@ watch(activeMenu, (newVal) => {
                   </div>
                 </div>
               </template>
+
+              <!-- 视频播放器弹窗 -->
+              <Transition name="player">
+                <div
+                  v-if="playingVideo"
+                  class="video-player-overlay"
+                  @click.self="playingVideo = null"
+                >
+                  <div class="video-player-dialog">
+                    <div class="video-player-header">
+                      <h3>{{ playingVideo.title }}</h3>
+                      <button
+                        class="video-player-close"
+                        @click="playingVideo = null"
+                      >
+                        <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                    <video
+                      :src="getVideoUrl(playingVideo.cover)"
+                      class="video-player-element"
+                      controls
+                      autoplay
+                      playsinline
+                    ></video>
+                  </div>
+                </div>
+              </Transition>
             </div>
 
             <!-- 2. 课程分析 -->
@@ -3768,6 +3789,14 @@ watch(activeMenu, (newVal) => {
   letter-spacing: 2px;
   pointer-events: none;
   z-index: 1;
+}
+
+.video-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
 }
 
 .video-overlay {

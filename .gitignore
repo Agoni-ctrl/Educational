@@ -53,6 +53,9 @@ server/output/
 # API Key 配置（含敏感信息）
 server/config.local.py
 
+# 视频资源文件（体积过大，不上传 GitHub）
+public/video/
+
 # 防止其他项目混入
 .agents/
 .codex/
