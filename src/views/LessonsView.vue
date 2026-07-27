@@ -1419,6 +1419,9 @@ const currentVideos = computed(() =>
 function openCourseDetail(id) {
   currentCourseId.value = id;
   playingVideo.value = null;
+  // 预加载该课程下所有视频的真实时长
+  const videos = courseVideos[id] || [];
+  preloadVideoDurations(videos);
 }
 
 function backToVideoList() {
@@ -1441,6 +1444,31 @@ function getVideoUrl(cover) {
 }
 function getCoverUrl(cover) {
   return `/video/courses/covers/${cover}.jpg`;
+}
+
+// ===== 预加载视频真实时长 =====
+const realDurations = ref({});
+
+function preloadVideoDurations(videos) {
+  if (!videos || videos.length === 0) return;
+  for (const video of videos) {
+    const tempVideo = document.createElement("video");
+    tempVideo.preload = "metadata";
+    tempVideo.muted = true;
+    tempVideo.src = getVideoUrl(video.cover);
+    tempVideo.onloadedmetadata = () => {
+      if (tempVideo.duration && isFinite(tempVideo.duration)) {
+        realDurations.value = {
+          ...realDurations.value,
+          [video.id]: tempVideo.duration,
+        };
+      }
+      tempVideo.remove();
+    };
+    tempVideo.onerror = () => {
+      tempVideo.remove();
+    };
+  }
 }
 
 // ===== B站风格播放器 =====
@@ -1519,6 +1547,13 @@ function biliOnMetaLoaded() {
   const video = biliVideoRef.value;
   if (!video) return;
   biliDuration.value = biliFormatTime(video.duration);
+  // 同步更新到 realDurations，和视频卡片显示一致
+  if (playingVideo.value && video.duration && isFinite(video.duration)) {
+    realDurations.value = {
+      ...realDurations.value,
+      [playingVideo.value.id]: video.duration,
+    };
+  }
   video.playbackRate = biliPlaybackRate.value;
 }
 
@@ -1538,6 +1573,13 @@ function biliFormatTime(s) {
   const min = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
   return min + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+// 视频卡片显示时长：优先用加载到的真实时长（秒），回退到存储值
+function displayDuration(video) {
+  const realSec = realDurations.value[video.id];
+  if (realSec) return biliFormatTime(realSec);
+  return video.duration;
 }
 
 function biliSeek(e) {
@@ -2291,7 +2333,7 @@ watch(activeMenu, (newVal) => {
                           <div class="video-play-btn">▶</div>
                         </div>
                         <span class="video-duration-badge">{{
-                          video.duration
+                          displayDuration(video)
                         }}</span>
                       </div>
                       <div class="video-info">
@@ -2622,7 +2664,7 @@ watch(activeMenu, (newVal) => {
                               video.title
                             }}</span>
                             <span class="bili-playlist-meta">{{
-                              video.duration
+                              displayDuration(video)
                             }}</span>
                           </div>
                         </div>
