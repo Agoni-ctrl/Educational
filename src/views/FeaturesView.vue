@@ -995,10 +995,9 @@ function generateRadarChartOption() {
   const dates = data.map((d) => d.label);
 
   // 计算每日累计使用时间（模拟数据：每个任务约15-30分钟）
-  const usageTimeData = data.map((d) => {
+  const usageTimeData = data.map((d, i) => {
     const totalTasks = d.ppt + d.doc + d.interactive;
-    // 每个任务15-30分钟，加上基础时间
-    return Math.round(totalTasks * (15 + Math.random() * 15) + 10);
+    return Math.round(totalTasks * 18 + 12 + i * 3);
   });
 
   return {
@@ -1923,7 +1922,7 @@ function generateTrendLineChartOption() {
 
   return {
     // ===== 颜色主题 =====
-    color: ["#667eea"],
+    color: ["#4c7dff"],
     // ===== 背景区域标识生产效率区间 =====
     visualMap: {
       show: false,
@@ -1943,7 +1942,7 @@ function generateTrendLineChartOption() {
       padding: [14, 18],
       textStyle: { color: "#1e293b", fontSize: 13 },
       extraCssText:
-        "box-shadow: 0 12px 32px rgba(0,0,0,0.1); border-radius: 16px;",
+        "box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-radius: 14px;",
       formatter: function (params) {
         const idx = params[0].dataIndex;
         const item = data[idx];
@@ -1954,10 +1953,11 @@ function generateTrendLineChartOption() {
         const isMax = value === maxValue;
         const isAvgAbove = value >= avgValue;
 
-        let html = "";
-        html +=
-          '<div style="font-weight: 700; margin-bottom: 10px; font-size: 15px; color: #1e293b;">';
-        html += `${item.label} ${item.date}`;
+        let html =
+          '<div style="font-weight:700;margin-bottom:8px;font-size:14px;color:#1e293b;">' +
+          item.label +
+          " " +
+          item.date;
         if (isMax)
           html +=
             ' <span style="color: #f59e0b; font-size: 13px;">🏆 本周最高</span>';
@@ -1965,16 +1965,31 @@ function generateTrendLineChartOption() {
 
         html +=
           '<div style="display: flex; align-items: center; gap: 8px; margin: 8px 0;">';
-        html += `<span style="display: inline-block; width: 10px; height: 10px; background: ${efficiencyColor}; border-radius: 50%; box-shadow: 0 0 6px ${efficiencyColor}80;"></span>`;
-        html += `<span>创作数量: <strong style="font-size: 18px; color: ${efficiencyColor};">${value}</strong> 个</span>`;
+        html +=
+          '<span style="display:inline-block;width:8px;height:8px;background:' +
+          efficiencyColor +
+          ';border-radius:50%;"></span>';
+        html +=
+          '<span>创作数量: <strong style="font-size:16px;color:' +
+          efficiencyColor +
+          ';">' +
+          value +
+          "</strong> 个</span>";
         html += "</div>";
 
-        html += `<div style="display: flex; gap: 16px; margin: 10px 0 6px; font-size: 12px; color: #64748b;">`;
-        html += `<span>📊 均值 ${avgValue} 个</span>`;
-        html += `<span>${isAvgAbove ? "📈 高于均值" : "📉 低于均值"}</span>`;
+        html +=
+          '<div style="display:flex;gap:12px;font-size:12px;color:#64748b;">';
+        html += "<span>日均 " + avgValue + " 个</span>";
+        html +=
+          "<span>" + (value >= avgValue ? "高于均值" : "低于均值") + "</span>";
         html += "</div>";
 
-        html += `<div style="display: inline-block; padding: 3px 12px; background: ${efficiencyColor}18; border-radius: 12px; color: ${efficiencyColor}; font-size: 12px; font-weight: 700; border: 1px solid ${efficiencyColor}30;">`;
+        html +=
+          '<div style="display:inline-block;margin-top:8px;padding:2px 10px;background:' +
+          efficiencyColor +
+          "15;border-radius:10px;color:" +
+          efficiencyColor +
+          ';font-size:11px;font-weight:600;">';
         html += efficiency;
         html += "</div>";
 
@@ -2027,7 +2042,7 @@ function generateTrendLineChartOption() {
       type: "value",
       name: "创作数量（个）",
       nameLocation: "end",
-      nameGap: 12,
+      nameGap: 10,
       nameTextStyle: {
         color: "#94a3b8",
         fontSize: 11,
@@ -2057,7 +2072,7 @@ function generateTrendLineChartOption() {
       {
         name: "创作数量",
         type: "line",
-        smooth: 0.4,
+        smooth: 0.35,
         symbol: "circle",
         symbolSize: function (val, params) {
           return params.dataIndex === maxIndex ? 14 : 8;
