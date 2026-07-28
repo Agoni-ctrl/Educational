@@ -13,10 +13,10 @@ const showcaseItems = [
     title: "AI 智能备课",
     subtitle: "输入主题，一键生成完整教案",
     description:
-      "告别繁琐备课，AI 自动撰写教案框架与课堂活动设计，大幅提升备课效率。",
+      "告别手动排版，<em>AI 自动撰写</em>教案框架与课堂活动设计。支持 PDF / Word 参考文档上传，智能提取知识结构，<em>大语言模型驱动</em>的个性化备课助手。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/><circle cx="19" cy="19" r="3"/><path d="M17 19h4"/></svg>`,
-    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-    accent: "#7c5cff",
+    gradient: "linear-gradient(135deg, #f97316 0%, #ef4444 50%, #f43f5e 100%)",
+    accent: "#f97316",
     shape: "ripple",
     route: "/assistant",
     imageUrl: "/image/showcase/prepare.svg",
@@ -26,9 +26,9 @@ const showcaseItems = [
     title: "课件管理",
     subtitle: "海量模板，轻松打造精致课件",
     description:
-      "覆盖全学科的 PPT 模板与素材库，在线编辑与云端同步，智能排版更专业。",
+      "覆盖全学科的 <em>PPT 模板与素材库</em>，在线编辑与云端同步。支持 PPT / Word / 互动游戏三种格式一键导出，<em>多模态资源</em>统一管理。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h6M8 16h4"/></svg>`,
-    gradient: "linear-gradient(135deg, #0ba360 0%, #3cba92 50%, #00d2ff 100%)",
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)",
     accent: "#10b981",
     shape: "grid",
     route: "/lessons",
@@ -39,9 +39,9 @@ const showcaseItems = [
     title: "数据分析",
     subtitle: "教学趋势，可视化图表洞察",
     description:
-      "自动汇总教学数据，图表展示创作趋势与学情变化，用数据驱动教学决策。",
+      "自动汇总 <em>课件创作数据</em>，图表展示每周备课趋势与学情变化。支持日 / 周 / 月 / 年多维度查看，用<em>数据驱动</em>教学决策。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>`,
-    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #ffa751 100%)",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
     accent: "#f59e0b",
     shape: "dots",
     route: "/features",
@@ -52,10 +52,10 @@ const showcaseItems = [
     title: "教学社区",
     subtitle: "分享经验，与全国教师互动交流",
     description:
-      "汇聚一线教师分享教学心得与优质资源，找到同行，碰撞灵感，共同成长。",
+      "汇聚一线教师 <em>分享教学心得</em>与优质资源。支持点赞评论、收藏互动，<em>AI 课件共创</em>经验交流专区，找到同行碰撞灵感。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20c0-3.3 2.2-6 5-6h2c2.8 0 5 2.7 5 6"/><path d="M14 14c2.8 0 5 2.7 5 6"/></svg>`,
-    gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)",
-    accent: "#06b6d4",
+    gradient: "linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)",
+    accent: "#ec4899",
     shape: "wave",
     route: "/community",
     imageUrl: "/image/showcase/community.svg",
@@ -276,9 +276,10 @@ onUnmounted(() => {
               <div class="showcase-info__subtitle">
                 {{ showcaseItems[currentIndex].subtitle }}
               </div>
-              <div class="showcase-info__desc">
-                {{ showcaseItems[currentIndex].description }}
-              </div>
+              <div
+                class="showcase-info__desc"
+                v-html="showcaseItems[currentIndex].description"
+              />
               <div
                 class="showcase-info__bar"
                 :style="{ background: showcaseItems[currentIndex].accent }"
@@ -360,7 +361,7 @@ onUnmounted(() => {
   right: -8%;
   background: radial-gradient(
     circle,
-    rgba(0, 144, 255, 0.26) 0%,
+    rgba(249, 115, 22, 0.18) 0%,
     transparent 68%
   );
   animation: drift-a 20s ease-in-out infinite;
@@ -375,7 +376,7 @@ onUnmounted(() => {
   left: -10%;
   background: radial-gradient(
     circle,
-    rgba(0, 194, 212, 0.2) 0%,
+    rgba(16, 185, 129, 0.14) 0%,
     transparent 70%
   );
   animation: drift-b 24s ease-in-out infinite;
@@ -390,7 +391,7 @@ onUnmounted(() => {
   left: 42%;
   background: radial-gradient(
     circle,
-    rgba(99, 179, 255, 0.16) 0%,
+    rgba(236, 72, 153, 0.12) 0%,
     transparent 72%
   );
   animation: drift-c 18s ease-in-out infinite reverse;
@@ -402,12 +403,12 @@ onUnmounted(() => {
   background:
     radial-gradient(
       ellipse 75% 45% at 55% 0%,
-      rgba(0, 119, 230, 0.08),
+      rgba(249, 115, 22, 0.06),
       transparent
     ),
     radial-gradient(
       ellipse 50% 35% at 95% 55%,
-      rgba(0, 194, 212, 0.05),
+      rgba(16, 185, 129, 0.04),
       transparent
     );
 }
@@ -449,7 +450,7 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #4f7dff, #0bc5ea);
+  background: linear-gradient(135deg, #f97316, #e11d48);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -460,7 +461,7 @@ onUnmounted(() => {
   margin-left: 4px;
   width: 24px;
   height: 1.5px;
-  background: linear-gradient(90deg, #4f7dff, transparent);
+  background: linear-gradient(90deg, #f97316, transparent);
   border-radius: 2px;
 }
 
@@ -486,7 +487,7 @@ onUnmounted(() => {
 .hero__title em {
   font-style: normal;
   position: relative;
-  background: linear-gradient(102deg, #2b6ef0 0%, #0bc5ea 52%, #5b8fff 100%);
+  background: linear-gradient(102deg, #f97316 0%, #e11d48 52%, #f43f5e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -498,7 +499,7 @@ onUnmounted(() => {
   right: 0;
   bottom: 2px;
   height: 4px;
-  background: linear-gradient(90deg, #2b6ef0, #0bc5ea, transparent);
+  background: linear-gradient(90deg, #f97316, #e11d48, transparent);
   border-radius: 4px;
   opacity: 0.25;
 }
@@ -510,7 +511,7 @@ onUnmounted(() => {
   color: var(--ink-soft);
   margin-bottom: 28px;
   padding-left: 20px;
-  border-left: 3px solid rgba(75, 125, 255, 0.15);
+  border-left: 3px solid rgba(249, 115, 22, 0.12);
   position: relative;
 }
 
@@ -533,9 +534,13 @@ onUnmounted(() => {
       rgba(255, 255, 255, 0.95),
       rgba(255, 255, 255, 0.6)
     ),
-    radial-gradient(circle at 15% 10%, rgba(0, 194, 212, 0.12), transparent 42%);
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(249, 115, 22, 0.08),
+      transparent 42%
+    );
   box-shadow:
-    0 8px 28px rgba(0, 87, 217, 0.06),
+    0 8px 28px rgba(249, 115, 22, 0.06),
     0 1px 3px rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(18px);
   overflow: hidden;
@@ -546,7 +551,7 @@ onUnmounted(() => {
 .lesson-stat:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 12px 36px rgba(0, 87, 217, 0.1),
+    0 12px 36px rgba(249, 115, 22, 0.1),
     0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
@@ -566,7 +571,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 1.55rem;
   line-height: 1;
-  background: linear-gradient(135deg, #4f7dff, #0bc5ea);
+  background: linear-gradient(135deg, #f97316, #e11d48);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -606,14 +611,14 @@ onUnmounted(() => {
 }
 
 .btn--dark {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316 0%, #e11d48 100%);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
 }
 
 .btn--dark:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 28px rgba(249, 115, 22, 0.4);
 }
 
 .btn--ghost {
@@ -772,6 +777,11 @@ onUnmounted(() => {
   max-width: 380px;
   margin: 0 auto;
   position: relative;
+}
+.showcase-info__desc :deep(em) {
+  font-style: normal;
+  font-weight: 700;
+  color: #1e293b;
 }
 .showcase-info__bar {
   width: 40px;
