@@ -13,20 +13,20 @@ const showForm = ref(false);
 
 // 搜索关键词
 const searchQuery = ref("");
-const hotSearches = ["AI 提示词", "翻转课堂", "新课导入", "物理交互动画"];
+const hotSearches = ["翻转课堂", "新课导入", "物理交互动画", "课堂管理"];
 
 const recentViews = ref([
   { id: 1, title: "如何设计「先破后立」的历史课导入？", time: "10分钟前" },
-  { id: 2, title: "物理实验课怎样用 AI 生成可交互演示动画？", time: "1小时前" },
-  { id: 3, title: "多模态 AI 工具在公开课中的落地尝试", time: "3小时前" },
+  { id: 2, title: "物理实验课的可交互演示动画怎么做？", time: "1小时前" },
+  { id: 3, title: "公开课中数字化工具的使用经验分享", time: "3小时前" },
 ]);
 
 const hotRecommendations = ref([
-  { id: 1, title: "2026年最新 AI 教学工具盘点...", reads: "2.3w" },
-  { id: 2, title: "如何写出让 AI 乖乖听话的 Prompt...", reads: "1.9w" },
+  { id: 1, title: "2026年热门教学工具盘点与对比...", reads: "2.3w" },
+  { id: 2, title: "课堂提问技巧：从封闭式到开放式...", reads: "1.9w" },
   { id: 3, title: "高中历史公开课破冰高分案例分享...", reads: "1.5w" },
   { id: 4, title: "教研组联名推荐：10个宝藏教师网站...", reads: "1.2w" },
-  { id: 5, title: "关于大模型赋能个性化作业的思考...", reads: "1.1w" },
+  { id: 5, title: "分层作业设计的思路与实践...", reads: "1.1w" },
 ]);
 
 const newPost = ref({
@@ -36,14 +36,14 @@ const newPost = ref({
   author: "匿名老师",
 });
 
-const tags = ["教学讨论", "课件结构", "互动设计", "多模态参考", "AI 提示词"];
+const tags = ["教学讨论", "课件结构", "互动设计", "课堂管理", "备课技巧"];
 
 const activeTab = ref("discuss");
 const contentTabs = [
-  { key: "discuss", label: "教学讨论", desc: "经验交流" },
-  { key: "resource", label: "资源分享", desc: "课件·教案" },
-  { key: "qa", label: "问答互助", desc: "难题解答" },
-  { key: "case", label: "优秀案例", desc: "课堂实践" },
+  { key: "discuss", label: "教学讨论" },
+  { key: "resource", label: "资源分享" },
+  { key: "qa", label: "问答互助" },
+  { key: "case", label: "优秀案例" },
 ];
 
 const featuredResources = [
@@ -158,23 +158,14 @@ onMounted(() => {
 
 <template>
   <div class="community-page">
-    <div class="aurora" aria-hidden="true">
-      <div class="aurora__blob aurora__blob--1" />
-      <div class="aurora__blob aurora__blob--2" />
-      <div class="aurora__grain" />
-    </div>
-
     <SiteNav />
 
     <main class="main">
       <div class="hero-compact">
         <div class="hero-compact__copy">
-          <h1>教师共创社区</h1>
+          <h1>教师社区</h1>
           <p class="hero-compact__lead">
-            与同行一起把
-            <strong>AI 教学</strong>从<span>"会用"</span>推进到<span
-              >"用好"</span
-            >
+            发布教学话题、分享课件经验、参与教研讨论
           </p>
           <div class="hero-compact__actions">
             <button class="btn btn--dark" @click="showForm = true">
@@ -591,74 +582,6 @@ onMounted(() => {
   color: var(--ink);
 }
 
-.aurora {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      circle at 12% 20%,
-      rgba(0, 194, 212, 0.12),
-      transparent 28%
-    ),
-    radial-gradient(circle at 86% 4%, rgba(0, 119, 230, 0.16), transparent 30%),
-    linear-gradient(165deg, #f8fafc 0%, #edf5fb 45%, #f7fbff 100%);
-}
-
-.aurora__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-}
-
-.aurora__blob--1 {
-  width: 50vw;
-  height: 50vw;
-  max-width: 600px;
-  max-height: 600px;
-  top: -10%;
-  right: -8%;
-  background: radial-gradient(
-    circle,
-    rgba(0, 144, 255, 0.22) 0%,
-    transparent 68%
-  );
-  animation: drift 18s ease-in-out infinite;
-}
-
-.aurora__blob--2 {
-  width: 40vw;
-  height: 40vw;
-  max-width: 480px;
-  max-height: 480px;
-  bottom: 10%;
-  left: -10%;
-  background: radial-gradient(
-    circle,
-    rgba(0, 194, 212, 0.18) 0%,
-    transparent 70%
-  );
-  animation: drift 22s ease-in-out infinite reverse;
-}
-
-.aurora__grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.3;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-}
-
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(-20px, 30px);
-  }
-}
-
 .main {
   position: relative;
   z-index: 1;
@@ -693,10 +616,7 @@ onMounted(() => {
   font-weight: 800;
   letter-spacing: -0.04em;
   margin-bottom: 6px;
-  background: linear-gradient(135deg, #0072ff 0%, #00c2d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
 }
 
 .hero-compact__lead {
@@ -741,10 +661,7 @@ onMounted(() => {
 .stats-pill strong {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  background: linear-gradient(135deg, #0072ff, #00c2d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0072ff;
   line-height: 1.2;
 }
 
