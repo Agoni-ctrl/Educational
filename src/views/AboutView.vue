@@ -26,34 +26,35 @@ const capabilities = [
 ];
 
 const values = [
-  { title: "以教师为中心", desc: "不是替代教师，而是放大教学设计师的专业能力" },
-  { title: "闭环而非碎片", desc: "从意图理解到课件生成，一个平台完成全流程" },
-  { title: "深度而非浅层", desc: "多轮对话把握复杂教学思路，而非单次简单指令" },
+  {
+    title: "多模态输入",
+    desc: "上传 PDF 教案、Word 文档、图片和视频，系统提取知识结构",
+  },
+  {
+    title: "多格式输出",
+    desc: "一键导出 PPT 演示文稿、Word 教案和课堂小测互动文件",
+  },
+  { title: "可迭代", desc: "生成初稿后可反复修改完善，预览满意后再下载" },
 ];
 
 const team = [
-  { name: "产品设计", role: "教学场景调研 · 交互设计" },
-  { name: "AI 工程", role: "大语言模型 · 多模态解析" },
-  { name: "前端开发", role: "Vue3 · 智能体界面" },
+  { name: "教学场景设计", role: "课堂调研 · 交互方案" },
+  { name: "AI 模型工程", role: "语言模型集成 · 多模态处理" },
+  { name: "前端开发", role: "Vue3 · 课件编辑器" },
 ];
 </script>
 
 <template>
   <div class="about-page">
-    <div class="bg" aria-hidden="true">
-      <div class="bg__orb bg__orb--1" />
-      <div class="bg__orb bg__orb--2" />
-    </div>
-
     <SiteNav />
 
     <main>
       <section class="hero">
-        <p class="eyebrow">About Us</p>
+        <p class="eyebrow">About</p>
         <h1>关于知启灵枢</h1>
         <p class="hero__lead">
-          多模态 AI 互动式教学智能体——以教师教学思路为核心，
-          构建具备深度互动与多模态解析生成能力的课件共创系统。
+          面向教师的课件制作工具，整合 AI 备课、课件管理、数据分析与教学社区。
+          支持多模态文档输入与多格式输出，覆盖备课到反思的全流程。
         </p>
       </section>
 
@@ -75,31 +76,29 @@ const team = [
           </div>
           <div class="block__aside">
             <div class="quote-card">
-              <p>「让教师回归教学设计师」</p>
-              <span>— 知启灵枢 使命</span>
+              <p>「从备课思路到课件产出，在一套工具内完成」</p>
+              <span>— 知启灵枢</span>
             </div>
           </div>
         </div>
       </section>
 
       <section class="block">
-        <h2 class="block__title">我们要解决的问题</h2>
+        <h2 class="block__title">解决的问题</h2>
         <div class="problem-grid">
           <article class="problem-card">
-            <h3>功能碎片化</h3>
+            <h3>备课工具分散</h3>
             <p>
-              教学设计、PPT 制作、讲义撰写需多个工具，流程割裂，切换成本高。
+              教案用 Word、课件用 PPT、素材从各处搜集，切换窗口耗费大量时间。
             </p>
           </article>
           <article class="problem-card">
-            <h3>意图理解浅层化</h3>
-            <p>
-              只能执行单次简单指令，无法把握教师复杂的教学思路与个性化要求。
-            </p>
+            <h3>格式调整繁琐</h3>
+            <p>内容写好了还要花时间排版、配图、调样式，重复劳动多。</p>
           </article>
           <article class="problem-card">
-            <h3>重复性劳动</h3>
-            <p>大量时间耗费在格式调整与资源搜寻，挤压了教学逻辑构思的空间。</p>
+            <h3>资源查找耗时</h3>
+            <p>找一份合适的课件模板或教学素材，往往要在网站间来回对比。</p>
           </article>
         </div>
       </section>
@@ -188,44 +187,6 @@ const team = [
   color: var(--ink);
 }
 
-.bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: transparent;
-}
-
-.bg__orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-}
-
-.bg__orb--1 {
-  width: 480px;
-  height: 480px;
-  top: -10%;
-  right: -5%;
-  background: radial-gradient(
-    circle,
-    rgba(0, 144, 255, 0.18) 0%,
-    transparent 70%
-  );
-}
-
-.bg__orb--2 {
-  width: 400px;
-  height: 400px;
-  bottom: 10%;
-  left: -8%;
-  background: radial-gradient(
-    circle,
-    rgba(0, 194, 212, 0.14) 0%,
-    transparent 70%
-  );
-}
-
 main {
   position: relative;
   z-index: 1;
@@ -307,15 +268,10 @@ main {
 }
 
 .quote-card p {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
   line-height: 1.5;
-  margin-bottom: 12px;
-  background: linear-gradient(102deg, var(--accent), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .quote-card span {

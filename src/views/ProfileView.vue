@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import {
   ref,
   reactive,
@@ -35,151 +35,6 @@ const tempName = ref(userInfo.name);
 // 发布想法
 const postContent = ref("");
 const selectedFiles = ref([]);
-const showEmojiPicker = ref(false);
-
-// Emoji 列表
-const emojis = [
-  "😀",
-  "😃",
-  "😄",
-  "😁",
-  "😅",
-  "😂",
-  "🤣",
-  "😊",
-  "😇",
-  "🙂",
-  "🙃",
-  "😉",
-  "😌",
-  "😍",
-  "🥰",
-  "😘",
-  "😗",
-  "😙",
-  "😚",
-  "😋",
-  "😛",
-  "😝",
-  "😜",
-  "🤪",
-  "🤨",
-  "🧐",
-  "🤓",
-  "😎",
-  "🥸",
-  "🤩",
-  "🥳",
-  "😏",
-  "😒",
-  "😞",
-  "😔",
-  "😟",
-  "😕",
-  "🙁",
-  "☹️",
-  "😣",
-  "😖",
-  "😫",
-  "😩",
-  "🥺",
-  "😢",
-  "😭",
-  "😤",
-  "😠",
-  "😡",
-  "🤬",
-  "🤯",
-  "😳",
-  "🥵",
-  "🥶",
-  "😱",
-  "😨",
-  "😰",
-  "😥",
-  "😓",
-  "🤗",
-  "🤔",
-  "🤭",
-  "🤫",
-  "🤥",
-  "😶",
-  "😐",
-  "😑",
-  "😬",
-  "🙄",
-  "😯",
-  "😦",
-  "😧",
-  "😮",
-  "😲",
-  "🥱",
-  "😴",
-  "🤤",
-  "😪",
-  "😵",
-  "🤐",
-  "🥴",
-  "🤢",
-  "🤮",
-  "🤧",
-  "😷",
-  "🤒",
-  "🤕",
-  "🤑",
-  "🤠",
-  "😈",
-  "👿",
-  "👹",
-  "👺",
-  "🤡",
-  "💩",
-  "👻",
-  "💀",
-  "☠️",
-  "👽",
-  "👾",
-  "🤖",
-  "🎃",
-  "😺",
-  "😸",
-  "😹",
-  "😻",
-  "😼",
-  "😽",
-  "🙀",
-  "😿",
-  "😾",
-  "❤️",
-  "🧡",
-  "💛",
-  "💚",
-  "💙",
-  "💜",
-  "🖤",
-  "🤍",
-  "🤎",
-  "💔",
-  "❣️",
-  "💕",
-  "💞",
-  "💓",
-  "💗",
-  "💖",
-  "💘",
-  "💝",
-  "💟",
-  "👍",
-  "👎",
-  "👏",
-  "🙌",
-  "👐",
-  "🤲",
-  "🤝",
-  "🤜",
-  "🤛",
-  "✊",
-];
 
 // 已发布的想法列表
 const posts = ref([
@@ -197,12 +52,12 @@ const activeMenu = ref("profile");
 
 // 菜单列表
 const menuItems = [
-  { id: "profile", label: "个人资料", icon: "👤" },
-  { id: "usage", label: "使用记录", icon: "📊" },
-  { id: "favorites", label: "我的收藏", icon: "⭐" },
-  { id: "verify", label: "实名认证", icon: "✅" },
-  { id: "posts", label: "发布想法", icon: "💡" },
-  { id: "settings", label: "账号设置", icon: "⚙️" },
+  { id: "profile", label: "个人资料" },
+  { id: "usage", label: "使用记录" },
+  { id: "favorites", label: "我的收藏" },
+  { id: "verify", label: "实名认证" },
+  { id: "posts", label: "发布想法" },
+  { id: "settings", label: "账号设置" },
 ];
 
 // 使用记录数据
@@ -1518,12 +1373,6 @@ function submitVerification() {
   }
 }
 
-// 插入 Emoji
-function insertEmoji(emoji) {
-  postContent.value += emoji;
-  showEmojiPicker.value = false;
-}
-
 // 文件上传
 function handleFileUpload(event) {
   const files = Array.from(event.target.files);
@@ -1650,7 +1499,97 @@ onUnmounted(() => {
             :class="{ 'menu-item--active': activeMenu === item.id }"
             @click="activeMenu = item.id"
           >
-            <span class="menu-item__icon">{{ item.icon }}</span>
+            <span class="menu-item__icon">
+              <svg
+                v-if="item.id === 'profile'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <svg
+                v-if="item.id === 'usage'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <svg
+                v-if="item.id === 'favorites'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+              <svg
+                v-if="item.id === 'verify'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+              <svg
+                v-if="item.id === 'posts'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                />
+              </svg>
+              <svg
+                v-if="item.id === 'settings'"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                />
+              </svg>
+            </span>
             <span class="menu-item__label">{{ item.label }}</span>
           </button>
         </nav>
@@ -2416,28 +2355,24 @@ onUnmounted(() => {
               <!-- 工具栏 -->
               <div class="composer-toolbar">
                 <div class="toolbar-left">
-                  <!-- Emoji 按钮 -->
-                  <div class="emoji-wrapper">
-                    <button
-                      class="toolbar-btn"
-                      @click="showEmojiPicker = !showEmojiPicker"
+                  <!-- 插入表情 -->
+                  <button class="toolbar-btn" title="表情">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
                     >
-                      😊
-                    </button>
-                    <!-- Emoji 选择器 -->
-                    <div v-if="showEmojiPicker" class="emoji-picker">
-                      <div class="emoji-grid">
-                        <button
-                          v-for="emoji in emojis"
-                          :key="emoji"
-                          class="emoji-item"
-                          @click="insertEmoji(emoji)"
-                        >
-                          {{ emoji }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                      <line x1="9" y1="9" x2="9.01" y2="9" />
+                      <line x1="15" y1="9" x2="15.01" y2="9" />
+                    </svg>
+                  </button>
 
                   <!-- 文件上传 -->
                   <label class="toolbar-btn">
@@ -2635,12 +2570,8 @@ onUnmounted(() => {
   width: 80px;
   height: 80px;
   border-radius: var(--radius-full);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-primary-700)
-  );
-  color: var(--text-inverse);
+  background: #2563eb;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2712,13 +2643,19 @@ onUnmounted(() => {
 }
 
 .menu-item--active {
-  background: linear-gradient(135deg, #0090ff15, #0057d915);
-  color: #0090ff;
+  background: #eff6ff;
+  color: #2563eb;
   font-weight: 600;
 }
 
 .menu-item__icon {
-  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+  flex-shrink: 0;
 }
 
 /* 主内容区 */
@@ -2763,7 +2700,7 @@ onUnmounted(() => {
 
 .form-input:focus {
   outline: none;
-  border-color: #0090ff;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(0, 144, 255, 0.1);
 }
 
@@ -2789,7 +2726,7 @@ onUnmounted(() => {
 .form-label svg {
   width: 18px;
   height: 18px;
-  color: #0090ff;
+  color: #64748b;
 }
 
 /* 文本域 */
@@ -2807,7 +2744,7 @@ onUnmounted(() => {
 
 .form-textarea:focus {
   outline: none;
-  border-color: #0090ff;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(0, 144, 255, 0.1);
 }
 
@@ -2830,25 +2767,19 @@ onUnmounted(() => {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  padding: 12px 24px;
+  background: #2563eb;
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(0, 144, 255, 0.3);
+  transition: background 0.2s;
 }
 
 .btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 144, 255, 0.4);
-}
-
-.btn-save:active {
-  transform: translateY(0);
+  background: #1d4ed8;
 }
 
 .btn-save svg {
@@ -2867,7 +2798,7 @@ onUnmounted(() => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  background: #2563eb;
   color: white;
   display: flex;
   align-items: center;
@@ -2920,7 +2851,7 @@ onUnmounted(() => {
 .name-input {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #0090ff;
+  border: 1px solid #2563eb;
   border-radius: 12px;
   font-size: 0.9375rem;
   outline: none;
@@ -3029,7 +2960,7 @@ onUnmounted(() => {
 }
 
 .idcard-upload:hover {
-  border-color: #0090ff;
+  border-color: #2563eb;
   background: rgba(0, 144, 255, 0.02);
 }
 
@@ -3048,20 +2979,19 @@ onUnmounted(() => {
 
 .btn-primary {
   width: 100%;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  padding: 12px 24px;
+  background: #2563eb;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 144, 255, 0.3);
+  background: #1d4ed8;
 }
 
 /* 使用记录 */
@@ -3098,7 +3028,7 @@ onUnmounted(() => {
 
 .range-btn--active {
   background: white;
-  color: #0090ff;
+  color: #2563eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -3110,17 +3040,17 @@ onUnmounted(() => {
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 16px;
+  background: #f8fafc;
+  border-radius: 14px;
   padding: 20px;
   text-align: center;
-  border: 1px solid #bae6fd;
+  border: 1px solid #eef2f6;
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #0090ff;
+  color: #2563eb;
   margin-bottom: 4px;
 }
 
@@ -3142,10 +3072,6 @@ onUnmounted(() => {
   width: 100%;
   height: auto;
   overflow: visible;
-}
-
-.chart-line {
-  filter: drop-shadow(0 2px 4px rgba(0, 144, 255, 0.3));
 }
 
 .chart-tooltip {
@@ -3170,7 +3096,7 @@ onUnmounted(() => {
 .tooltip-value {
   font-size: 1rem;
   font-weight: 700;
-  color: #0090ff;
+  color: #2563eb;
   margin-bottom: 8px;
 }
 
@@ -3313,66 +3239,20 @@ onUnmounted(() => {
   height: 18px;
 }
 
-/* Emoji 选择器 */
-.emoji-wrapper {
-  position: relative;
-}
-
-.emoji-picker {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  margin-bottom: 8px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  width: 320px;
-}
-
-.emoji-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.emoji-item {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1.125rem;
-  transition: background 0.15s;
-}
-
-.emoji-item:hover {
-  background: #f1f5f9;
-}
-
 .btn-publish {
   padding: 10px 24px;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  background: #2563eb;
   color: white;
   border: none;
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .btn-publish:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 144, 255, 0.3);
+  background: #1d4ed8;
 }
 
 .btn-publish:disabled {
@@ -3467,7 +3347,7 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  background: #2563eb;
   color: white;
   display: flex;
   align-items: center;
@@ -3500,7 +3380,7 @@ onUnmounted(() => {
 }
 
 .post-content :deep(.link) {
-  color: #0090ff;
+  color: #2563eb;
   text-decoration: none;
 }
 
@@ -3568,7 +3448,7 @@ onUnmounted(() => {
 .favorites-empty {
   text-align: center;
   padding: 64px 32px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #f8fafc;
   border-radius: 20px;
   border: 2px dashed #e2e8f0;
 }
@@ -3599,18 +3479,16 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  background: #2563eb;
   color: white;
   text-decoration: none;
   border-radius: 12px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(0, 144, 255, 0.3);
+  transition: background 0.2s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 144, 255, 0.4);
+  background: #1d4ed8;
 }
 
 .favorites-list {
@@ -3647,7 +3525,7 @@ onUnmounted(() => {
   padding: 4px 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #0090ff;
+  color: #2563eb;
   background: rgba(0, 144, 255, 0.08);
   border-radius: 999px;
 }
@@ -3742,7 +3620,7 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0090ff, #0057d9);
+  background: #2563eb;
   color: white;
   display: flex;
   align-items: center;
@@ -3823,7 +3701,7 @@ onUnmounted(() => {
 
 .range-btn--active {
   background: white;
-  color: #0090ff;
+  color: #2563eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -3850,17 +3728,17 @@ onUnmounted(() => {
 }
 
 .stat-card--primary {
-  background: linear-gradient(135deg, #e0e7ff 0%, #c7b8ff 100%);
+  background: #eef2ff;
   color: #4c1d95;
 }
 
 .stat-card--success {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  background: #ecfdf5;
   color: #065f46;
 }
 
 .stat-card--info {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  background: #eff6ff;
   color: #1e40af;
 }
 

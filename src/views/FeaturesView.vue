@@ -341,10 +341,10 @@ const savedArchiveFilters = ref([
 const archiveFilterOptions = {
   grades: ["七年级", "八年级", "九年级", "高一", "高二", "高三"],
   formats: [
-    { value: "pptx", label: "PPTX", icon: "📊", color: "#f59e0b" },
-    { value: "pdf", label: "PDF", icon: "📄", color: "#ef4444" },
-    { value: "docx", label: "DOCX", icon: "📝", color: "#3b82f6" },
-    { value: "mp4", label: "MP4", icon: "🎬", color: "#8b5cf6" },
+    { value: "pptx", label: "PPTX", icon: "ppt", color: "#f59e0b" },
+    { value: "pdf", label: "PDF", icon: "pdf", color: "#ef4444" },
+    { value: "docx", label: "DOCX", icon: "doc", color: "#3b82f6" },
+    { value: "mp4", label: "MP4", icon: "video", color: "#8b5cf6" },
   ],
   difficulties: [
     { value: "basic", label: "基础", color: "#22c55e", bgColor: "#dcfce7" },
@@ -441,7 +441,7 @@ const navGroups = [
         id: "ppt",
         label: "课件制作",
         icon: "ppt",
-        desc: "AI 生成可视化课件，支持投屏讲授",
+        desc: "输入学科与知识点，生成可下载的课件文件",
       },
       {
         id: "doc",
@@ -453,18 +453,18 @@ const navGroups = [
         id: "interactive",
         label: "课堂练习",
         icon: "interactive",
-        desc: "智能生成分层训练题与课堂检测",
+        desc: "按难度分层生成练习题与检测卷",
       },
     ],
   },
   {
-    label: "🎯 教学实施",
+    label: "教学实施",
     items: [
       {
         id: "classroom",
         label: "课堂互动",
         icon: "classroom",
-        desc: "实时互动工具，提升学生参与度",
+        desc: "随堂投票、抢答、抽选等互动功能",
       },
       {
         id: "feedback",
@@ -475,13 +475,13 @@ const navGroups = [
     ],
   },
   {
-    label: "📝 复盘优化",
+    label: "复盘优化",
     items: [
       {
         id: "history",
         label: "教学档案",
         icon: "history",
-        desc: "查看历史生成记录，支持复用与迭代",
+        desc: "按学科和时间检索历史生成内容",
       },
       {
         id: "iterate",
@@ -559,28 +559,28 @@ const overviewCards = computed(() => [
       ? `最近任务：${history.value[0].title}`
       : "还没有生成记录，先开启一次创作吧",
     tone: "blue",
-    icon: "01",
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 2.5 2.5 4.5 5 5-2.5.5-4.5 2.5-5 5-.5-2.5-2.5-4.5-5-5 2.5-.5 4.5-2.5 5-5z"/><path d="M18 13c.3 1.2 1.5 2.4 3 2.7-1.5.3-2.7 1.5-3 2.7-.3-1.2-1.5-2.4-3-2.7 1.5-.3 2.7-1.5 3-2.7z"/><path d="M5 16c.2.8 1 1.6 2 1.8-1 .2-1.8 1-2 1.8-.2-.8-1-1.6-2-1.8 1-.2 1.8-1 2-1.8z"/></svg>`,
   },
   {
     label: "已完成",
     value: stats.value.completed,
     detail: "可直接继续编辑、导出或进入复用",
     tone: "mint",
-    icon: "02",
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="9 13 11 15 15 9"/><path d="M8 5.5C6.3 6.7 5 9.2 5 12c0 3.9 3.1 7 7 7s7-3.1 7-7-3.1-7-7-7"/></svg>`,
   },
   {
     label: "待优化",
     value: stats.value.iterating,
     detail: "适合优先处理带反馈的内容，提高成品质量",
     tone: "violet",
-    icon: "03",
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><polyline points="12 7 12 12 15 14"/><path d="M21 3v5h-5"/></svg>`,
   },
   {
     label: "覆盖学科",
     value: new Set(history.value.map((item) => item.subject)).size || 1,
     detail: "统一沉淀不同学科的生成经验与历史资产",
     tone: "amber",
-    icon: "04",
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="14" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>`,
   },
 ]);
 
@@ -2849,42 +2849,45 @@ onUnmounted(() => {
 
       <div class="main__body">
         <div v-if="activePanel === 'overview'" class="panel panel--overview">
-          <section class="overview-stage">
-            <div class="overview-stage__lead">
-              <div class="overview-stage__badge">
-                <span class="badge-dot"></span>
-                AI Teaching Workspace
-              </div>
-              <h2>
-                让核心功能区像一个<span class="highlight-text">创作工作台</span
-                >，<br />而不是传统后台首页
-              </h2>
-              <p class="lead-desc">
-                不强调空洞的大数字，把任务状态、创作节奏和类型分布融入清晰的视觉流中
-              </p>
-
-              <!-- 任务状态 ECharts 交互式饼图 -->
-              <div class="task-pie-chart">
-                <div ref="taskPieChartRef" class="pie-chart-container"></div>
-              </div>
+          <section class="workspace-header">
+            <div class="workspace-header__text">
+              <h2>创作工作台</h2>
+              <p>查看本周任务状态，掌握创作节奏</p>
             </div>
-
-            <div class="metric-grid">
-              <article
-                v-for="card in overviewCards"
-                :key="card.label"
-                class="metric-card"
-                :data-tone="card.tone"
-              >
-                <div class="metric-card__icon">{{ card.icon }}</div>
-                <div class="metric-card__body">
-                  <span>{{ card.label }}</span>
-                  <strong>{{ card.value }}</strong>
-                  <p>{{ card.detail }}</p>
-                </div>
-              </article>
+            <div class="workspace-header__meta">
+              <span class="meta-item">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                更新于 {{ new Date().toLocaleDateString("zh-CN") }}
+              </span>
             </div>
           </section>
+
+          <div class="metric-grid">
+            <article
+              v-for="card in overviewCards"
+              :key="card.label"
+              class="metric-card"
+              :data-tone="card.tone"
+            >
+              <div class="metric-card__head">
+                <span class="metric-card__num" v-html="card.icon"></span>
+                <span class="metric-card__label">{{ card.label }}</span>
+              </div>
+              <strong class="metric-card__value">{{ card.value }}</strong>
+              <p class="metric-card__detail">{{ card.detail }}</p>
+            </article>
+          </div>
 
           <section class="insight-grid">
             <article class="dashboard-card dashboard-card--chart">
@@ -2983,7 +2986,7 @@ onUnmounted(() => {
                   <!-- 核心指标卡片 -->
                   <div class="day-metrics-grid">
                     <div class="day-metric-card total">
-                      <div class="metric-icon">📚</div>
+                      <div class="metric-icon"></div>
                       <div class="metric-info">
                         <span class="metric-value">{{
                           selectedDay.value
@@ -3016,7 +3019,7 @@ onUnmounted(() => {
                       </div>
                     </div>
                     <div class="day-metric-card time">
-                      <div class="metric-icon">⏱️</div>
+                      <div class="metric-icon"></div>
                       <div class="metric-info">
                         <span class="metric-value"
                           >{{ selectedDay.totalTime }}<small>min</small></span
@@ -4132,7 +4135,7 @@ onUnmounted(() => {
                   class="qa-action-btn qa-action-btn--reset"
                   @click="resetQAQuestion"
                 >
-                  🔄 重新开始
+                  重新开始
                 </button>
               </template>
               <template v-if="qaStarted &amp;&amp; !qaTimerRunning">
@@ -4147,7 +4150,7 @@ onUnmounted(() => {
                   class="qa-action-btn qa-action-btn--reset"
                   @click="resetQAQuestion"
                 >
-                  🔄 重新开始
+                  重新开始
                 </button>
               </template>
             </div>
@@ -4470,10 +4473,10 @@ onUnmounted(() => {
             <h2>学情反馈</h2>
             <p>学情分析功能正在开发中，将支持：</p>
             <ul class="feature-list">
-              <li>📈 学生答题正确率分析</li>
-              <li>⏱️ 知识点掌握时长统计</li>
-              <li>🎯 易错点智能识别</li>
-              <li>📋 个性化学习建议生成</li>
+              <li>学生答题正确率分析</li>
+              <li>知识点掌握时长统计</li>
+              <li>易错点智能识别</li>
+              <li>个性化学习建议生成</li>
             </ul>
             <div class="placeholder-tip">
               <span
@@ -5678,7 +5681,6 @@ onUnmounted(() => {
 }
 
 .section-tag,
-.overview-stage__badge,
 .preview-card__eyebrow {
   display: inline-flex;
   align-items: center;
@@ -5690,109 +5692,46 @@ onUnmounted(() => {
   font-weight: 800;
 }
 
-.overview-stage {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: 18px;
+/* ===== 创作工作台头部 ===== */
+.workspace-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 28px 32px 24px;
+  margin-bottom: 8px;
 }
 
-.overview-stage__lead {
-  position: relative;
-  overflow: hidden;
-  padding: 32px 32px 28px;
-  border-radius: 28px;
-  background:
-    radial-gradient(
-      ellipse at 80% 0%,
-      rgba(76, 125, 255, 0.12) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 0% 100%,
-      rgba(35, 195, 178, 0.08) 0%,
-      transparent 45%
-    ),
-    radial-gradient(
-      ellipse at 100% 100%,
-      rgba(139, 92, 246, 0.06) 0%,
-      transparent 40%
-    ),
-    linear-gradient(160deg, #f8faff 0%, #f0f4ff 35%, #f5f8ff 70%, #fafbfe 100%);
-  color: #1e293b;
-  box-shadow:
-    0 4px 24px rgba(76, 125, 255, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(76, 125, 255, 0.12);
-  transition:
-    box-shadow 0.4s ease,
-    transform 0.4s ease;
+.workspace-header__text h2 {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
-.overview-stage__lead:hover {
-  box-shadow:
-    0 8px 40px rgba(31, 65, 134, 0.22),
-    0 2px 6px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transform: translateY(-1px);
+.workspace-header__text p {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
 }
 
-.overview-stage__badge {
+.workspace-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(76, 125, 255, 0.1),
-    rgba(139, 92, 246, 0.08)
-  );
-  border: 1px solid rgba(76, 125, 255, 0.2);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #4c7dff;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #94a3b8;
 }
 
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4c7dff, #6b9aff);
-  box-shadow: 0 0 10px rgba(76, 125, 255, 0.4);
-  animation: badgePulse 2s ease-in-out infinite;
-}
-
-@keyframes badgePulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.3);
-  }
-}
-
-.overview-stage__lead h2 {
-  margin: 18px 0 14px;
-  max-width: 12em;
-  font-family: var(--font-display);
-  font-size: 2rem;
-  line-height: 1.2;
-  letter-spacing: -0.04em;
-  font-weight: 700;
-}
-
-.highlight-text {
-  position: relative;
-  background: linear-gradient(135deg, #4c7dff, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.meta-item svg {
+  opacity: 0.5;
 }
 
 .lead-desc {
@@ -5900,89 +5839,83 @@ onUnmounted(() => {
   text-align: right;
 }
 
+/* ===== 指标卡片网格 ===== */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
+  padding: 0 32px 28px;
 }
 
 .metric-card {
-  display: flex;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.98),
-    rgba(242, 247, 255, 0.92)
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  transition: all 0.3s ease;
+  padding: 22px 20px 20px;
+  border-radius: 20px;
+  border: 1px solid #eef2f6;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
   cursor: default;
 }
 
 .metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 24px rgba(31, 65, 134, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  border-color: rgba(76, 125, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+  border-color: #e2e8f0;
 }
 
-.metric-card__icon {
-  width: 50px;
-  height: 50px;
+.metric-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.metric-card__num {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  font-size: 0.84rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: #fff;
-  flex-shrink: 0;
 }
 
-.metric-card[data-tone="blue"] .metric-card__icon {
-  background: linear-gradient(135deg, #4c7dff, #5a9dff);
+.metric-card[data-tone="blue"] .metric-card__num {
+  background: #4c7dff;
+}
+.metric-card[data-tone="mint"] .metric-card__num {
+  background: #23c3b2;
+}
+.metric-card[data-tone="violet"] .metric-card__num {
+  background: #8b5cf6;
+}
+.metric-card[data-tone="amber"] .metric-card__num {
+  background: #f59e0b;
 }
 
-.metric-card[data-tone="mint"] .metric-card__icon {
-  background: linear-gradient(135deg, #23c3b2, #62d9c4);
+.metric-card__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
 }
 
-.metric-card[data-tone="violet"] .metric-card__icon {
-  background: linear-gradient(135deg, #7c5cff, #9b7dff);
-}
-
-.metric-card[data-tone="amber"] .metric-card__icon {
-  background: linear-gradient(135deg, #f59e0b, #ffbf5a);
-}
-
-.metric-card__body {
-  min-width: 0;
-}
-
-.metric-card__body span {
+.metric-card__value {
   display: block;
-  font-size: 0.78rem;
-  color: var(--ink-muted);
-}
-
-.metric-card__body strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 1.9rem;
+  font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.04em;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1;
 }
 
-.metric-card__body p,
-.summary-pill p {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
-  font-size: 0.82rem;
-  line-height: 1.65;
+.metric-card__detail {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.55;
 }
 
 .insight-grid {
@@ -6551,10 +6484,10 @@ onUnmounted(() => {
 .viz-card,
 .feedback-card,
 .summary-pill {
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: rgba(248, 251, 255, 0.78);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  border: 1px solid #eef2f6;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .dashboard-card,
@@ -6566,80 +6499,16 @@ onUnmounted(() => {
 }
 
 .dashboard-card--chart {
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(76, 125, 255, 0.12),
-      transparent 28%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.98),
-      rgba(239, 245, 255, 0.94)
-    );
+  background: #fff;
 }
 
 .dashboard-card--donut {
-  background: rgba(250, 252, 255, 0.9);
+  background: #fff;
 }
 
-/* 柱状图卡片 - 精美渐变背景 */
+/* 柱状图卡片 */
 .dashboard-card--queue {
-  background:
-    radial-gradient(
-      ellipse at 20% 0%,
-      rgba(76, 125, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 80% 100%,
-      rgba(35, 195, 178, 0.06) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(139, 92, 246, 0.04) 0%,
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(248, 250, 255, 0.96) 50%,
-      rgba(243, 247, 255, 0.94) 100%
-    );
-  position: relative;
-  overflow: hidden;
-}
-
-/* 装饰性背景元素 */
-.dashboard-card--queue::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(
-    circle,
-    rgba(76, 125, 255, 0.03) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.dashboard-card--queue::after {
-  content: "";
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(
-    circle,
-    rgba(35, 195, 178, 0.03) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
+  background: #fff;
 }
 
 /* 类型图例 */
@@ -6736,30 +6605,10 @@ onUnmounted(() => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 图表绘制区域 - 带柔和背景 */
+/* 图表绘制区域 */
 .chart-area {
   position: relative;
-  background:
-    radial-gradient(
-      ellipse at 50% 100%,
-      rgba(76, 125, 255, 0.04) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 30% 0%,
-      rgba(35, 195, 178, 0.03) 0%,
-      transparent 40%
-    ),
-    radial-gradient(
-      ellipse at 70% 0%,
-      rgba(139, 92, 246, 0.03) 0%,
-      transparent 40%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(248, 250, 255, 0.6) 0%,
-      rgba(240, 245, 255, 0.7) 100%
-    );
+  background: #f8fafc;
   border-radius: 18px;
   border: 1px solid rgba(226, 232, 240, 0.4);
   padding: 8px 4px 4px;
@@ -7077,24 +6926,9 @@ onUnmounted(() => {
   gap: 12px;
   padding: 12px 14px;
   margin: 14px 0 0;
-  background:
-    radial-gradient(
-      ellipse at 0% 50%,
-      rgba(76, 125, 255, 0.06) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 100% 50%,
-      rgba(139, 92, 246, 0.05) 0%,
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(248, 250, 255, 0.9) 0%,
-      rgba(243, 247, 255, 0.85) 100%
-    );
+  background: #f8fafc;
   border-radius: 14px;
-  border: 1px solid rgba(76, 125, 255, 0.08);
+  border: 1px solid #eef2f6;
 }
 
 .trend-stat__value {
@@ -7138,17 +6972,13 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* 日期详情面板 - 优化版 */
+/* 日期详情面板 */
 .day-detail-panel {
   margin-top: 16px;
   padding: 20px;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(248, 251, 255, 0.95) 100%
-  );
+  background: #fff;
   border-radius: 20px;
-  border: 1px solid rgba(76, 125, 255, 0.15);
+  border: 1px solid #eef2f6;
   box-shadow: 0 8px 32px rgba(76, 125, 255, 0.12);
 }
 
@@ -7271,9 +7101,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.8);
+  background: #fff;
   border-radius: 14px;
-  border: 1px solid rgba(76, 125, 255, 0.08);
+  border: 1px solid #eef2f6;
   transition: all 0.2s ease;
 }
 
@@ -7321,7 +7151,7 @@ onUnmounted(() => {
 
 .dist-section {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.6);
+  background: #f8fafc;
   border-radius: 14px;
 }
 
@@ -7643,18 +7473,7 @@ onUnmounted(() => {
 
 /* ========== 雷达图样式 ========== */
 .dashboard-card--radar {
-  background:
-    radial-gradient(
-      ellipse at 0% 0%,
-      rgba(76, 125, 255, 0.06) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 100% 100%,
-      rgba(139, 92, 246, 0.05) 0%,
-      transparent 50%
-    ),
-    rgba(250, 252, 255, 0.95);
+  background: #fff;
 }
 
 .radar-panel {
@@ -9687,11 +9506,15 @@ onUnmounted(() => {
 }
 
 @media (max-width: 1200px) {
-  .overview-stage,
+  .workspace-header,
   .insight-grid,
   .generator-layout,
   .insight-grid--simple {
     grid-template-columns: 1fr;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
