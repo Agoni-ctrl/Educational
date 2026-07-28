@@ -13,52 +13,52 @@ const showcaseItems = [
     title: "AI 智能备课",
     subtitle: "输入主题，一键生成完整教案",
     description:
-      "告别手动排版，<em>AI 自动撰写</em>教案框架与课堂活动设计。支持 PDF / Word 参考文档上传，智能提取知识结构，<em>大语言模型驱动</em>的个性化备课助手。",
+      "上传教案或参考文档，系统自动分析知识结构并生成课件初稿。<em>支持 PDF/Word</em> 多格式输入，<em>AI 辅助撰写</em>教学流程与活动设计。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/><circle cx="19" cy="19" r="3"/><path d="M17 19h4"/></svg>`,
     gradient: "linear-gradient(135deg, #f97316 0%, #ef4444 50%, #f43f5e 100%)",
     accent: "#f97316",
     shape: "ripple",
     route: "/assistant",
-    imageUrl: "/image/showcase/prepare.svg",
+    imageUrl: "/image/showcase/prepare.jpg",
   },
   {
     id: 2,
     title: "课件管理",
     subtitle: "海量模板，轻松打造精致课件",
     description:
-      "覆盖全学科的 <em>PPT 模板与素材库</em>，在线编辑与云端同步。支持 PPT / Word / 互动游戏三种格式一键导出，<em>多模态资源</em>统一管理。",
+      "管理所有已生成的课件与教案，支持 <em>PPT / Word / 互动游戏</em> 三种格式一键导出。<em>云端同步存储</em>，按学科与时间分类检索。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h6M8 16h4"/></svg>`,
     gradient: "linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)",
     accent: "#10b981",
     shape: "grid",
     route: "/lessons",
-    imageUrl: "/image/showcase/cources.png",
+    imageUrl: "/image/showcase/cources.jpg",
   },
   {
     id: 3,
     title: "数据分析",
     subtitle: "教学趋势，可视化图表洞察",
     description:
-      "自动汇总 <em>课件创作数据</em>，图表展示每周备课趋势与学情变化。支持日 / 周 / 月 / 年多维度查看，用<em>数据驱动</em>教学决策。",
+      "<em>课件创作统计</em>仪表盘，以图表展示备课量趋势与内容类型分布。<em>日 / 周 / 月 / 年</em> 多维度筛选，辅助教学规划。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="4" height="6" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>`,
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
     accent: "#f59e0b",
     shape: "dots",
     route: "/features",
-    imageUrl: "/image/showcase/analytics.svg",
+    imageUrl: "/image/showcase/analytics.jpg",
   },
   {
     id: 4,
     title: "教学社区",
     subtitle: "分享经验，与全国教师互动交流",
     description:
-      "汇聚一线教师 <em>分享教学心得</em>与优质资源。支持点赞评论、收藏互动，<em>AI 课件共创</em>经验交流专区，找到同行碰撞灵感。",
+      "<em>教师教研社区</em>，发布教学话题与资源分享。支持 <em>点赞 / 评论 / 收藏</em> 互动，按学科分类浏览，与同行交流实践心得。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20c0-3.3 2.2-6 5-6h2c2.8 0 5 2.7 5 6"/><path d="M14 14c2.8 0 5 2.7 5 6"/></svg>`,
     gradient: "linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%)",
     accent: "#ec4899",
     shape: "wave",
     route: "/community",
-    imageUrl: "/image/showcase/community.svg",
+    imageUrl: "/image/showcase/community.jpg",
   },
 ];
 
@@ -117,9 +117,9 @@ function stopAutoPlay() {
 }
 
 const lessonHighlights = [
-  { value: "4 步", label: "从备课到反思" },
-  { value: "6 类", label: "多模态教学资源" },
-  { value: "1 份", label: "课件教案同步" },
+  { value: "PPT / Word / 互动", label: "三格式一键导出" },
+  { value: "日 / 周 / 月 / 年", label: "多维度数据分析" },
+  { value: "PDF / Word / 图片", label: "参考文档智能识别" },
 ];
 
 const materialCards = [
@@ -150,43 +150,22 @@ onUnmounted(() => {
 
 <template>
   <div class="home">
-    <div class="aurora" aria-hidden="true">
-      <div
-        class="aurora__blob aurora__blob--1"
-        :style="{
-          transform: `translate(${(mouse.x - 0.5) * 36}px, ${(mouse.y - 0.5) * 28}px)`,
-        }"
-      />
-      <div
-        class="aurora__blob aurora__blob--2"
-        :style="{
-          transform: `translate(${(mouse.x - 0.5) * -44}px, ${(mouse.y - 0.5) * -32}px)`,
-        }"
-      />
-      <div class="aurora__blob aurora__blob--3" />
-      <div class="aurora__mesh" />
-      <div class="aurora__grain" />
-    </div>
-
     <SiteNav />
 
     <main class="hero">
       <div class="hero__inner">
         <div class="hero__copy">
           <p class="hero__eyebrow reveal" style="--i: 0">
-            <span class="pulse" />
-            知启灵枢 · AI 赋能每一堂课
+            知启灵枢 · 教学课件工具
           </p>
 
           <h1 class="hero__title reveal" style="--i: 1">
-            让每位教师都成为<br />
-            <em>教学设计师</em>
+            从备课思路到<br />课件初稿，<em>一气呵成</em>
           </h1>
 
           <p class="hero__lead reveal" style="--i: 2">
-            告别熬夜做课件。您只需告诉我们教学思路，AI 即可生成专业 PPT
-            与教案初稿——<br />
-            从素材搜集到排版美化，一气呵成。把时间还给课堂，让每一分钟都值得。
+            描述教学目标与知识点，系统自动生成 PPT / Word / 互动课件。<br />
+            支持 PDF 参考文档上传、在线编辑与多格式下载。
           </p>
 
           <div
@@ -265,12 +244,7 @@ onUnmounted(() => {
                 :style="{ color: showcaseItems[currentIndex].accent }"
                 v-html="showcaseItems[currentIndex].icon"
               />
-              <div
-                class="showcase-info__title"
-                :style="{
-                  backgroundImage: showcaseItems[currentIndex].gradient,
-                }"
-              >
+              <div class="showcase-info__title">
                 {{ showcaseItems[currentIndex].title }}
               </div>
               <div class="showcase-info__subtitle">
@@ -302,24 +276,6 @@ onUnmounted(() => {
                 />
               </div>
             </div>
-
-            <!-- 使用引导 -->
-            <div class="usage-guide">
-              <div class="guide-item">
-                <span class="guide-num">1</span>
-                <span class="guide-text">选择功能模块</span>
-              </div>
-              <div class="guide-arrow">→</div>
-              <div class="guide-item">
-                <span class="guide-num">2</span>
-                <span class="guide-text">输入教学需求</span>
-              </div>
-              <div class="guide-arrow">→</div>
-              <div class="guide-item">
-                <span class="guide-num">3</span>
-                <span class="guide-text">AI生成内容</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -333,92 +289,6 @@ onUnmounted(() => {
   min-height: 100vh;
   overflow: hidden;
   color: var(--ink);
-}
-
-/* Aurora */
-.aurora {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(168deg, #fafcff 0%, #eef5fc 42%, #f4f8fd 100%);
-}
-
-.aurora__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(88px);
-  will-change: transform;
-  transition: transform 0.45s var(--ease-out);
-}
-
-.aurora__blob--1 {
-  width: 52vw;
-  height: 52vw;
-  max-width: 640px;
-  max-height: 640px;
-  top: -12%;
-  right: -8%;
-  background: radial-gradient(
-    circle,
-    rgba(249, 115, 22, 0.18) 0%,
-    transparent 68%
-  );
-  animation: drift-a 20s ease-in-out infinite;
-}
-
-.aurora__blob--2 {
-  width: 42vw;
-  height: 42vw;
-  max-width: 520px;
-  max-height: 520px;
-  bottom: 0;
-  left: -10%;
-  background: radial-gradient(
-    circle,
-    rgba(16, 185, 129, 0.14) 0%,
-    transparent 70%
-  );
-  animation: drift-b 24s ease-in-out infinite;
-}
-
-.aurora__blob--3 {
-  width: 32vw;
-  height: 32vw;
-  max-width: 400px;
-  max-height: 400px;
-  top: 42%;
-  left: 42%;
-  background: radial-gradient(
-    circle,
-    rgba(236, 72, 153, 0.12) 0%,
-    transparent 72%
-  );
-  animation: drift-c 18s ease-in-out infinite reverse;
-}
-
-.aurora__mesh {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 75% 45% at 55% 0%,
-      rgba(249, 115, 22, 0.06),
-      transparent
-    ),
-    radial-gradient(
-      ellipse 50% 35% at 95% 55%,
-      rgba(16, 185, 129, 0.04),
-      transparent
-    );
-}
-
-.aurora__grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.3;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
 }
 
 /* Hero */
@@ -450,28 +320,7 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #f97316, #e11d48);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-}
-.hero__eyebrow::after {
-  content: "";
-  margin-left: 4px;
-  width: 24px;
-  height: 1.5px;
-  background: linear-gradient(90deg, #f97316, transparent);
-  border-radius: 2px;
-}
-
-.pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 0 var(--accent-glow);
-  animation: pulse-ring 2s ease-out infinite;
+  color: #f97316;
 }
 
 .hero__title {
@@ -486,22 +335,7 @@ onUnmounted(() => {
 
 .hero__title em {
   font-style: normal;
-  position: relative;
-  background: linear-gradient(102deg, #f97316 0%, #e11d48 52%, #f43f5e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.hero__title em::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  height: 4px;
-  background: linear-gradient(90deg, #f97316, #e11d48, transparent);
-  border-radius: 4px;
-  opacity: 0.25;
+  color: #e11d48;
 }
 
 .hero__lead {
@@ -571,10 +405,7 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 1.55rem;
   line-height: 1;
-  background: linear-gradient(135deg, #f97316, #e11d48);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f97316;
 }
 
 .lesson-stat span {
@@ -611,7 +442,7 @@ onUnmounted(() => {
 }
 
 .btn--dark {
-  background: linear-gradient(135deg, #f97316 0%, #e11d48 100%);
+  background: #f97316;
   color: #fff;
   box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
 }
@@ -755,20 +586,12 @@ onUnmounted(() => {
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 4px;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 100%;
-  transition: background-image 0.6s ease;
 }
 .showcase-info__subtitle {
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #475569, #64748b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #64748b;
 }
 .showcase-info__desc {
   font-size: 0.85rem;
@@ -2245,53 +2068,6 @@ onUnmounted(() => {
   display: none;
 }
 
-/* Usage Guide - 使用引导 */
-.usage-guide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
-  padding: 14px 20px;
-  background: rgba(241, 245, 249, 0.6);
-  border-radius: 12px;
-  border: 1px dashed rgba(203, 213, 225, 0.5);
-}
-
-.guide-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.guide-num {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-}
-
-.guide-text {
-  font-size: 0.85rem;
-  color: #334155;
-  font-weight: 600;
-}
-
-.guide-arrow {
-  font-size: 1rem;
-  color: #3b82f6;
-  opacity: 0.5;
-  font-weight: 700;
-}
-
 /* Old Float Styles */
 .float-wrap {
   position: relative;
@@ -2768,36 +2544,6 @@ onUnmounted(() => {
   }
 }
 
-@keyframes drift-a {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-28px, 36px) scale(1.04);
-  }
-}
-
-@keyframes drift-b {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(36px, -28px);
-  }
-}
-
-@keyframes drift-c {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    transform: translate(calc(-50% + 18px), calc(-50% - 22px)) scale(1.06);
-  }
-}
-
 @keyframes float-main {
   0%,
   100% {
@@ -2835,18 +2581,6 @@ onUnmounted(() => {
   }
   50% {
     transform: translateY(-8px) translateX(5px);
-  }
-}
-
-@keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 var(--accent-glow);
-  }
-  70% {
-    box-shadow: 0 0 0 10px transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
   }
 }
 
@@ -2892,13 +2626,6 @@ onUnmounted(() => {
     width: 40px;
     height: 40px;
     font-size: 1.3rem;
-  }
-  .usage-guide {
-    gap: 10px;
-    padding: 12px 16px;
-  }
-  .guide-text {
-    font-size: 0.8rem;
   }
 }
 
@@ -2973,15 +2700,6 @@ onUnmounted(() => {
   }
   .hint-desc {
     font-size: 0.75rem;
-  }
-  .usage-guide {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px 12px;
-    margin-top: 16px;
-  }
-  .guide-arrow {
-    display: none;
   }
   .float-wrap {
     aspect-ratio: auto;
