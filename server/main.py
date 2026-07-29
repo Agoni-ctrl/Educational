@@ -24,8 +24,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from config import OUTPUT_DIR, HOST, PORT
-from ai_service import generate_ppt_content, generate_doc_content, generate_quiz_content
-from file_generator import generate_pptx, generate_docx, generate_quiz_html
+from ai_service import generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content
+from file_generator import generate_pptx, generate_docx, generate_quiz_html, generate_exam_html
 
 app = FastAPI(title="EduAI 课件生成 API", version="1.0.0")
 
@@ -66,7 +66,7 @@ def _update_task(task_id: str, **kwargs):
 
 @app.post("/api/courseware/create")
 async def create_courseware(
-    type: str = Form(...),          # ppt | doc | quiz
+    type: str = Form(...),          # ppt | doc | quiz | exam
     subject: str = Form(...),
     topic: str = Form(...),
     grade: str = Form(""),
@@ -74,11 +74,16 @@ async def create_courseware(
     outline: str = Form(""),
     requirements: str = Form(""),
     difficulty: str = Form("适中"),
+    totalScore: str = Form("100"),
+    choiceCount: str = Form("10"),
+    fillCount: str = Form("6"),
+    essayCount: str = Form("4"),
+    generateAB: str = Form("false"),
     files: list[UploadFile] = File(default=[]),
 ):
     """
     提交课件生成任务
-    - type: ppt | doc | quiz
+    - type: ppt | doc | quiz | exam
     - 文件可选，当前版本暂不处理文件内容（可后续扩展）
     """
     task_id = _new_task(type)
@@ -91,6 +96,11 @@ async def create_courseware(
         "outline": outline,
         "requirements": requirements,
         "difficulty": difficulty,
+        "totalScore": totalScore,
+        "choiceCount": choiceCount,
+        "fillCount": fillCount,
+        "essayCount": essayCount,
+        "generateAB": generateAB,
     }
 
     # 后台异步执行
@@ -116,6 +126,16 @@ async def _run_generation(task_id: str, params: dict):
                 params["subject"], params["topic"],
                 params["grade"], params["requirements"],
             )
+        elif params["type"] == "exam":
+            content = await generate_exam_content(
+                params["subject"], params["topic"],
+                grade=params["grade"], difficulty=params.get("difficulty", "中等"),
+                total_score=int(params.get("totalScore", 100)),
+                choice_count=int(params.get("choiceCount", 10)),
+                fill_count=int(params.get("fillCount", 6)),
+                essay_count=int(params.get("essayCount", 4)),
+                generate_ab=params.get("generateAB", "false").lower() == "true",
+            )
         else:
             content = await generate_quiz_content(
                 params["subject"], params["topic"],
@@ -134,6 +154,8 @@ async def _run_generation(task_id: str, params: dict):
             filepath, filename = generate_pptx(content)
         elif params["type"] == "doc":
             filepath, filename = generate_docx(content)
+        elif params["type"] == "exam":
+            filepath, filename = generate_exam_html(content)
         else:
             filepath, filename = generate_quiz_html(content)
 

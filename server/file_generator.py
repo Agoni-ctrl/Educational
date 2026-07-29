@@ -810,6 +810,169 @@ def generate_quiz_html(content: dict) -> tuple:
     return filepath, filename
 
 
+def generate_exam_html(content: dict) -> tuple:
+    """生成试卷 HTML 页面，含选择题/填空题/解答题"""
+    title = content.get("title", "综合试卷")
+    subject = content.get("subject", "")
+    grade = content.get("grade", "")
+    total = content.get("total_score", 100)
+    duration = content.get("duration", "90分钟")
+    sections = content.get("sections", [])
+    answer_key = content.get("answer_key", "")
+
+    # 计算总题数
+    total_questions = sum(s.get("count", 0) for s in sections)
+
+    sections_html = ""
+    section_letters = "一二三四五六七八九十"
+    for si, sec in enumerate(sections):
+        stype = sec.get("type", "选择题")
+        count = sec.get("count", 0)
+        score_per = sec.get("score_per", 0)
+        subtotal = sec.get("subtotal", count * score_per)
+        questions = sec.get("questions", [])
+
+        q_html = ""
+        for qi, q in enumerate(questions, 1):
+            q_content = q.get("content", "")
+            q_options = q.get("options", [])
+            q_diff = q.get("difficulty", "")
+
+            opts_html = ""
+            for opt in q_options:
+                opts_html += f'<p style="margin:4px 0 4px 20px">{opt}</p>'
+
+            q_html += f'''<div class="question-item">
+  <div class="q-row">
+    <span class="q-num">{qi}.</span>
+    <span class="q-text">{q_content}</span>
+    {f'<span class="q-blank"></span>' if stype == "填空题" and not q_options else ''}
+    {f'<span class="q-diff {q_diff}">{"⚪" if q_diff == "基础" else "🔵" if q_diff == "中等" else "🔴"}</span>' if q_diff else ''}
+  </div>
+  {f'<div class="q-opts">{opts_html}</div>' if opts_html else ''}
+</div>'''
+
+        sections_html += f'''<div class="section">
+  <div class="section-header">
+    <span class="section-title">{section_letters[si] if si < len(section_letters) else si + 1}、{stype}</span>
+    <span class="section-meta">共 {count} 题 · 每题 {score_per} 分 · 小计 {subtotal} 分</span>
+  </div>
+  <div class="section-body">
+    {q_html}
+  </div>
+</div>'''
+
+    html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px;
+    color: #1E293B;
+    background: #F7F5F2;
+  }}
+  .paper-header {{
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 28px;
+    border-bottom: 3px double #CBD5E1;
+  }}
+  .paper-header h1 {{ font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; color: #0F172A; }}
+  .paper-header .meta {{ margin-top: 12px; display: flex; justify-content: center; gap: 32px; font-size: 0.9rem; color: #64748B; }}
+  .paper-header .meta span {{ white-space: nowrap; }}
+  .section {{
+    margin-bottom: 36px;
+    page-break-inside: avoid;
+  }}
+  .section-header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #E2E8F0;
+  }}
+  .section-title {{ font-size: 1.1rem; font-weight: 700; color: #0F172A; }}
+  .section-meta {{ font-size: 0.8rem; color: #6B7280; }}
+  .question-item {{
+    padding: 12px 0;
+    border-bottom: 1px solid #F1F5F9;
+  }}
+  .question-item:last-child {{ border-bottom: none; }}
+  .q-row {{ display: flex; align-items: flex-start; gap: 8px; line-height: 1.7; }}
+  .q-num {{ font-weight: 600; color: #475569; min-width: 28px; }}
+  .q-text {{ flex: 1; }}
+  .q-blank {{
+    display: inline-block;
+    min-width: 80px;
+    border-bottom: 2px solid #94A3B8;
+    margin: 0 4px;
+  }}
+  .q-opts {{ margin-top: 4px; font-size: 0.9rem; color: #334155; }}
+  .q-diff {{ margin-left: auto; font-size: 0.7rem; }}
+  .answer-key {{
+    margin-top: 48px;
+    padding: 24px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-size: 0.88rem;
+    color: #1E293B;
+  }}
+  .answer-key h3 {{ font-size: 1rem; margin-bottom: 12px; }}
+  @media print {{
+    body {{ background: #FFF; padding: 20px; }}
+    .question-item {{ page-break-inside: avoid; }}
+    .section {{ page-break-inside: avoid; }}
+  }}
+  @media (max-width: 600px) {{
+    body {{ padding: 16px; }}
+    .paper-header .meta {{ flex-direction: column; gap: 4px; }}
+    .section-header {{ flex-direction: column; gap: 4px; }}
+  }}
+</style>
+</head>
+<body>
+<div class="paper-header">
+  <h1>{title}</h1>
+  <div class="meta">
+    <span>学科：{subject}</span>
+    <span>年级：{grade}</span>
+    <span>总分：{total} 分</span>
+    <span>时长：{duration}</span>
+    <span>题量：共 {total_questions} 题</span>
+  </div>
+</div>
+
+{sections_html}
+
+{f'<div class="answer-key"><h3>📋 参考答案与评分标准</h3>{answer_key}</div>' if answer_key else ''}
+
+<div style="text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:0.8rem;">
+  <p>知启灵枢 · AI 智能组卷 · 仅供教学参考</p>
+</div>
+</body>
+</html>"""
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
+    filename = f"{safe_title}.html"
+    filepath = os.path.join(OUTPUT_DIR, filename)
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[HTML Exam] 已生成: {filepath}")
+    return filepath, filename
+
+
 # ════════════════════════════════════════════════════════════════
 # 测试入口
 # ════════════════════════════════════════════════════════════════

@@ -230,3 +230,68 @@ async def generate_quiz_content(
 难度：{difficulty}
 """
     return await call_deepseek(QUIZ_SYSTEM_PROMPT, user_prompt)
+
+
+async def generate_exam_content(
+    subject: str, topic: str, grade: str = "",
+    difficulty: str = "中等", total_score: int = 100,
+    choice_count: int = 10, fill_count: int = 6, essay_count: int = 4,
+    generate_ab: bool = False,
+) -> dict:
+    """生成完整试卷"""
+    system_prompt = """你是一个专业的试卷出题专家。请为教师生成一套完整的考试试卷。
+
+要求：
+1. 试卷包含三部分：选择题、填空题、解答题
+2. 题目难度均衡，覆盖基础知识、综合应用和拓展提高
+3. 每道题标注分值
+4. 提供参考答案和评分标准
+5. 使用JSON格式返回，结构如下：
+{
+  "title": "试卷标题",
+  "subject": "学科",
+  "grade": "年级",
+  "total_score": 100,
+  "duration": "90分钟",
+  "sections": [
+    {
+      "type": "选择题",
+      "count": 10,
+      "score_per": 3,
+      "subtotal": 30,
+      "questions": [
+        {"id": 1, "content": "题目内容", "options": ["A. 选项A", "B. 选项B", "C. 选项C", "D. 选项D"], "answer": "A", "difficulty": "基础"}
+      ]
+    },
+    {
+      "type": "填空题",
+      "count": 6,
+      "score_per": 4,
+      "subtotal": 24,
+      "questions": [
+        {"id": 1, "content": "题目内容____", "answer": "参考答案", "difficulty": "中等"}
+      ]
+    },
+    {
+      "type": "解答题",
+      "count": 4,
+      "score_per": 10,
+      "subtotal": 40,
+      "questions": [
+        {"id": 1, "content": "题目内容", "answer": "参考答案要点", "difficulty": "提高", "scoring_criteria": "评分标准"}
+      ]
+    }
+  ],
+  "answer_key": "简要答案汇总"
+}"""
+    user_prompt = f"""请为以下考试生成试卷：
+
+学科：{subject}
+考试范围：{topic}
+年级：{grade or '未指定'}
+难度：{difficulty}
+总分：{total_score}分
+题型配置：选择题{choice_count}题 / 填空题{fill_count}题 / 解答题{essay_count}题
+{'需要生成A/B两套卷' if generate_ab else '生成一套试卷'}
+"""
+    return await call_deepseek(system_prompt, user_prompt)
