@@ -117,9 +117,9 @@ function stopAutoPlay() {
 }
 
 const lessonHighlights = [
-  { value: "PPT / Word / 互动", label: "三格式一键导出" },
-  { value: "日 / 周 / 月 / 年", label: "多维度数据分析" },
-  { value: "PDF / Word / 图片", label: "参考文档智能识别" },
+  { value: "PPT / Word / 互动课件", label: "三格式一键导出", color: "#4c7dff" },
+  { value: "日 / 周 / 月 / 年", label: "多维度数据分析", color: "#23c3b2" },
+  { value: "PDF / Word / 图片", label: "参考文档智能识别", color: "#8b5cf6" },
 ];
 
 const materialCards = [
@@ -177,8 +177,9 @@ onUnmounted(() => {
               v-for="item in lessonHighlights"
               :key="item.label"
               class="lesson-stat"
+              :style="{ '--card-accent': item.color }"
             >
-              <strong>{{ item.value }}</strong>
+              <strong :style="{ color: item.color }">{{ item.value }}</strong>
               <span>{{ item.label }}</span>
             </article>
           </div>
@@ -359,34 +360,18 @@ onUnmounted(() => {
 
 .lesson-stat {
   position: relative;
-  padding: 16px 16px 14px;
-  border: 1px solid rgba(10, 15, 26, 0.06);
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.95),
-      rgba(255, 255, 255, 0.6)
-    ),
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(249, 115, 22, 0.08),
-      transparent 42%
-    );
-  box-shadow:
-    0 8px 28px rgba(249, 115, 22, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.02);
-  backdrop-filter: blur(18px);
-  overflow: hidden;
+  padding: 14px 16px 12px;
+  border: 1px solid #eef2f6;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 .lesson-stat:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 12px 36px rgba(249, 115, 22, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .lesson-stat::after {
@@ -395,17 +380,17 @@ onUnmounted(() => {
   inset: auto 14px 0;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0.4;
+  background: var(--card-accent, #f97316);
+  opacity: 0.3;
 }
 
 .lesson-stat strong {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-family: var(--font-display);
-  font-size: 1.55rem;
-  line-height: 1;
-  color: #f97316;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  font-weight: 700;
 }
 
 .lesson-stat span {
