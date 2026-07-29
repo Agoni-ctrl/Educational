@@ -210,9 +210,10 @@ watch(activeId, scrollToBottom);
           to="/"
           class="icon-btn icon-btn--soft"
           title="返回首页"
+          aria-label="返回首页"
           @click="sidebarOpen = false"
         >
-          <svg viewBox="0 0 20 20" fill="none">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12 4l-6 6 6 6"
               stroke="currentColor"
@@ -222,7 +223,6 @@ watch(activeId, scrollToBottom);
             />
           </svg>
         </RouterLink>
-
         <button class="new-chat-btn" @click="handleNewChat">
           <svg viewBox="0 0 20 20" fill="none">
             <path
@@ -253,7 +253,10 @@ watch(activeId, scrollToBottom);
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="搜索对话..."
+          placeholder="搜索对话…"
+          aria-label="搜索对话历史"
+          autocomplete="off"
+          name="assistant-search"
           class="sidebar-search__input"
         />
       </div>
@@ -291,6 +294,7 @@ watch(activeId, scrollToBottom);
             <button
               class="history-pin"
               title="置顶/取消置顶"
+              aria-label="置顶/取消置顶"
               @click.stop="togglePin(session.id)"
             >
               <svg
@@ -301,6 +305,7 @@ watch(activeId, scrollToBottom);
                 :stroke="session.isPinned ? '#4d98f4' : 'currentColor'"
                 stroke-width="2"
                 stroke-linecap="round"
+                aria-hidden="true"
               >
                 <path
                   d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"
@@ -387,7 +392,11 @@ watch(activeId, scrollToBottom);
           :class="{ 'mode-btn--active': activeMode === m.id }"
           @click="switchMode(m.id)"
         >
-          <span class="mode-btn__icon" v-html="m.icon"></span>
+          <span
+            class="mode-btn__icon"
+            aria-hidden="true"
+            v-html="m.icon"
+          ></span>
           <span class="mode-btn__label">{{ m.label }}</span>
         </button>
       </div>
@@ -396,7 +405,51 @@ watch(activeId, scrollToBottom);
         <div v-if="!hasMessages && !isLoading" class="welcome">
           <div class="welcome__brand">
             <div class="welcome__logo">
-              <span class="welcome__logo-icon">AI</span>
+              <span class="welcome__logo-icon">
+                <svg
+                  viewBox="0 0 40 40"
+                  fill="none"
+                  aria-hidden="true"
+                  width="40"
+                  height="40"
+                >
+                  <rect
+                    width="40"
+                    height="40"
+                    rx="10"
+                    fill="url(#welcome-ai-g)"
+                  />
+                  <path
+                    d="M12 11c0-.55.45-1 1-1h6c.55 0 1 .45 1 1v16c0 .55-.45 1-1 1H13c-.55 0-1-.45-1-1V11z"
+                    fill="rgba(255,255,255,0.9)"
+                  />
+                  <path
+                    d="M20 11c0-.55.45-1 1-1h6c.55 0 1 .45 1 1v16c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1V11z"
+                    fill="rgba(255,255,255,0.55)"
+                  />
+                  <rect
+                    x="19"
+                    y="11"
+                    width="2"
+                    height="16"
+                    rx="0.5"
+                    fill="rgba(255,255,255,0.2)"
+                  />
+                  <circle cx="31" cy="11" r="3" fill="#FDE68A" />
+                  <defs>
+                    <linearGradient
+                      id="welcome-ai-g"
+                      x1="0"
+                      y1="0"
+                      x2="40"
+                      y2="40"
+                    >
+                      <stop stop-color="#2563EB" />
+                      <stop stop-color="#1D4ED8" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
             </div>
 
             <h1 class="welcome__title">智课 AI 助手</h1>
@@ -438,8 +491,45 @@ watch(activeId, scrollToBottom);
               <span
                 v-if="msg.role === 'assistant'"
                 class="avatar-icon ai-avatar"
-                >AI</span
               >
+                <svg
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  aria-hidden="true"
+                  class="ai-avatar-svg"
+                >
+                  <rect width="32" height="32" rx="8" fill="url(#chat-ai-g)" />
+                  <path
+                    d="M10 9c0-.55.45-1 1-1h4.5c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1H11c-.55 0-1-.45-1-1V9z"
+                    fill="rgba(255,255,255,0.88)"
+                  />
+                  <path
+                    d="M15.5 9c0-.55.45-1 1-1H21c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1h-4.5c-.55 0-1-.45-1-1V9z"
+                    fill="rgba(255,255,255,0.55)"
+                  />
+                  <rect
+                    x="14.5"
+                    y="9"
+                    width="3"
+                    height="12"
+                    rx="0.5"
+                    fill="rgba(255,255,255,0.2)"
+                  />
+                  <circle cx="24.5" cy="9" r="2.5" fill="#FDE68A" />
+                  <defs>
+                    <linearGradient
+                      id="chat-ai-g"
+                      x1="0"
+                      y1="0"
+                      x2="32"
+                      y2="32"
+                    >
+                      <stop stop-color="#2563EB" />
+                      <stop stop-color="#1D4ED8" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
               <!-- 用户头像 -->
               <img
                 v-else-if="userStore.getAvatar()"
@@ -448,7 +538,13 @@ watch(activeId, scrollToBottom);
                 alt="头像"
               />
               <!-- 默认用户头像 -->
-              <svg v-else viewBox="0 0 32 32" fill="none" class="avatar-icon">
+              <svg
+                v-else
+                viewBox="0 0 32 32"
+                fill="none"
+                class="avatar-icon"
+                aria-hidden="true"
+              >
                 <circle cx="16" cy="16" r="16" fill="#edf2f9" />
                 <circle cx="16" cy="12.5" r="4.5" fill="#6e8fb7" />
                 <path
@@ -468,6 +564,7 @@ watch(activeId, scrollToBottom);
               <button
                 class="msg-action"
                 title="复制"
+                aria-label="复制消息"
                 @click="copyMessage(msg.content)"
               >
                 <svg
@@ -478,6 +575,7 @@ watch(activeId, scrollToBottom);
                   stroke="currentColor"
                   stroke-width="2"
                   stroke-linecap="round"
+                  aria-hidden="true"
                 >
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path
@@ -488,6 +586,7 @@ watch(activeId, scrollToBottom);
               <button
                 class="msg-action"
                 title="重新生成"
+                aria-label="重新生成回答"
                 @click="regenerate(msg)"
                 v-if="index === activeSession.messages.length - 1"
               >
@@ -499,6 +598,7 @@ watch(activeId, scrollToBottom);
                   stroke="currentColor"
                   stroke-width="2"
                   stroke-linecap="round"
+                  aria-hidden="true"
                 >
                   <polyline points="23 4 23 10 17 10" />
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
@@ -508,6 +608,7 @@ watch(activeId, scrollToBottom);
               <button
                 class="msg-action"
                 title="有帮助"
+                aria-label="评价有帮助"
                 @click="rateMessage(msg, 'up')"
               >
                 <svg
@@ -518,6 +619,7 @@ watch(activeId, scrollToBottom);
                   stroke="currentColor"
                   stroke-width="2"
                   stroke-linecap="round"
+                  aria-hidden="true"
                 >
                   <path
                     d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
@@ -527,6 +629,7 @@ watch(activeId, scrollToBottom);
               <button
                 class="msg-action"
                 title="需改进"
+                aria-label="评价需改进"
                 @click="rateMessage(msg, 'down')"
               >
                 <svg
@@ -537,6 +640,7 @@ watch(activeId, scrollToBottom);
                   stroke="currentColor"
                   stroke-width="2"
                   stroke-linecap="round"
+                  aria-hidden="true"
                 >
                   <path
                     d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
@@ -548,7 +652,50 @@ watch(activeId, scrollToBottom);
 
           <div v-if="isLoading" class="message message--assistant">
             <div class="message__avatar">
-              <span class="avatar-icon ai-avatar">AI</span>
+              <span class="avatar-icon ai-avatar">
+                <svg
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  aria-hidden="true"
+                  class="ai-avatar-svg"
+                >
+                  <rect
+                    width="32"
+                    height="32"
+                    rx="8"
+                    fill="url(#loading-ai-g)"
+                  />
+                  <path
+                    d="M10 9c0-.55.45-1 1-1h4.5c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1H11c-.55 0-1-.45-1-1V9z"
+                    fill="rgba(255,255,255,0.88)"
+                  />
+                  <path
+                    d="M15.5 9c0-.55.45-1 1-1H21c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1h-4.5c-.55 0-1-.45-1-1V9z"
+                    fill="rgba(255,255,255,0.55)"
+                  />
+                  <rect
+                    x="14.5"
+                    y="9"
+                    width="3"
+                    height="12"
+                    rx="0.5"
+                    fill="rgba(255,255,255,0.2)"
+                  />
+                  <circle cx="24.5" cy="9" r="2.5" fill="#FDE68A" />
+                  <defs>
+                    <linearGradient
+                      id="loading-ai-g"
+                      x1="0"
+                      y1="0"
+                      x2="32"
+                      y2="32"
+                    >
+                      <stop stop-color="#2563EB" />
+                      <stop stop-color="#1D4ED8" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
             </div>
             <div class="message__bubble message__bubble--typing">
               <span /><span /><span />
@@ -561,7 +708,10 @@ watch(activeId, scrollToBottom);
             <input
               v-model="inputText"
               type="text"
-              placeholder="输入问题..."
+              placeholder="输入问题…"
+              aria-label="输入您的问题"
+              autocomplete="off"
+              name="assistant-query"
               :disabled="isLoading"
               @keydown="onKeydown"
             />
@@ -594,7 +744,23 @@ watch(activeId, scrollToBottom);
 </template>
 
 <style scoped>
+/* ═══════════════════════════════════════════════
+   Design Tokens & Page Shell
+   ═══════════════════════════════════════════════ */
 .assistant-page {
+  --accent-blue: #2563eb;
+  --accent-blue-dark: #1d4ed8;
+  --coral: #f43f5e;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-muted: #6b7280;
+  --ink-faint: #9ca3af;
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
   display: flex;
   min-height: 100vh;
   background: #f7f5f2;
@@ -608,23 +774,26 @@ watch(activeId, scrollToBottom);
     sans-serif;
 }
 
+/* ═══════════════════════════════════════════════
+   Sidebar
+   ═══════════════════════════════════════════════ */
 .assistant-sidebar {
   width: 300px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  padding: 22px 18px;
+  padding: 20px 16px;
   background: #ffffff;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .assistant-sidebar__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .icon-btn {
@@ -633,21 +802,20 @@ watch(activeId, scrollToBottom);
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  color: #9a9a9a;
+  border-radius: var(--radius-sm);
+  border: none;
+  color: var(--ink-faint);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .icon-btn--soft {
-  background: #f1f1f2;
-  border-color: transparent;
+  background: #f3f4f6;
 }
 
 .icon-btn:hover {
-  background: #e5e5e6;
+  background: #e5e7eb;
 }
 
 .icon-btn svg {
@@ -658,22 +826,23 @@ watch(activeId, scrollToBottom);
 .new-chat-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  min-width: auto;
-  padding: 5px 14px;
-  border-radius: 10px;
+  padding: 6px 14px;
   border: none;
-  background: #2b6cb0;
+  border-radius: var(--radius-sm);
+  background: var(--accent-blue);
   color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .new-chat-btn:hover {
-  background: #1e4f82;
+  background: var(--accent-blue-dark);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25);
 }
 
 .new-chat-btn svg {
@@ -683,24 +852,23 @@ watch(activeId, scrollToBottom);
 
 .assistant-sidebar__history {
   flex: 1;
-  padding: 18px 0;
+  padding: 16px 0;
   overflow-y: auto;
 }
 
 .history-group + .history-group {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .history-label {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 8px;
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: #9a9a9a;
-  padding: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
 }
 
 .history-label::before,
@@ -708,43 +876,38 @@ watch(activeId, scrollToBottom);
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.history-label::before {
-  margin-right: 0;
+  background: var(--border-subtle);
 }
 
 .history-row {
   position: relative;
-  display: block;
-  align-items: center;
-  padding: 3px;
-  border-radius: 10px;
+  padding: 2px;
+  border-radius: var(--radius);
   transition: background 0.2s ease;
 }
 
 .history-row + .history-row {
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .history-row:hover,
 .history-row--active {
-  background: #f1f1f2;
+  background: #f3f4f6;
 }
 
 .history-item {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   width: 100%;
   min-width: 0;
-  padding: 9px 70px 9px 10px;
+  padding: 8px 68px 8px 10px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  color: #4a4a4a;
+  color: var(--ink-soft);
+  font-family: inherit;
 }
 
 .history-item__icon {
@@ -754,9 +917,9 @@ watch(activeId, scrollToBottom);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: #f1f1f2;
-  color: #9a9a9a;
+  border-radius: var(--radius-sm);
+  background: #f3f4f6;
+  color: var(--ink-faint);
 }
 
 .history-item__icon svg {
@@ -778,35 +941,34 @@ watch(activeId, scrollToBottom);
 }
 
 .history-item__content strong {
-  font-size: 0.84rem;
-  font-weight: 650;
-  color: #1a1a1a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .history-item__content small {
   margin-top: 2px;
   font-size: 0.68rem;
-  color: #9a9a9a;
+  color: var(--ink-faint);
 }
 
 .history-row--active .history-item__content strong {
-  color: #2b6cb0;
+  color: var(--accent-blue);
 }
 
-.history-delete {
+.history-delete,
+.history-pin {
   position: absolute;
-  right: 8px;
   top: 50%;
   width: 28px;
   height: 28px;
-  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: #9a9a9a;
+  color: var(--ink-faint);
   cursor: pointer;
   opacity: 0;
   transform: translate(4px, -50%);
@@ -817,26 +979,41 @@ watch(activeId, scrollToBottom);
     background 0.2s ease;
 }
 
+.history-pin {
+  right: 36px;
+}
+
+.history-delete {
+  right: 5px;
+}
+
 .history-row:hover .history-delete,
-.history-delete:focus-visible {
+.history-row:hover .history-pin,
+.history-delete:focus-visible,
+.history-pin:focus-visible {
   opacity: 1;
   transform: translate(0, -50%);
 }
 
-.history-delete:hover {
-  color: #d84747;
-  background: #f1f1f2;
-  transform: translate(0, -50%);
+.history-pin:hover {
+  color: var(--accent-blue);
+  background: #e5e7eb;
 }
 
-.history-delete svg {
+.history-delete:hover {
+  color: var(--coral);
+  background: #fef2f2;
+}
+
+.history-delete svg,
+.history-pin svg {
   width: 14px;
   height: 14px;
 }
 
 .assistant-sidebar__foot {
-  padding-top: 18px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .home-btn {
@@ -848,9 +1025,8 @@ watch(activeId, scrollToBottom);
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 14px;
-  font-size: 0.72rem;
-  color: #9a9a9a;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
 }
 
 .assistant-sidebar__hint svg {
@@ -858,12 +1034,50 @@ watch(activeId, scrollToBottom);
   height: 12px;
 }
 
+/* ---- Sidebar Search ---- */
+.sidebar-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 2px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #f3f4f6;
+  transition: background 0.2s ease;
+}
+
+.sidebar-search:focus-within {
+  background: #e5e7eb;
+}
+
+.sidebar-search__icon {
+  flex-shrink: 0;
+  color: var(--ink-faint);
+}
+
+.sidebar-search__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-family: inherit;
+}
+
+.sidebar-search__input::placeholder {
+  color: var(--ink-faint);
+}
+
+/* ═══════════════════════════════════════════════
+   Main Area
+   ═══════════════════════════════════════════════ */
 .assistant-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px 22px;
+  padding: 20px 24px;
 }
 
 .assistant-mobile-bar {
@@ -876,7 +1090,7 @@ watch(activeId, scrollToBottom);
 .assistant-mobile-bar__title {
   font-size: 1rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .assistant-shell {
@@ -885,143 +1099,172 @@ watch(activeId, scrollToBottom);
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
+/* ═══════════════════════════════════════════════
+   Mode Bar (inside shell top)
+   ═══════════════════════════════════════════════ */
+.mode-bar {
+  display: flex;
+  gap: 2px;
+  padding: 14px 24px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #ffffff;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px 9px;
+  border: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+  position: relative;
+  font-family: inherit;
+}
+
+.mode-btn:hover {
+  color: var(--accent-blue);
+  background: #f8fafc;
+}
+
+.mode-btn--active {
+  color: var(--accent-blue);
+  background: transparent;
+  font-weight: 600;
+}
+
+.mode-btn--active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent-blue);
+}
+
+.mode-btn__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.mode-btn__label {
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════
+   Welcome screen
+   ═══════════════════════════════════════════════ */
 .welcome {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 36px 24px 20px;
+  padding: 40px 32px 24px;
   text-align: center;
 }
 
 .welcome__brand {
-  max-width: 580px;
+  max-width: 520px;
 }
 
 .welcome__logo {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 24px;
-  border-radius: 10px;
+  margin: 0 auto 20px;
   display: grid;
   place-items: center;
 }
 
 .welcome__logo-icon {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: #2b6cb0;
-  color: #fff;
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  border-radius: 14px;
 }
 
 .welcome__title {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
   font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: #1a1a1a;
+  line-height: 1.25;
+  color: var(--ink);
 }
 
 .welcome__desc {
-  margin-top: 12px;
-  font-size: 0.88rem;
-  line-height: 1.65;
-  color: #9a9a9a;
-  max-width: 440px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-faint);
+  max-width: 400px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.welcome__notes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.welcome-note {
-  display: inline-flex;
-  align-items: center;
-  padding: 9px 14px;
-  border-radius: 10px;
-  background: #f1f1f2;
-  border: none;
-  color: #4a4a4a;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
+/* ---- Suggestions ---- */
 .suggestions-block {
-  max-width: 640px;
+  max-width: 560px;
   width: 100%;
-  margin-top: 40px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
+  margin-top: 36px;
 }
 
 .suggestions-block__label {
-  margin-bottom: 16px;
-  font-size: 0.82rem;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #9a9a9a;
-  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   text-align: center;
 }
 
 .suggestions-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 32px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .suggestion-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: auto;
   padding: 0;
-  border-radius: 0;
   border: none;
   background: transparent;
-  color: #4a4a4a;
+  color: var(--ink-soft);
   text-align: left;
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   line-height: 1.5;
+  font-family: inherit;
   transition: color 0.2s ease;
 }
 
 .suggestion-card::before {
-  content: "•";
-  color: #d0d0d0;
-  font-size: 1rem;
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d1d5db;
   flex-shrink: 0;
 }
 
 .suggestion-card:hover {
-  color: #2b6cb0;
-  background: transparent;
-  border-color: transparent;
-  transform: none;
-  box-shadow: none;
+  color: var(--accent-blue);
 }
 
 .suggestion-card__icon {
@@ -1029,29 +1272,21 @@ watch(activeId, scrollToBottom);
 }
 
 .suggestion-card__text {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   line-height: 1.5;
-  color: #4a4a4a;
+  color: inherit;
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* ═══════════════════════════════════════════════
+   Messages
+   ═══════════════════════════════════════════════ */
 .messages {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   padding: 24px 28px;
 }
 
@@ -1059,7 +1294,7 @@ watch(activeId, scrollToBottom);
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  animation: msg-in 0.28s var(--ease-out);
+  animation: msg-in 0.25s ease-out;
 }
 
 .message--assistant {
@@ -1074,12 +1309,12 @@ watch(activeId, scrollToBottom);
 }
 
 .message--user .message__avatar {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .message__avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1087,26 +1322,57 @@ watch(activeId, scrollToBottom);
   overflow: hidden;
 }
 
-.message__bubble {
-  font-size: 0.9375rem;
-  line-height: 1.75;
+/* Avatar styles */
+.avatar-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-/* AI 回复：浅蓝灰气泡 */
+.ai-avatar {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.ai-avatar-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.user-avatar-img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message__bubble {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
 .message--assistant .message__bubble {
-  padding: 12px 16px;
-  background: #eef2f6;
-  color: #4a4a4a;
-  border-radius: 10px;
+  padding: 12px 18px;
+  background: #f0f4ff;
+  color: var(--ink-soft);
+  border-radius: 4px 14px 14px 14px;
   flex: 1;
   min-width: 0;
 }
 
-/* 用户消息：气泡样式 */
 .message--user .message__bubble {
   padding: 12px 18px;
-  border-radius: 10px;
-  background: #2b6cb0;
+  border-radius: 14px 4px 14px 14px;
+  background: var(--accent-blue);
   color: #fff;
   font-weight: 500;
 }
@@ -1114,15 +1380,15 @@ watch(activeId, scrollToBottom);
 .message__bubble--typing {
   display: flex;
   gap: 5px;
-  padding: 18px 20px;
+  padding: 18px 22px;
 }
 
 .message__bubble--typing span {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: rgba(43, 108, 176, 0.4);
-  animation: typing 1.4s ease-in-out infinite;
+  background: #93a9e0;
+  animation: typing 1.3s ease-in-out infinite;
 }
 
 .message__bubble--typing span:nth-child(2) {
@@ -1137,7 +1403,7 @@ watch(activeId, scrollToBottom);
   60%,
   100% {
     transform: translateY(0);
-    opacity: 0.4;
+    opacity: 0.35;
   }
   30% {
     transform: translateY(-5px);
@@ -1156,9 +1422,64 @@ watch(activeId, scrollToBottom);
   }
 }
 
+/* ---- Message Actions ---- */
+.message__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  margin-left: 46px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.message--user .message__actions {
+  display: none;
+}
+
+.message:hover .message__actions {
+  opacity: 1;
+}
+
+.msg-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.msg-action:hover {
+  color: var(--accent-blue);
+  background: #f3f4f6;
+}
+
+.msg-action svg {
+  width: 13px;
+  height: 13px;
+}
+
+.msg-action-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border-subtle);
+  margin: 0 4px;
+}
+
+/* ═══════════════════════════════════════════════
+   Input Area
+   ═══════════════════════════════════════════════ */
 .input-area {
   padding: 16px 24px 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border-subtle);
   background: #ffffff;
 }
 
@@ -1166,15 +1487,20 @@ watch(activeId, scrollToBottom);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 4px 4px 14px;
-  border-radius: 10px;
-  border: none;
-  background: #f1f1f2;
-  transition: background 0.2s ease;
+  padding: 3px 3px 3px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input-wrap:focus-within {
-  background: #eaeaeb;
+  border-color: var(--accent-blue);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .input-wrap input {
@@ -1184,15 +1510,16 @@ watch(activeId, scrollToBottom);
   background: transparent;
   padding: 10px 0;
   font-size: 0.92rem;
-  color: #1a1a1a;
+  color: var(--ink);
+  font-family: inherit;
 }
 
 .input-wrap input::placeholder {
-  color: #9a9a9a;
+  color: var(--ink-faint);
 }
 
 .input-wrap input:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .send-btn {
@@ -1204,18 +1531,25 @@ watch(activeId, scrollToBottom);
   justify-content: center;
   border: none;
   border-radius: 10px;
-  background: #2b6cb0;
+  background: var(--accent-blue);
   color: #fff;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
 .send-btn:hover:not(:disabled) {
-  background: #1a4f7f;
+  background: var(--accent-blue-dark);
+  transform: scale(1.05);
+}
+
+.send-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .send-btn:disabled {
-  background: #d0d0d0;
+  background: #d1d5db;
   cursor: not-allowed;
 }
 
@@ -1230,8 +1564,8 @@ watch(activeId, scrollToBottom);
   justify-content: center;
   gap: 4px;
   margin-top: 10px;
-  font-size: 0.625rem;
-  color: #9a9a9a;
+  font-size: 0.62rem;
+  color: var(--ink-faint);
 }
 
 .input-hint svg {
@@ -1239,10 +1573,16 @@ watch(activeId, scrollToBottom);
   height: 12px;
 }
 
+/* ═══════════════════════════════════════════════
+   Sidebar Overlay (mobile)
+   ═══════════════════════════════════════════════ */
 .sidebar-overlay {
   display: none;
 }
 
+/* ═══════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════ */
 @media (max-width: 980px) {
   .suggestions-grid {
     grid-template-columns: 1fr;
@@ -1281,29 +1621,16 @@ watch(activeId, scrollToBottom);
   }
 
   .assistant-shell {
-    border-radius: 10px;
+    border-radius: 12px;
   }
 
   .welcome {
-    padding: 36px 20px 22px;
-  }
-
-  .welcome__logo,
-  .welcome__logo-icon {
-    width: 60px;
-    height: 60px;
+    padding: 32px 18px 20px;
   }
 
   .welcome__logo-icon {
-    font-size: 1.3rem;
-  }
-
-  .welcome__logo {
-    border-radius: 10px;
-  }
-
-  .welcome__logo-icon {
-    border-radius: 10px;
+    width: 50px;
+    height: 50px;
   }
 
   .messages {
@@ -1319,359 +1646,37 @@ watch(activeId, scrollToBottom);
   }
 }
 
-/* ---- Sidebar Search ---- */
-.sidebar-search {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 12px 0 4px;
-  padding: 5px 8px;
-  border-radius: 10px;
-  background: #f1f1f2;
-  border: none;
-  transition: background 0.2s ease;
-}
-
-.sidebar-search:focus-within {
-  background: #eaeaeb;
-}
-
-.sidebar-search__icon {
-  flex-shrink: 0;
-  color: #9a9a9a;
-}
-
-.sidebar-search__input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 0.82rem;
-  color: #4a4a4a;
-}
-
-.sidebar-search__input::placeholder {
-  color: #9a9a9a;
-}
-
-/* ---- Pin Button ---- */
-.history-pin {
-  position: absolute;
-  right: 38px;
-  top: 50%;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: #9a9a9a;
-  cursor: pointer;
-  opacity: 0;
-  transform: translate(4px, -50%);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease;
-}
-
-.history-row:hover .history-pin,
-.history-pin:focus-visible {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.history-pin:hover {
-  color: #2b6cb0;
-  background: #f1f1f2;
-  transform: translate(0, -50%);
-}
-
-.history-pin svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* ---- Mode Bar ---- */
-.mode-bar {
-  display: flex;
-  gap: 4px;
-  padding: 10px 24px 0;
-  background: transparent;
-}
-
-.mode-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
-  border: 1px solid transparent;
-  border-radius: 10px 10px 0 0;
-  background: transparent;
-  color: #9a9a9a;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
-  position: relative;
-  bottom: -1px;
-  letter-spacing: 0.01em;
-}
-
-.mode-btn:hover {
-  color: #2b6cb0;
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.mode-btn--active {
-  color: #2b6cb0;
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.06);
-  border-bottom-color: #ffffff;
-  font-weight: 700;
-}
-
-.mode-btn__icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.mode-btn__label {
-  white-space: nowrap;
-}
-
-/* ---- Message Actions ---- */
-.message__actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-top: 4px;
-  margin-left: 48px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.message--user .message__actions {
-  display: none;
-}
-
-.message:hover .message__actions {
-  opacity: 1;
-}
-
-.msg-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: #9a9a9a;
-  cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease;
-}
-
-.msg-action:hover {
-  color: #2b6cb0;
-  background: #eef2f6;
-  transform: none;
-}
-
-.msg-action-divider {
-  width: 1px;
-  height: 14px;
-  margin: 0 4px;
-  background: rgba(0, 0, 0, 0.08);
-}
-
-/* ---- Markdown Body ---- */
-.markdown-body {
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-  letter-spacing: 0.01em;
-}
-
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3,
-.markdown-body h4,
-.markdown-body h5,
-.markdown-body h6 {
-  margin: 0.8em 0 0.35em;
-  font-weight: 700;
-  line-height: 1.45;
-  color: #1a1a1a;
-}
-
-.markdown-body h1 {
-  font-size: 1.35em;
-  margin-top: 0.4em;
-}
-.markdown-body h2 {
-  font-size: 1.18em;
-}
-.markdown-body h3 {
-  font-size: 1.08em;
-}
-
-.markdown-body p {
-  margin: 0.4em 0;
-}
-
-.markdown-body p + p {
-  margin-top: 0.6em;
-}
-
-.markdown-body ul,
-.markdown-body ol {
-  margin: 0.4em 0;
-  padding-left: 1.5em;
-}
-
-.markdown-body li {
-  margin: 0.2em 0;
-  line-height: 1.75;
-}
-
-.markdown-body li::marker {
-  color: #2b6cb0;
-}
-
-.markdown-body blockquote {
-  margin: 0.5em 0;
-  padding: 6px 14px;
-  border-left: 3px solid #2b6cb0;
-  color: #4a4a4a;
-  background: #eef2f6;
-  border-radius: 0 6px 6px 0;
-  font-style: normal;
-}
-
-.markdown-body code {
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: #eef2f6;
-  color: #2b6cb0;
-  font-size: 0.88em;
-  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-}
-
-.markdown-body pre {
-  margin: 0.6em 0;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: #1a1a2e;
-  overflow-x: auto;
-  font-size: 0.88em;
-  line-height: 1.55;
-}
-
-.markdown-body pre code {
-  padding: 0;
-  background: transparent;
-  color: #e0e0e0;
-  font-size: inherit;
-}
-
-.markdown-body table {
-  width: 100%;
-  margin: 0.6em 0;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.92em;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.markdown-body th,
-.markdown-body td {
-  padding: 8px 12px;
-  text-align: left;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.markdown-body th {
-  background: #eef2f6;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.markdown-body td {
-  color: #4a4a4a;
-}
-
-.markdown-body a {
-  color: #2b6cb0;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-color: rgba(43, 108, 176, 0.25);
-  transition: text-decoration-color 0.2s;
-}
-.markdown-body a:hover {
-  text-decoration-color: #2b6cb0;
-}
-
-.markdown-body a.internal-link {
-  text-decoration: none;
-  font-weight: 600;
-  color: #2b6cb0;
-  cursor: pointer;
-}
-.markdown-body a.internal-link:hover {
-  text-decoration: underline;
-}
-
-.markdown-body hr {
-  margin: 0.8em 0;
-  border: none;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.markdown-body strong {
-  font-weight: 650;
-  color: #1a1a1a;
-}
-
-.markdown-body img {
-  max-width: 100%;
-  border-radius: 8px;
-}
-
-/* ---- Avatar Icon ---- */
-.avatar-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-}
-
-.ai-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #2b6cb0;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.user-avatar-img {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
+/* ═══════════════════════════════════════════════
+   Reduced Motion
+   ═══════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .message {
+    animation: none !important;
+  }
+  .message__bubble--typing span {
+    animation: none !important;
+  }
+  .assistant-sidebar {
+    transition: none !important;
+  }
+  .sidebar-overlay {
+    transition: none !important;
+  }
+  .msg-action,
+  .mode-btn,
+  .history-item,
+  .history-row,
+  .icon-btn,
+  .send-btn,
+  .input-wrap,
+  .new-chat-btn,
+  .sidebar-search,
+  .history-delete,
+  .history-pin {
+    transition: none !important;
+  }
+  .send-btn:hover:not(:disabled) {
+    transform: none;
+  }
 }
 </style>

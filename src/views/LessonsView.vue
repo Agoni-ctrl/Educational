@@ -2123,21 +2123,28 @@ watch(activeMenu, (newVal) => {
               v-if="activeMenu === 'home'"
               class="content-panel content-panel--home"
             >
-              <!-- 背景装饰 -->
-              <div class="home-backdrop">
-                <div class="home-orb home-orb--1"></div>
-                <div class="home-orb home-orb--2"></div>
-                <div class="home-orb home-orb--3"></div>
-              </div>
-
               <!-- Hero 区域 -->
               <div class="home-hero">
                 <div class="home-hero-badge">智能教学平台</div>
                 <h1 class="home-hero-title">
-                  <span class="float-cap">🎓</span> 课堂<span
-                    class="gradient-text"
-                    >教程</span
-                  >
+                  <span class="float-cap">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#4c7dff"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                      <path
+                        d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
+                      />
+                    </svg>
+                  </span>
+                  课堂<span class="gradient-text">教程</span>
                 </h1>
                 <p class="home-hero-subtitle">
                   集成课程资源、数据分析、互动问答与AI总结的一站式教学工具，<br />帮助教师高效备课，提升课堂质量。
@@ -2209,7 +2216,22 @@ watch(activeMenu, (newVal) => {
 
               <!-- 底部提示 -->
               <div class="home-footer-hint">
-                <span>💡 也可以使用左侧菜单栏在各模块间快速切换</span>
+                <span>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#6B7280"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="vertical-align: middle; margin-right: 4px"
+                  >
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                  也可以使用左侧菜单栏在各模块间快速切换
+                </span>
               </div>
             </div>
 
@@ -2218,7 +2240,25 @@ watch(activeMenu, (newVal) => {
               <!-- ===== 课程列表视图 ===== -->
               <template v-if="!currentCourseId">
                 <div class="panel-header">
-                  <h1>📚 课程资源</h1>
+                  <h1>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#4c7dff"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="vertical-align: middle; margin-right: 8px"
+                    >
+                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                      <path
+                        d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
+                      />
+                    </svg>
+                    课程资源
+                  </h1>
                   <p>浏览所有可用的课程资源，点击课程查看该课程下的教学视频</p>
                 </div>
 
@@ -2844,7 +2884,10 @@ watch(activeMenu, (newVal) => {
 
                   <!-- 课件制作建议 -->
                   <div class="tips-card">
-                    <h3>💡 课件制作建议</h3>
+                    <h3>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                      课件制作建议
+                    </h3>
                     <div class="design-section">
                       <div class="design-item strength">
                         <span class="design-label">✅ 优势</span>
@@ -3417,7 +3460,10 @@ watch(activeMenu, (newVal) => {
             <!-- 5. AI总结助手 -->
             <div v-if="activeMenu === 'ai-summary'" class="content-panel">
               <div class="panel-header">
-                <h1>🤖 AI总结助手</h1>
+                <h1>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M12 2l1.5 5L18 8l-5 1.5L12 14l-1.5-5L6 8l5-1.5L12 2z"/><path d="M19 17l.5 1.5L21 19l-1.5.5-.5 1.5-.5-1.5L17 19l1.5-.5.5-1.5z"/></svg>
+                  AI总结助手
+                </h1>
                 <p>智能分析学习情况，生成个性化总结</p>
               </div>
 
@@ -3569,32 +3615,23 @@ watch(activeMenu, (newVal) => {
   min-height: 100vh;
   background: #f8fafc;
   position: relative;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    sans-serif;
 }
 
 .lessons-bg {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(
-      1200px 600px at 80% -10%,
-      rgba(76, 125, 255, 0.08),
-      transparent
-    ),
-    radial-gradient(
-      900px 500px at -10% 30%,
-      rgba(99, 102, 241, 0.06),
-      transparent
-    ),
-    radial-gradient(
-      800px 400px at 70% 90%,
-      rgba(76, 125, 255, 0.04),
-      transparent
-    ),
-    radial-gradient(
-      600px 350px at 20% 95%,
-      rgba(139, 92, 246, 0.03),
-      transparent
-    );
+  background: radial-gradient(
+    800px 400px at 80% -10%,
+    rgba(76, 125, 255, 0.05),
+    transparent
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -3602,7 +3639,7 @@ watch(activeMenu, (newVal) => {
 .lessons-main {
   position: relative;
   z-index: 1;
-  max-width: 1600px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 100px 24px 24px;
 }
@@ -3631,7 +3668,7 @@ watch(activeMenu, (newVal) => {
 
 .menu-header {
   padding: 28px 24px;
-  background: linear-gradient(135deg, #4c7dff 0%, #6366f1 100%);
+  background: #1e293b;
   color: white;
   text-align: center;
 }
@@ -3665,8 +3702,13 @@ watch(activeMenu, (newVal) => {
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   text-align: left;
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid #4c7dff;
+  outline-offset: 2px;
 }
 
 .menu-item:hover {
@@ -3735,7 +3777,7 @@ watch(activeMenu, (newVal) => {
 
 .menu-item__desc {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #6b7280;
 }
 
 .menu-item__arrow {
@@ -3755,7 +3797,7 @@ watch(activeMenu, (newVal) => {
   display: flex;
   justify-content: space-around;
   padding: 16px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #f8fafc;
   border-radius: 12px;
 }
 
@@ -3817,8 +3859,8 @@ watch(activeMenu, (newVal) => {
 }
 
 .panel-header p {
-  font-size: 1rem;
-  color: #64748b;
+  font-size: 0.95rem;
+  color: #475569;
   margin: 0;
 }
 
@@ -3836,76 +3878,6 @@ watch(activeMenu, (newVal) => {
   padding: 0;
   position: relative;
   overflow: hidden;
-}
-
-/* 背景装饰层 */
-.home-backdrop {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.home-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.18;
-}
-
-.home-orb--1 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(76, 125, 255, 0.5), transparent);
-  top: -120px;
-  right: -60px;
-  animation: orbFloat1 8s ease-in-out infinite alternate;
-}
-
-.home-orb--2 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent);
-  bottom: 15%;
-  left: -80px;
-  animation: orbFloat2 10s ease-in-out infinite alternate;
-}
-
-.home-orb--3 {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.25), transparent);
-  top: 55%;
-  right: 10%;
-  animation: orbFloat3 9s ease-in-out infinite alternate;
-}
-
-@keyframes orbFloat1 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(30px, -20px) scale(1.05);
-  }
-}
-
-@keyframes orbFloat2 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(-25px, 15px) scale(1.08);
-  }
-}
-
-@keyframes orbFloat3 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(20px, -10px) scale(1.06);
-  }
 }
 
 /* Hero 区域 */
@@ -3971,8 +3943,8 @@ watch(activeMenu, (newVal) => {
 }
 
 .home-hero-subtitle {
-  font-size: 1.05rem;
-  color: #64748b;
+  font-size: 1rem;
+  color: #475569;
   line-height: 1.7;
   margin: 0 auto 36px;
   max-width: 560px;
@@ -4237,7 +4209,7 @@ watch(activeMenu, (newVal) => {
 
 .home-card-count {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 500;
 }
 
@@ -4321,8 +4293,8 @@ watch(activeMenu, (newVal) => {
 
 .home-footer-hint span {
   font-size: 0.85rem;
-  color: #94a3b8;
-  background: rgba(148, 163, 184, 0.08);
+  color: #6b7280;
+  background: rgba(107, 114, 128, 0.08);
   padding: 8px 20px;
   border-radius: 20px;
 }
@@ -4467,13 +4439,19 @@ watch(activeMenu, (newVal) => {
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 52px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
   z-index: 2;
 }
 
 .course-card:hover .course-overlay {
   opacity: 1;
+}
+
+@media (hover: none) {
+  .course-overlay {
+    opacity: 0;
+  }
 }
 
 .detail-hint {
@@ -4534,7 +4512,7 @@ watch(activeMenu, (newVal) => {
 
 .course-desc {
   font-size: 0.85rem;
-  color: #64748b;
+  color: #6b7280;
   margin: 0 0 12px 0;
   line-height: 1.5;
 }
@@ -4812,7 +4790,7 @@ watch(activeMenu, (newVal) => {
 
 .video-grade-label {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 400;
 }
 
@@ -4918,7 +4896,7 @@ watch(activeMenu, (newVal) => {
   margin-right: 6px;
 }
 .bili-page-course-info span {
-  color: #94a3b8;
+  color: #6b7280;
   font-size: 0.78rem;
 }
 
@@ -7341,6 +7319,25 @@ watch(activeMenu, (newVal) => {
   }
   .poll-bar-item__meta {
     width: 100%;
+  }
+}
+
+/* ==================== 无障碍支持 ==================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .home-card:hover,
+  .course-card:hover,
+  .video-card:hover,
+  .menu-item:hover {
+    transform: none !important;
   }
 }
 </style>

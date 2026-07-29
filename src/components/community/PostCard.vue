@@ -177,7 +177,7 @@ function commentAvatarColor(author) {
           <path
             d="M11 19s-7-4.5-7-9A4 4 0 0 1 11 7a4 4 0 0 1 7-3c2 1.5 3 4 0 9s-7 6-7 6z"
             :fill="liked ? '#ff4d6a' : 'none'"
-            :stroke="liked ? '#ff4d6a' : '#94a3b8'"
+            :stroke="liked ? '#ff4d6a' : '#6B7280'"
             stroke-width="1.5"
             stroke-linejoin="round"
           />
@@ -198,7 +198,7 @@ function commentAvatarColor(author) {
           <path
             d="M11 2l2.5 5.2L19 8l-4 3.8L16 19l-5-3.2L6 19l1-7.2L3 8l5.5-.8L11 2z"
             :fill="favorited ? '#fbbf24' : 'none'"
-            :stroke="favorited ? '#fbbf24' : '#94a3b8'"
+            :stroke="favorited ? '#fbbf24' : '#6B7280'"
             stroke-width="1.5"
             stroke-linejoin="round"
           />
@@ -214,7 +214,7 @@ function commentAvatarColor(author) {
         >
           <path
             d="M5 4h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
-            stroke="#94a3b8"
+            stroke="#6B7280"
             stroke-width="1.5"
             stroke-linejoin="round"
           />
@@ -232,15 +232,15 @@ function commentAvatarColor(author) {
           fill="none"
           class="action-icon action-icon--share"
         >
-          <circle cx="6" cy="11" r="2.5" stroke="#94a3b8" stroke-width="1.5" />
-          <circle cx="16" cy="5" r="2.5" stroke="#94a3b8" stroke-width="1.5" />
-          <circle cx="16" cy="17" r="2.5" stroke="#94a3b8" stroke-width="1.5" />
+          <circle cx="6" cy="11" r="2.5" stroke="#6B7280" stroke-width="1.5" />
+          <circle cx="16" cy="5" r="2.5" stroke="#6B7280" stroke-width="1.5" />
+          <circle cx="16" cy="17" r="2.5" stroke="#6B7280" stroke-width="1.5" />
           <line
             x1="8.2"
             y1="9.8"
             x2="13.8"
             y2="6.2"
-            stroke="#94a3b8"
+            stroke="#6B7280"
             stroke-width="1.5"
             stroke-linecap="round"
           />
@@ -249,7 +249,7 @@ function commentAvatarColor(author) {
             y1="12.2"
             x2="13.8"
             y2="15.8"
-            stroke="#94a3b8"
+            stroke="#6B7280"
             stroke-width="1.5"
             stroke-linecap="round"
           />
@@ -374,7 +374,7 @@ function commentAvatarColor(author) {
 
 .post-card__time {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 500;
 }
 
@@ -385,7 +385,7 @@ function commentAvatarColor(author) {
   font-size: 0.7rem;
   font-weight: 700;
   border: none;
-  color: #7C3AED;
+  color: #7c3aed;
   background: rgba(124, 58, 237, 0.08);
   flex-shrink: 0;
 }
@@ -538,7 +538,7 @@ function commentAvatarColor(author) {
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #94a3b8;
+  color: #6b7280;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
@@ -653,7 +653,7 @@ function commentAvatarColor(author) {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: #6b7280;
   cursor: pointer;
   transition: all 0.18s;
   font-size: 0.72rem;
