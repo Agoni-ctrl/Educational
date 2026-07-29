@@ -286,6 +286,8 @@ onUnmounted(() => {
 
 <style scoped>
 .home {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   position: relative;
   min-height: 100vh;
   overflow: hidden;
@@ -794,7 +796,12 @@ onUnmounted(() => {
   padding: 28px;
   text-align: center;
   background: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   backdrop-filter: blur(8px);
 }
 
@@ -921,7 +928,12 @@ onUnmounted(() => {
   padding: 10px 8px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1133,7 +1145,12 @@ onUnmounted(() => {
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1256,7 +1273,12 @@ onUnmounted(() => {
   border-radius: 8px;
   margin-bottom: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .task-item:hover {
@@ -1301,7 +1323,12 @@ onUnmounted(() => {
   font-size: 0.75rem;
   color: #475569;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   text-align: left;
 }
 
@@ -2022,7 +2049,12 @@ onUnmounted(() => {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .mini-dot:hover {
@@ -2576,6 +2608,45 @@ onUnmounted(() => {
   }
   50% {
     box-shadow: 0 0 0 8px rgba(0, 119, 230, 0.07);
+  }
+}
+
+/* ── prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .hero__inner .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .showcase-info {
+    animation: none !important;
+  }
+  .stack-card {
+    transition: none !important;
+  }
+  .mini-dot__progress {
+    transition: none !important;
+  }
+  .chat-bubble {
+    animation: none !important;
+  }
+  .typing-indicator span {
+    animation: none !important;
+  }
+  .file-item--processing .file-spinner {
+    animation: none !important;
+    border-top-color: #94a3b8;
+  }
+  .float-wrap {
+    animation: none !important;
+  }
+  .float-card--back {
+    animation: none !important;
+  }
+  [class*="float"] {
+    animation: none !important;
+  }
+  [class*="pulse"] {
+    animation: none !important;
   }
 }
 

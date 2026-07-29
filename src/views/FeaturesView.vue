@@ -5069,24 +5069,24 @@ onUnmounted(() => {
               <div class="reflect-tips">
                 <span class="reflect-tips__label">快捷填入</span>
                 <div class="reflect-tips__tags">
-                  <span class="tip-tag" @click="appendTag('结构调整')"
-                    >结构调整</span
-                  >
-                  <span class="tip-tag" @click="appendTag('讲授风格')"
-                    >讲授风格</span
-                  >
-                  <span class="tip-tag" @click="appendTag('题目难度')"
-                    >题目难度</span
-                  >
-                  <span class="tip-tag" @click="appendTag('课堂互动')"
-                    >课堂互动</span
-                  >
-                  <span class="tip-tag" @click="appendTag('内容深度')"
-                    >内容深度</span
-                  >
-                  <span class="tip-tag" @click="appendTag('视觉设计')"
-                    >视觉设计</span
-                  >
+                  <button class="tip-tag" @click="appendTag('结构调整')">
+                    结构调整
+                  </button>
+                  <button class="tip-tag" @click="appendTag('讲授风格')">
+                    讲授风格
+                  </button>
+                  <button class="tip-tag" @click="appendTag('题目难度')">
+                    题目难度
+                  </button>
+                  <button class="tip-tag" @click="appendTag('课堂互动')">
+                    课堂互动
+                  </button>
+                  <button class="tip-tag" @click="appendTag('内容深度')">
+                    内容深度
+                  </button>
+                  <button class="tip-tag" @click="appendTag('视觉设计')">
+                    视觉设计
+                  </button>
                 </div>
               </div>
 
@@ -5304,6 +5304,8 @@ onUnmounted(() => {
 }
 
 .features-page {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   --font-display: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --ink: #1a1a1a;
@@ -5420,7 +5422,9 @@ onUnmounted(() => {
   background: #fafafa;
   color: var(--ink);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .icon-btn:hover {
@@ -5464,7 +5468,12 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--ink-soft);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
@@ -5509,7 +5518,12 @@ onUnmounted(() => {
   text-align: left;
   cursor: pointer;
   border-left: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .nav-item:hover {
@@ -5534,7 +5548,12 @@ onUnmounted(() => {
   color: var(--ink-muted);
   border: 0;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .nav-item:hover .nav-item__icon {
@@ -5869,7 +5888,9 @@ onUnmounted(() => {
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
   border: 1px solid transparent;
 }
 
@@ -5919,7 +5940,10 @@ onUnmounted(() => {
   border: 1px solid var(--border);
   background: #fff;
   box-shadow: var(--shadow);
-  transition: all 0.25s var(--ease-out);
+  transition:
+    transform 0.25s var(--ease-out),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
   cursor: default;
 }
 
@@ -6254,8 +6278,8 @@ onUnmounted(() => {
     box-shadow 0.25s;
   box-sizing: border-box;
 }
-.reflect-select:focus,
-.reflect-input:focus {
+.reflect-select:focus-visible,
+.reflect-input:focus-visible {
   outline: none;
   border-color: var(--accent-iterate);
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.08);
@@ -6282,7 +6306,7 @@ onUnmounted(() => {
     box-shadow 0.25s;
   box-sizing: border-box;
 }
-.reflect-textarea:focus {
+.reflect-textarea:focus-visible {
   outline: none;
   border-color: var(--accent-iterate);
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.08);
@@ -6309,7 +6333,12 @@ onUnmounted(() => {
   color: var(--accent-iterate);
   background: rgba(147, 51, 234, 0.04);
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
   width: fit-content;
 }
 .reflect-upload__btn:hover {
@@ -6382,7 +6411,14 @@ onUnmounted(() => {
   background: rgba(147, 51, 234, 0.07);
   border: 1px solid rgba(147, 51, 234, 0.12);
   cursor: pointer;
-  transition: all 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+  font-family: inherit;
+  line-height: inherit;
 }
 .reflect-tips__tags .tip-tag:hover {
   background: rgba(147, 51, 234, 0.14);
@@ -6728,7 +6764,12 @@ onUnmounted(() => {
   margin-bottom: 6px;
   opacity: 0;
   transform: translateY(4px);
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .bar-value-label.show {
@@ -6903,7 +6944,12 @@ onUnmounted(() => {
 /* 提示框过渡动画 */
 .tooltip-fade-enter-active,
 .tooltip-fade-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tooltip-fade-enter-from,
@@ -6946,7 +6992,12 @@ onUnmounted(() => {
 }
 
 .data-point .point-circle {
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .data-point:hover .point-circle {
@@ -6976,7 +7027,12 @@ onUnmounted(() => {
   cursor: pointer;
   padding: 6px 4px;
   border-radius: 10px;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .line-chart__label:hover {
@@ -7148,7 +7204,12 @@ onUnmounted(() => {
   border-radius: 12px;
   background: rgba(113, 129, 151, 0.1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-close:hover {
@@ -7178,7 +7239,12 @@ onUnmounted(() => {
   background: #fff;
   border-radius: 14px;
   border: 1px solid #eef2f6;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .day-metric-card:hover {
@@ -7382,7 +7448,12 @@ onUnmounted(() => {
   font-size: 0.9rem;
   color: #334155;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .feature-list li:hover {
@@ -7440,7 +7511,12 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
   border: 1px solid rgba(43, 108, 176, 0.06);
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .day-item:hover {
@@ -7537,7 +7613,12 @@ onUnmounted(() => {
 /* 过渡动画 */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .slide-fade-enter-from,
@@ -7818,7 +7899,12 @@ onUnmounted(() => {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   overflow: hidden;
-  transition: all 0.25s var(--ease-out);
+  transition:
+    background 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    box-shadow 0.25s var(--ease-out),
+    transform 0.25s var(--ease-out);
   cursor: pointer;
 }
 
@@ -7847,7 +7933,12 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: 16px;
   flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -7969,7 +8060,12 @@ onUnmounted(() => {
   border: none;
   color: var(--accent-deep);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-expand:hover {
@@ -8051,7 +8147,12 @@ onUnmounted(() => {
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .action-btn:hover {
@@ -8112,7 +8213,12 @@ onUnmounted(() => {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-delete-text:hover {
@@ -8163,7 +8269,12 @@ onUnmounted(() => {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .record-empty .btn-primary:hover {
@@ -8293,10 +8404,10 @@ onUnmounted(() => {
   color: #9a9a9a;
 }
 
-.form-card input:focus,
-.form-card select:focus,
-.history-toolbar input:focus,
-.feedback-card textarea:focus {
+.form-card input:focus-visible,
+.form-card select:focus-visible,
+.history-toolbar input:focus-visible,
+.feedback-card textarea:focus-visible {
   border-color: var(--accent);
   box-shadow:
     0 0 0 4px rgba(43, 108, 176, 0.08),
@@ -8377,7 +8488,12 @@ onUnmounted(() => {
   padding: 24px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   background: #fafafa;
   margin-bottom: 16px;
 }
@@ -8446,7 +8562,12 @@ onUnmounted(() => {
   color: #64748b;
   font-size: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .remove-file:hover {
@@ -8463,10 +8584,15 @@ onUnmounted(() => {
   font-size: 0.9rem;
   resize: vertical;
   min-height: 60px;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
-.form-card textarea:focus {
+.form-card textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.08);
@@ -8481,7 +8607,12 @@ onUnmounted(() => {
   font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .chip-row__chip:hover {
   background: #e8eaed;
@@ -8871,7 +9002,12 @@ onUnmounted(() => {
   background: white;
   outline: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -8879,7 +9015,7 @@ onUnmounted(() => {
   padding-right: 30px;
 }
 
-.archive-filter-select:focus {
+.archive-filter-select:focus-visible {
   border-color: var(--accent-history);
   box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.08);
 }
@@ -8916,14 +9052,19 @@ onUnmounted(() => {
   color: #1e293b;
   background: white;
   outline: none;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .archive-search-input::placeholder {
   color: #9ca3af;
 }
 
-.archive-search-input:focus {
+.archive-search-input:focus-visible {
   border-color: var(--accent-history);
   box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.08);
 }
@@ -8935,7 +9076,12 @@ onUnmounted(() => {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   white-space: nowrap;
 }
 
@@ -9181,7 +9327,9 @@ onUnmounted(() => {
   background: transparent;
   color: #94a3b8;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .archive-action-btn:hover {
   background: rgba(43, 108, 176, 0.08);
@@ -9235,7 +9383,11 @@ onUnmounted(() => {
   font-weight: 500;
   color: #475569;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   min-width: 34px;
   justify-content: center;
 }
@@ -9375,10 +9527,15 @@ onUnmounted(() => {
   font-size: 0.88rem;
   color: var(--ink);
   min-width: 140px;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
-.filter-input:focus,
-.filter-select:focus {
+.filter-input:focus-visible,
+.filter-select:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
@@ -9398,7 +9555,12 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--ink-soft);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .btn-reset:hover {
   background: rgba(43, 108, 176, 0.08);
@@ -9425,7 +9587,12 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: 16px;
   flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .feedback-card__type-icon :deep(svg) {
@@ -9553,7 +9720,12 @@ onUnmounted(() => {
   font-size: 0.8rem;
   color: var(--ink-soft);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .tip-tag:hover {
   background: rgba(43, 108, 176, 0.1);
@@ -9573,9 +9745,14 @@ onUnmounted(() => {
   line-height: 1.7;
   color: var(--ink);
   resize: vertical;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
-.feedback-textarea:focus {
+.feedback-textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(43, 108, 176, 0.08);
@@ -9594,7 +9771,12 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--ink-soft);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .btn-secondary:hover {
   background: rgba(43, 108, 176, 0.08);
@@ -9787,7 +9969,12 @@ onUnmounted(() => {
   border: 2px solid transparent;
   border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(8px);
 }
 
@@ -9875,7 +10062,12 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.7);
   border-radius: 12px;
   border: 2px solid #e2e8f0;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 .qa-timer--running {
   border-color: #10b981;
@@ -9955,7 +10147,12 @@ onUnmounted(() => {
   border-radius: 12px;
   border: 2px solid #e2e8f0;
   background: rgba(255, 255, 255, 0.6);
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
   cursor: pointer;
 }
 .qa-option:hover:not(.qa-option--correct):not(.qa-option--wrong) {
@@ -10033,7 +10230,12 @@ onUnmounted(() => {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 .qa-action-btn:disabled {
   opacity: 0.4;
@@ -10098,7 +10300,12 @@ onUnmounted(() => {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid #e2e8f0;
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 .qa-leaderboard-item--top {
   background: linear-gradient(
@@ -10250,7 +10457,12 @@ onUnmounted(() => {
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 .poll-action-btn:hover {
   border-color: #667eea;
@@ -10274,7 +10486,12 @@ onUnmounted(() => {
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 .pick-mode-btn--active {
   border-color: #667eea;
@@ -10347,7 +10564,12 @@ onUnmounted(() => {
   color: #fff;
   background: linear-gradient(135deg, #f59e0b, #d97706);
   box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   display: flex;
   justify-content: center;
   width: fit-content;
@@ -10381,7 +10603,12 @@ onUnmounted(() => {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .roster-item:hover {
   border-color: #667eea;
@@ -10458,7 +10685,12 @@ onUnmounted(() => {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(226, 232, 240, 0.6);
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 .group-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -10529,7 +10761,12 @@ onUnmounted(() => {
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10674,7 +10911,10 @@ onUnmounted(() => {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
 }
 .preview-btn--secondary {
   background: #f1f5f9;
@@ -10710,5 +10950,43 @@ onUnmounted(() => {
 }
 .modal-leave-to .preview-dialog {
   transform: scale(0.95);
+}
+/* ── prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+  .metric-card,
+  .record-card,
+  .day-metric-card,
+  .viz-card,
+  .stack-card,
+  .feature-list li,
+  .data-point .point-circle,
+  .bar-value-label {
+    transition: none !important;
+    animation: none !important;
+  }
+  .tooltip-fade-enter-active,
+  .tooltip-fade-leave-active,
+  .slide-fade-enter-active,
+  .slide-fade-leave-active {
+    transition: opacity 0.15s ease !important;
+  }
+  [class*="ring"] {
+    animation: none !important;
+  }
+  [class*="radar"] {
+    animation: none !important;
+  }
+  [class*="pulse"] {
+    animation: none !important;
+  }
+  [class*="spin"] {
+    animation: none !important;
+  }
+  [class*="float"] {
+    animation: none !important;
+  }
 }
 </style>
