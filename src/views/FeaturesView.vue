@@ -403,6 +403,7 @@ const contentTypeOptions = [
   { value: "ppt", label: "课件" },
   { value: "doc", label: "教案" },
   { value: "interactive", label: "教学题" },
+  { value: "exam", label: "试卷" },
 ];
 
 const pptForm = ref({
@@ -428,10 +429,53 @@ const docForm = ref({
 const questionForm = ref({
   subject: "",
   topic: "",
-  type: "分层训练",
-  difficulty: "中等",
   stage: "高中",
+  difficulty: "综合提升",
+  count: 8,
+  scenario: "随堂检测",
 });
+
+const commonSubjects = [
+  "语文",
+  "数学",
+  "英语",
+  "物理",
+  "化学",
+  "生物",
+  "历史",
+  "地理",
+  "政治",
+];
+
+const examForm = ref({
+  subject: "",
+  topic: "",
+  grade: "高中",
+  difficulty: "中等",
+  totalScore: 100,
+  choiceCount: 10,
+  fillCount: 6,
+  essayCount: 4,
+  generateAB: false,
+});
+
+const examPreviewStructure = {
+  基础: [
+    { type: "选择题", count: 12, score: 3, desc: "基础概念辨析" },
+    { type: "填空题", count: 6, score: 4, desc: "核心公式与术语" },
+    { type: "解答题", count: 3, score: 10, desc: "简单应用与计算" },
+  ],
+  中等: [
+    { type: "选择题", count: 10, score: 3, desc: "概念应用与情境判断" },
+    { type: "填空题", count: 6, score: 4, desc: "综合填空与推理" },
+    { type: "解答题", count: 4, score: 10, desc: "多步综合应用" },
+  ],
+  提高: [
+    { type: "选择题", count: 8, score: 3, desc: "高阶思维与综合辨析" },
+    { type: "填空题", count: 5, score: 4, desc: "复杂推导与计算" },
+    { type: "解答题", count: 5, score: 10, desc: "探究创新与拓展" },
+  ],
+};
 
 const navGroups = [
   {
@@ -454,6 +498,12 @@ const navGroups = [
         label: "课堂练习",
         icon: "interactive",
         desc: "按难度分层生成练习题与检测卷",
+      },
+      {
+        id: "exam",
+        label: "试卷生成",
+        icon: "exam",
+        desc: "混合题型组卷，支持A/B卷与答题卡",
       },
     ],
   },
@@ -498,6 +548,7 @@ const panelTitles = {
   ppt: "课件制作",
   doc: "教案编写",
   interactive: "课堂练习",
+  exam: "试卷生成",
   classroom: "课堂互动",
   feedback: "学情反馈",
   history: "教学档案",
@@ -509,6 +560,7 @@ const panelSubtitles = {
   ppt: "输入教学意图，AI 自动生成可下载的课件",
   doc: "描述教学目标，AI 辅助编写完整教案",
   interactive: "根据知识点智能出题，支持分层练习",
+  exam: "选择题+填空题+解答题混合组卷，一键生成A/B卷",
   classroom: "投屏互动、实时反馈，让课堂「活」起来",
   feedback: "学情数据可视化，精准定位薄弱环节",
   history: "查看历史生成记录，支持复用与迭代",
@@ -520,6 +572,7 @@ const panelChips = {
   ppt: "知启灵枢 · 智能课件生成",
   doc: "知启灵枢 · AI 教案编写",
   interactive: "知启灵枢 · 智能出题",
+  exam: "知启灵枢 · 智能组卷",
   classroom: "知启灵枢 · 课堂互动",
   feedback: "知启灵枢 · 学情分析",
   history: "知启灵枢 · 教学档案",
@@ -533,6 +586,11 @@ const featureIcons = {
     "M4.5 5.5h11v8h-11z",
     "M7.5 8.5h5M7.5 11.5h3",
     "M13.5 13.5l2 2",
+  ],
+  exam: [
+    "M6 3.5h10a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1z",
+    "M8 7.5h6M8 10.5h4M8 13.5h5",
+    "M17 12.5l-3 3-1.5-1.5",
   ],
   intent: [
     "M10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z",
@@ -1384,20 +1442,25 @@ const docPreviewStructure = {
 };
 
 const questionPreviewStructure = {
-  分层训练: {
-    基础: ["概念判断", "单步练习", "情境选择", "即时反馈"],
-    中等: ["基础过渡", "方法应用", "变式训练", "课堂回收"],
-    提高: ["关键情境", "综合推理", "迁移挑战", "反思总结"],
+  随堂检测: {
+    基础巩固: ["概念判断", "基础单选", "知识填空", "即时反馈"],
+    综合提升: ["情境辨析", "综合分析", "变式训练", "限时检测"],
+    拓展挑战: ["高阶推理", "实验探究", "开放论述", "思维拓展"],
   },
-  课堂检测: {
-    基础: ["快速热身", "知识判断", "基础检测", "出门测"],
-    中等: ["导入检测", "过程诊断", "重点辨析", "结果回收"],
-    提高: ["先行诊断", "综合判断", "高阶追问", "结果复盘"],
+  课后练习: {
+    基础巩固: ["知识回顾", "单选巩固", "基础填空", "自检清单"],
+    综合提升: ["综合应用", "计算推导", "案例分析", "错题整理"],
+    拓展挑战: ["拓展阅读", "实践探究", "小论文", "项目任务"],
   },
-  探究任务: {
-    基础: ["观察任务", "条件提取", "现象记录", "讨论回顾"],
-    中等: ["问题提出", "变量分析", "探究作答", "结论表达"],
-    提高: ["真实情境", "方案设计", "多步推演", "成果展示"],
+  单元复习: {
+    基础巩固: ["知识梳理", "概念辨析", "基础检测", "出门测"],
+    综合提升: ["专题训练", "综合大题", "易错判断", "重点复盘"],
+    拓展挑战: ["跨章综合", "创新应用", "高阶挑战", "成果展示"],
+  },
+  分层作业: {
+    基础巩固: ["必做A组", "概念判断", "基础巩固", "自评反馈"],
+    综合提升: ["选做B组", "变式训练", "综合应用", "互助互评"],
+    拓展挑战: ["挑战C组", "探究实践", "拓展阅读", "反思总结"],
   },
 };
 
@@ -1423,29 +1486,60 @@ const docRecommendation = computed(() =>
     title,
     note:
       index === 0
-        ? `${docForm.value.topic || "等待填写课题"} · ${docForm.value.format}`
-        : index === 3
-          ? `同步参考“${docForm.value.style}”下的讲授节奏`
-          : `适配${docForm.value.subject || "当前学科"}的教案表达方式`,
+        ? `明确"${docForm.value.topic || "本课"}"的教学目标与${docForm.value.subject || "学科"}核心素养方向`
+        : index === 1
+          ? `聚焦${docForm.value.subject || "学科"}关键难点，预设差异化突破策略`
+          : index === 2
+            ? `参考${docForm.value.style || "常规"}风格，分析学生认知起点与潜在误区`
+            : index === 3
+              ? `按${docForm.value.format}结构准备教具、多媒体与板书框架`
+              : index === 4
+                ? `设计导入→探究→收束主线，每环节嵌入互动与即时反馈`
+                : `围绕"${docForm.value.topic || "本课"}"布置分层课后任务，巩固核心知识`,
   })),
 );
 
 const questionRecommendation = computed(() => {
-  const structure =
-    questionPreviewStructure[questionForm.value.type] ||
-    questionPreviewStructure["分层训练"];
-  const entries = structure[questionForm.value.difficulty] || structure["中等"];
+  const scenarioKey = questionForm.value.scenario || "随堂检测";
+  const diffKey = questionForm.value.difficulty || "综合提升";
+  const structure = questionPreviewStructure[scenarioKey];
+  const entries = structure?.[diffKey] || structure?.["综合提升"] || [];
 
   return entries.map((title, index) => ({
     index: index + 1,
     title,
     note:
       index === 0
-        ? `${questionForm.value.topic || "等待填写知识点"} · ${questionForm.value.stage}${questionForm.value.subject || "学科"}`
-        : index === 2
-          ? `已根据“${questionForm.value.type} / ${questionForm.value.difficulty}”自动刷新题组结构`
-          : `适配课堂即时使用、投屏展示与课后回收场景`,
+        ? `以"${questionForm.value.topic || "知识点"}"切入，${questionForm.value.stage}水平快速摸底`
+        : index === 1
+          ? `聚焦${diffKey}目标，设计典型例题与即时变式`
+          : index === 2
+            ? `结合${scenarioKey}场景，推送${questionForm.value.subject || "学科"}情境应用题`
+            : `汇总共${questionForm.value.count}题作答数据，生成随堂诊断与课后建议`,
   }));
+});
+
+const examRecommendation = computed(() => {
+  const blueprint =
+    examPreviewStructure[examForm.value.difficulty] ||
+    examPreviewStructure["中等"];
+  let total = 0;
+  const totalScore = examForm.value.totalScore || 100;
+  return blueprint.map((section, index) => {
+    const subtotal = section.count * section.score;
+    total += subtotal;
+    return {
+      index: index + 1,
+      ...section,
+      subtotal,
+      caption:
+        index === 0
+          ? `覆盖${examForm.value.topic || "知识点"}的基础概念，检查${examForm.value.grade}学生掌握程度`
+          : index === 1
+            ? `从"${section.desc}"切入，衔接选择题的薄弱环节`
+            : `设置${section.count}道综合题，考查${examForm.value.difficulty}难度的完整推理能力`,
+    };
+  });
 });
 
 const filteredHistory = computed(() => {
@@ -2314,8 +2408,9 @@ async function callApiGenerate(apiType, params) {
         showToast(`✅ 生成完成：${data.filename}`);
 
         // 将新记录写入历史列表（localStorage）
-        // API type 映射: quiz → interactive
-        const historyType = apiType === "quiz" ? "interactive" : apiType;
+        // API type 映射: quiz → interactive, exam → exam
+        const typeMap = { quiz: "interactive", exam: "exam" };
+        const historyType = typeMap[apiType] || apiType;
         addRecord({
           taskId,
           type: historyType,
@@ -2371,13 +2466,31 @@ function handleDocGenerate() {
 
 // 教学题生成
 function handleQuestionGenerate() {
-  if (!questionForm.value.topic.trim())
-    return showToast("请先填写知识点或题组主题");
+  if (!questionForm.value.topic.trim()) return showToast("请先填写知识点");
   callApiGenerate("quiz", {
     subject: questionForm.value.subject || "未分类",
     topic: questionForm.value.topic,
     grade: questionForm.value.stage || "高中",
-    difficulty: questionForm.value.difficulty || "适中",
+    difficulty: questionForm.value.difficulty || "综合提升",
+    scenario: questionForm.value.scenario || "随堂检测",
+    count: questionForm.value.count || 8,
+  });
+}
+
+function handleExamGenerate() {
+  if (!examForm.value.topic.trim())
+    return showToast("请先填写知识点或考试范围");
+  if (!examForm.value.subject.trim()) return showToast("请填写学科");
+  callApiGenerate("exam", {
+    subject: examForm.value.subject,
+    topic: examForm.value.topic,
+    grade: examForm.value.grade,
+    difficulty: examForm.value.difficulty,
+    totalScore: examForm.value.totalScore,
+    choiceCount: examForm.value.choiceCount,
+    fillCount: examForm.value.fillCount,
+    essayCount: examForm.value.essayCount,
+    generateAB: examForm.value.generateAB,
   });
 }
 
@@ -3787,22 +3900,13 @@ onUnmounted(() => {
                   <span class="section-tag">Teaching Question Flow</span>
                   <h2>智能教学题</h2>
                   <p class="section-annotation">
-                    根据知识点智能出题，支持分层训练与课堂检测
+                    选择场景和难度，一键生成教学练习题
                   </p>
                 </div>
               </div>
 
               <label>
-                学科
-                <input
-                  v-model="questionForm.subject"
-                  type="text"
-                  placeholder="例如：物理"
-                />
-              </label>
-
-              <label>
-                知识点 / 题组主题
+                知识点
                 <input
                   v-model="questionForm.topic"
                   type="text"
@@ -3810,45 +3914,120 @@ onUnmounted(() => {
                 />
               </label>
 
-              <label>
-                题组类型
-                <select v-model="questionForm.type">
-                  <option>分层训练</option>
-                  <option>课堂检测</option>
-                  <option>探究任务</option>
-                </select>
-              </label>
+              <div
+                class="form-row"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <label>
+                  学科
+                  <select v-model="questionForm.subject">
+                    <option value="" disabled>选择学科</option>
+                    <option v-for="s in commonSubjects" :key="s" :value="s">
+                      {{ s }}
+                    </option>
+                  </select>
+                </label>
+                <label>
+                  学段
+                  <select v-model="questionForm.stage">
+                    <option>小学</option>
+                    <option>初中</option>
+                    <option>高中</option>
+                  </select>
+                </label>
+              </div>
 
-              <label>
-                难度
-                <select v-model="questionForm.difficulty">
-                  <option>基础</option>
-                  <option>中等</option>
-                  <option>提高</option>
-                </select>
-              </label>
-
-              <label>
-                学段
-                <select v-model="questionForm.stage">
-                  <option>小学</option>
-                  <option>初中</option>
-                  <option>高中</option>
-                </select>
-              </label>
-
-              <div class="chip-row">
-                <button type="button" class="chip-row__chip">投屏讲解</button>
-                <button type="button" class="chip-row__chip">随堂检测</button>
-                <button type="button" class="chip-row__chip">分层练习</button>
+              <div class="form-card__group">
+                <label class="form-card__group-label">配置</label>
+                <div class="form-card__group-row">
+                  <span class="form-card__group-key">使用场景</span>
+                  <div class="form-card__select-wrap">
+                    <select v-model="questionForm.scenario">
+                      <option>随堂检测</option>
+                      <option>课后练习</option>
+                      <option>单元复习</option>
+                      <option>分层作业</option>
+                    </select>
+                    <svg
+                      class="form-card__select-chevron"
+                      viewBox="0 0 12 12"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3 5l3 3 3-3"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div class="form-card__group-row">
+                  <span class="form-card__group-key">难度风格</span>
+                  <div class="form-card__select-wrap">
+                    <select v-model="questionForm.difficulty">
+                      <option>基础巩固</option>
+                      <option>综合提升</option>
+                      <option>拓展挑战</option>
+                    </select>
+                    <svg
+                      class="form-card__select-chevron"
+                      viewBox="0 0 12 12"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3 5l3 3 3-3"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div class="form-card__group-row">
+                  <span class="form-card__group-key">题量</span>
+                  <div class="form-card__select-wrap">
+                    <select v-model.number="questionForm.count">
+                      <option :value="5">5 题（快速练习）</option>
+                      <option :value="8">8 题（标准练习）</option>
+                      <option :value="10">10 题（完整检测）</option>
+                      <option :value="15">15 题（充分训练）</option>
+                    </select>
+                    <svg
+                      class="form-card__select-chevron"
+                      viewBox="0 0 12 12"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M3 5l3 3 3-3"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <button
                 class="btn-primary"
                 :disabled="isGenerating"
                 @click="handleQuestionGenerate"
+                style="margin-top: 16px"
               >
-                {{ isGenerating ? "AI 正在生成题组..." : "开始生成教学题" }}
+                {{ isGenerating ? "AI 正在生成题组..." : "一键生成" }}
               </button>
             </article>
 
@@ -3863,11 +4042,14 @@ onUnmounted(() => {
               <div class="preview-card__body">
                 <div class="preview-card__head">
                   <div>
-                    <span class="preview-card__eyebrow">实时题组推荐</span>
+                    <span class="preview-card__eyebrow"
+                      >{{ questionForm.scenario }} ·
+                      {{ questionForm.difficulty }}</span
+                    >
                     <h3>{{ questionForm.topic || "等待填写知识点" }}</h3>
                     <p>
-                      {{ questionForm.type }} · {{ questionForm.difficulty }} ·
-                      {{ questionForm.stage }}
+                      {{ questionForm.subject || "待选学科" }} ·
+                      {{ questionForm.stage }} · 共 {{ questionForm.count }} 题
                     </p>
                   </div>
                   <div
@@ -3875,15 +4057,8 @@ onUnmounted(() => {
                     :class="{ 'ai-badge--active': isGenerating }"
                   >
                     <i />
-                    {{ isGenerating ? "Reasoning" : "Live Sync" }}
+                    {{ isGenerating ? "Generating" : "Live Sync" }}
                   </div>
-                </div>
-
-                <div class="preview-highlight">
-                  <strong>当前联动说明</strong>
-                  <p>
-                    修改题组类型、难度或学段后，右侧结构会立即刷新，不再出现“左边改了，右边不变”的问题。
-                  </p>
                 </div>
 
                 <div class="recommendation-list">
@@ -3896,6 +4071,252 @@ onUnmounted(() => {
                     <div>
                       <strong>{{ item.title }}</strong>
                       <p>{{ item.note }}</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- 试卷生成面板 -->
+        <section
+          v-else-if="activePanel === 'exam'"
+          class="panel"
+          data-panel="exam"
+        >
+          <div class="generator-layout">
+            <article class="form-card">
+              <div class="section-head">
+                <div>
+                  <span class="section-tag">Paper Generator</span>
+                  <h2>试卷生成</h2>
+                  <p class="section-annotation">
+                    选择题 + 填空题 + 解答题混合组卷，支持 A/B 卷与答题卡导出
+                  </p>
+                </div>
+              </div>
+
+              <label>
+                学科
+                <input
+                  v-model="examForm.subject"
+                  type="text"
+                  placeholder="例如：物理"
+                />
+              </label>
+
+              <label>
+                知识点 / 考试范围
+                <input
+                  v-model="examForm.topic"
+                  type="text"
+                  placeholder="例如：牛顿运动定律综合"
+                />
+              </label>
+
+              <div
+                class="form-row"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <label>
+                  学段
+                  <select v-model="examForm.grade">
+                    <option>小学</option>
+                    <option>初中</option>
+                    <option>高中</option>
+                  </select>
+                </label>
+
+                <label>
+                  难度
+                  <select v-model="examForm.difficulty">
+                    <option>基础</option>
+                    <option>中等</option>
+                    <option>提高</option>
+                  </select>
+                </label>
+              </div>
+
+              <div
+                class="form-row"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <label>
+                  总分
+                  <input
+                    v-model.number="examForm.totalScore"
+                    type="number"
+                    min="50"
+                    max="150"
+                  />
+                </label>
+
+                <label
+                  class="checkbox-label"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-top: 24px;
+                  "
+                >
+                  <input v-model="examForm.generateAB" type="checkbox" />
+                  <span style="font-weight: 500; color: #475569"
+                    >生成 A/B 卷（防作弊）</span
+                  >
+                </label>
+              </div>
+
+              <div
+                style="
+                  margin-top: 8px;
+                  padding: 12px 14px;
+                  background: #f8fafc;
+                  border-radius: 8px;
+                  border: 1px solid rgba(0, 0, 0, 0.04);
+                "
+              >
+                <p
+                  style="
+                    margin: 0 0 8px 0;
+                    font-size: 0.78rem;
+                    font-weight: 600;
+                    color: #475569;
+                  "
+                >
+                  题量分配
+                </p>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <label style="font-size: 0.8rem; color: #6b7280">
+                    选择题
+                    <input
+                      v-model.number="examForm.choiceCount"
+                      type="number"
+                      min="4"
+                      max="20"
+                      style="
+                        display: block;
+                        width: 100%;
+                        margin-top: 4px;
+                        padding: 6px 8px;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                  </label>
+                  <label style="font-size: 0.8rem; color: #6b7280">
+                    填空题
+                    <input
+                      v-model.number="examForm.fillCount"
+                      type="number"
+                      min="2"
+                      max="12"
+                      style="
+                        display: block;
+                        width: 100%;
+                        margin-top: 4px;
+                        padding: 6px 8px;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                  </label>
+                  <label style="font-size: 0.8rem; color: #6b7280">
+                    解答题
+                    <input
+                      v-model.number="examForm.essayCount"
+                      type="number"
+                      min="1"
+                      max="8"
+                      style="
+                        display: block;
+                        width: 100%;
+                        margin-top: 4px;
+                        padding: 6px 8px;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <button
+                class="btn-primary"
+                :disabled="isGenerating"
+                @click="handleExamGenerate"
+              >
+                {{ isGenerating ? "AI 正在生成试卷..." : "开始生成试卷" }}
+              </button>
+            </article>
+
+            <article class="preview-card preview-card--rich">
+              <div class="preview-card__chrome">
+                <span />
+                <span />
+                <span />
+                <em>试卷结构预览</em>
+              </div>
+
+              <div class="preview-card__body">
+                <div class="preview-card__head">
+                  <div>
+                    <span class="preview-card__eyebrow"
+                      >{{ examForm.grade || "学段" }} ·
+                      {{ examForm.difficulty || "难度" }}</span
+                    >
+                    <h3>{{ examForm.topic || "等待填写考试范围" }}</h3>
+                    <p>
+                      总分 {{ examForm.totalScore || 100 }} 分 ·
+                      {{ examForm.subject || "待填写学科" }}
+                      {{ examForm.generateAB ? " · 含 A/B 卷" : "" }}
+                    </p>
+                  </div>
+                  <div
+                    class="ai-badge"
+                    :class="{ 'ai-badge--active': isGenerating }"
+                  >
+                    <i />
+                    {{ isGenerating ? "Generating" : "Ready" }}
+                  </div>
+                </div>
+
+                <div class="recommendation-list">
+                  <article
+                    v-for="item in examRecommendation"
+                    :key="item.index"
+                    class="recommendation-item"
+                  >
+                    <span>{{ item.index }}</span>
+                    <div>
+                      <strong
+                        >{{ item.type }} × {{ item.count }}（{{
+                          item.score
+                        }}
+                        分/题）</strong
+                      >
+                      <p style="font-size: 0.78rem; color: #6b7280">
+                        {{ item.desc }}
+                      </p>
+                      <p
+                        style="
+                          font-size: 0.75rem;
+                          color: #6b7280;
+                          margin-top: 2px;
+                        "
+                      >
+                        {{ item.caption }}
+                      </p>
                     </div>
                   </article>
                 </div>
@@ -5318,6 +5739,7 @@ onUnmounted(() => {
   --accent-ppt: #2563eb;
   --accent-doc: #059669;
   --accent-interactive: #7c3aed;
+  --accent-exam: #dc2626;
   --accent-classroom: #d97706;
   --accent-feedback: #dc2626;
   --accent-history: #0891b2;
@@ -5713,6 +6135,7 @@ onUnmounted(() => {
 .panel[data-panel="ppt"] .section-head h2,
 .panel[data-panel="doc"] .section-head h2,
 .panel[data-panel="interactive"] .section-head h2,
+.panel[data-panel="exam"] .section-head h2,
 .panel[data-panel="history"] .archive-section-header h2,
 .panel[data-panel="feedback"] .placeholder-panel h2 {
   background: none;
@@ -5735,6 +6158,10 @@ onUnmounted(() => {
   background: rgba(124, 58, 237, 0.1);
   color: var(--accent-interactive);
 }
+.panel[data-panel="exam"] .section-tag {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--accent-exam);
+}
 
 .panel[data-panel="ppt"] .ai-badge--active {
   background: rgba(37, 99, 235, 0.08);
@@ -5750,6 +6177,11 @@ onUnmounted(() => {
   background: rgba(124, 58, 237, 0.08);
   border-color: rgba(124, 58, 237, 0.2);
   color: var(--accent-interactive);
+}
+.panel[data-panel="exam"] .ai-badge--active {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: var(--accent-exam);
 }
 
 .section-head small {
@@ -8371,6 +8803,88 @@ onUnmounted(() => {
   line-height: 1.72;
 }
 
+/* 配置分组卡片 */
+.form-card__group {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  background: #faf9f7;
+  overflow: hidden;
+}
+.form-card__group-label {
+  display: block;
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9a9a9a;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+.form-card__group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  min-height: 42px;
+}
+.form-card__group-row + .form-card__group-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+.form-card__group-key {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  margin-right: 12px;
+}
+.form-card__select-wrap {
+  position: relative;
+  min-width: 0;
+  flex: 0 1 220px;
+  display: flex;
+  align-items: center;
+}
+.form-card__select-wrap select {
+  width: 100%;
+  padding: 7px 30px 7px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.form-card__select-wrap select:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.form-card__select-wrap select:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.08);
+}
+.form-card__select-chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #9ca3af;
+}
+.form-card__select-chevron path {
+  stroke: #9ca3af;
+}
+
 .form-card label {
   display: flex;
   flex-direction: column;
@@ -8618,6 +9132,14 @@ onUnmounted(() => {
   background: #e8eaed;
   border-color: var(--border-strong);
   color: var(--ink);
+}
+.chip-row__chip--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.chip-row__chip--active:hover {
+  opacity: 0.9;
 }
 
 .btn-primary,
