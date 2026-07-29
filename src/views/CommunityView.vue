@@ -778,10 +778,10 @@ onMounted(() => {
 }
 
 .filter-btn--active {
-  color: var(--accent-deep);
-  background: #fff;
-  border-color: rgba(0, 119, 230, 0.25);
-  box-shadow: 0 10px 28px rgba(0, 87, 217, 0.08);
+  color: #7c3aed;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(124, 58, 237, 0.25);
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.08);
 }
 
 .btn {
@@ -974,17 +974,15 @@ onMounted(() => {
 }
 
 .search-card {
-  background:
-    linear-gradient(135deg, rgba(0, 194, 212, 0.08), rgba(0, 114, 255, 0.06)),
-    rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(0, 194, 212, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .card-kicker {
   margin-bottom: 10px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #0e8c96;
+  color: #7c3aed;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1008,8 +1006,8 @@ onMounted(() => {
 }
 
 .search-box input:focus {
-  border-color: #00c2d4;
-  box-shadow: 0 0 0 3px rgba(0, 194, 212, 0.1);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
   background: #fff;
 }
 
@@ -1053,7 +1051,7 @@ onMounted(() => {
   color: #f97316;
 }
 .hot-word--3 {
-  color: #0077e6;
+  color: #7c3aed;
 }
 .hot-word--4 {
   color: #64748b;
@@ -1078,13 +1076,13 @@ onMounted(() => {
   gap: 8px;
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--accent-deep, #005cb3);
+  color: #7c3aed;
 }
 
 .card-title svg {
   width: 18px;
   height: 18px;
-  color: var(--accent-deep);
+  color: #7c3aed;
 }
 
 .recent-list,
@@ -1113,7 +1111,7 @@ onMounted(() => {
 }
 
 .item-title:hover {
-  color: #0077e6;
+  color: #7c3aed;
 }
 
 .recent-item .item-title {
@@ -1273,16 +1271,16 @@ onMounted(() => {
 }
 
 .tag-cloud__btn:hover {
-  border-color: rgba(0, 119, 230, 0.24);
-  color: var(--accent-deep, #005cb3);
-  background: rgba(0, 119, 230, 0.04);
+  border-color: rgba(124, 58, 237, 0.24);
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.04);
 }
 
 .tag-cloud__btn--active {
-  background: linear-gradient(135deg, #4facfe 0%, #0072ff 100%);
+  background: #7c3aed;
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.25);
 }
 
 /* ===== 精选资源 ===== */
@@ -1308,7 +1306,7 @@ onMounted(() => {
 
 .resource-item:hover {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 119, 230, 0.16);
+  border-color: rgba(124, 58, 237, 0.16);
   transform: translateX(3px);
 }
 
@@ -1319,12 +1317,8 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 119, 230, 0.08),
-    rgba(0, 194, 212, 0.08)
-  );
-  color: var(--accent-deep, #005cb3);
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
 }
 
 .resource-item__icon svg {
@@ -1358,8 +1352,8 @@ onMounted(() => {
   font-size: 0.68rem;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(0, 119, 230, 0.08);
-  color: var(--accent-deep, #005cb3);
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
   font-weight: 600;
 }
 
@@ -1369,25 +1363,18 @@ onMounted(() => {
 }
 
 .resource-card {
-  background:
-    radial-gradient(circle at 72% 0%, rgba(0, 119, 230, 0.12), transparent 42%),
-    rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .recommend-card {
-  background:
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(245, 158, 11, 0.1),
-      transparent 40%
-    ),
-    rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .teacher-card {
-  background:
-    radial-gradient(circle at 0% 80%, rgba(0, 194, 212, 0.12), transparent 42%),
-    rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .teacher-list {
@@ -1418,7 +1405,7 @@ onMounted(() => {
 .teacher-item strong {
   display: block;
   font-size: 0.88rem;
-  color: var(--accent-deep, #005cb3);
+  color: #7c3aed;
 }
 
 .teacher-item p {
