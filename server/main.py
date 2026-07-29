@@ -126,6 +126,10 @@ async def _run_generation(task_id: str, params: dict):
         await asyncio.sleep(0.2)
 
         # 2. 渲染文件
+        content["subject"] = params.get("subject", "")
+        content["style"] = params.get("style", "")
+        content["grade"] = params.get("grade", "")
+        content["duration"] = params.get("duration", "45分钟")
         if params["type"] == "ppt":
             filepath, filename = generate_pptx(content)
         elif params["type"] == "doc":

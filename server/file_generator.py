@@ -1,37 +1,126 @@
 """
-文件生成器 — 将 AI 生成的结构化内容渲染为 PPTX / DOCX 文件
+文件生成器 — 将 AI 生成的结构化内容渲染为 PPTX / DOCX / HTML 文件
+支持多套模板配色，自动根据学科匹配主题风格。
 """
 
 import os
+import re
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.shapes import MSO_SHAPE
 from docx import Document
-from docx.shared import Pt as DocxPt, RGBColor as DocxRGB, Inches as DocxInches
+from docx.shared import Pt as DocxPt, RGBColor as DocxRGB, Inches as DocxInches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml.ns import qn
 
 from config import OUTPUT_DIR
 
 # ════════════════════════════════════════════════════════════════
-# 配色方案
+# 多模板配色方案
 # ════════════════════════════════════════════════════════════════
 
 THEMES = {
-    "default": {
-        "primary": RGBColor(0x1E, 0x40, 0xAF),     # 深蓝
-        "secondary": RGBColor(0x3B, 0x82, 0xF6),    # 亮蓝
-        "accent": RGBColor(0x0B, 0xC5, 0xEA),       # 青色
-        "bg": RGBColor(0xF8, 0xFA, 0xFC),           # 浅灰背景
-        "text": RGBColor(0x1E, 0x29, 0x3B),         # 深灰
+    "blue": {
+        "name": "深海蓝",
+        "primary": RGBColor(0x1A, 0x36, 0x5D),      # 藏蓝
+        "secondary": RGBColor(0x2B, 0x6C, 0xB0),     # 中蓝
+        "accent": RGBColor(0x0E, 0xA5, 0xE9),        # 天蓝
+        "accent_light": RGBColor(0xE0, 0xF2, 0xFE),   # 浅蓝底
+        "bg": RGBColor(0xF8, 0xFA, 0xFC),            # 浅灰
+        "text": RGBColor(0x1E, 0x29, 0x3B),          # 深灰
+        "text_light": RGBColor(0x94, 0xA3, 0xB8),    # 浅灰字
         "white": RGBColor(0xFF, 0xFF, 0xFF),
-        "light_bg": RGBColor(0xE8, 0xF0, 0xFE),    # 浅蓝底
+        "dark_bg": RGBColor(0x0F, 0x20, 0x3A),       # 深色背景
+        "card_bg": RGBColor(0xF1, 0xF5, 0xF9),
+        "divider": RGBColor(0xE2, 0xE8, 0xF0),
+    },
+    "green": {
+        "name": "青松绿",
+        "primary": RGBColor(0x14, 0x52, 0x2D),
+        "secondary": RGBColor(0x16, 0xA3, 0x4A),
+        "accent": RGBColor(0x34, 0xD3, 0x99),
+        "accent_light": RGBColor(0xD1, 0xFA, 0xE5),
+        "bg": RGBColor(0xF8, 0xFA, 0xFC),
+        "text": RGBColor(0x1E, 0x29, 0x3B),
+        "text_light": RGBColor(0x94, 0xA3, 0xB8),
+        "white": RGBColor(0xFF, 0xFF, 0xFF),
+        "dark_bg": RGBColor(0x0A, 0x2E, 0x1A),
+        "card_bg": RGBColor(0xF1, 0xF5, 0xF9),
+        "divider": RGBColor(0xE2, 0xE8, 0xF0),
+    },
+    "warm": {
+        "name": "暖阳橙",
+        "primary": RGBColor(0x7C, 0x2D, 0x12),
+        "secondary": RGBColor(0xC2, 0x41, 0x0C),
+        "accent": RGBColor(0xF5, 0x9E, 0x0B),
+        "accent_light": RGBColor(0xFE, 0xF3, 0xC7),
+        "bg": RGBColor(0xFC, 0xFB, 0xF8),
+        "text": RGBColor(0x1E, 0x29, 0x3B),
+        "text_light": RGBColor(0xA8, 0xA2, 0x9E),
+        "white": RGBColor(0xFF, 0xFF, 0xFF),
+        "dark_bg": RGBColor(0x45, 0x1A, 0x0A),
+        "card_bg": RGBColor(0xF5, 0xF0, 0xEB),
+        "divider": RGBColor(0xE7, 0xE0, 0xDA),
+    },
+    "violet": {
+        "name": "紫罗兰",
+        "primary": RGBColor(0x4C, 0x1D, 0x95),
+        "secondary": RGBColor(0x7C, 0x3A, 0xED),
+        "accent": RGBColor(0xA7, 0x8B, 0xFA),
+        "accent_light": RGBColor(0xED, 0xE9, 0xFE),
+        "bg": RGBColor(0xF8, 0xFA, 0xFC),
+        "text": RGBColor(0x1E, 0x29, 0x3B),
+        "text_light": RGBColor(0x94, 0xA3, 0xB8),
+        "white": RGBColor(0xFF, 0xFF, 0xFF),
+        "dark_bg": RGBColor(0x2E, 0x10, 0x65),
+        "card_bg": RGBColor(0xF5, 0xF3, 0xFF),
+        "divider": RGBColor(0xE2, 0xE8, 0xF0),
+    },
+    "teal": {
+        "name": "湖水青",
+        "primary": RGBColor(0x13, 0x49, 0x4A),
+        "secondary": RGBColor(0x0D, 0x94, 0x88),
+        "accent": RGBColor(0x5E, 0xEA, 0xD4),
+        "accent_light": RGBColor(0xCC, 0xFB, 0xF1),
+        "bg": RGBColor(0xF8, 0xFA, 0xFC),
+        "text": RGBColor(0x1E, 0x29, 0x3B),
+        "text_light": RGBColor(0x94, 0xA3, 0xB8),
+        "white": RGBColor(0xFF, 0xFF, 0xFF),
+        "dark_bg": RGBColor(0x0C, 0x2D, 0x2E),
+        "card_bg": RGBColor(0xF0, 0xFD, 0xFA),
+        "divider": RGBColor(0xE2, 0xE8, 0xF0),
     },
 }
 
+# 自动根据学科匹配主题
+SUBJECT_THEME_MAP = {
+    "物理": "blue", "化学": "blue", "数学": "blue", "科学": "blue",
+    "生物": "green", "地理": "teal", "自然": "green",
+    "语文": "warm", "历史": "warm", "政治": "warm", "道德": "warm", "社会": "warm",
+    "英语": "violet", "美术": "violet", "音乐": "violet", "艺术": "violet",
+}
+DEFAULT_THEME = "blue"
+
+
+def _pick_theme(subject: str = "", style: str = "") -> dict:
+    """根据学科自动选择配色主题"""
+    if not subject:
+        return THEMES[DEFAULT_THEME]
+    for keyword, theme_name in SUBJECT_THEME_MAP.items():
+        if keyword in subject:
+            return THEMES.get(theme_name, THEMES[DEFAULT_THEME])
+    return THEMES[DEFAULT_THEME]
+
+
+# ════════════════════════════════════════════════════════════════
+# PPTX 工具函数
+# ════════════════════════════════════════════════════════════════
 
 def _set_slide_bg(slide, color: RGBColor):
-    """设置幻灯片背景色"""
+    """设置幻灯片纯色背景"""
     background = slide.background
     fill = background.fill
     fill.solid()
@@ -39,7 +128,8 @@ def _set_slide_bg(slide, color: RGBColor):
 
 
 def _add_text_box(slide, left, top, width, height, text, font_size=18,
-                  bold=False, color=None, alignment=PP_ALIGN.LEFT):
+                  bold=False, color=None, alignment=PP_ALIGN.LEFT,
+                  font_name=None, line_spacing=None):
     """在幻灯片上添加文本框"""
     txBox = slide.shapes.add_textbox(
         Inches(left), Inches(top), Inches(width), Inches(height)
@@ -50,226 +140,757 @@ def _add_text_box(slide, left, top, width, height, text, font_size=18,
     p.text = text
     p.font.size = Pt(font_size)
     p.font.bold = bold
-    p.font.color.rgb = color or THEMES["default"]["text"]
+    p.font.color.rgb = color or THEMES[DEFAULT_THEME]["text"]
     p.alignment = alignment
+    if font_name:
+        p.font.name = font_name
+    if line_spacing:
+        p.line_spacing = Pt(line_spacing)
     return txBox
 
 
 def _add_bullet_list(slide, left, top, width, height, items,
-                     font_size=16, color=None):
-    """添加要点列表"""
+                     font_size=16, color=None, bullet_char="▸", line_spacing=1.4):
+    """添加带符号的要点列表"""
     txBox = slide.shapes.add_textbox(
         Inches(left), Inches(top), Inches(width), Inches(height)
     )
     tf = txBox.text_frame
     tf.word_wrap = True
 
+    bullet_color = color or THEMES[DEFAULT_THEME]["text"]
     for i, item in enumerate(items):
-        if i == 0:
-            p = tf.paragraphs[0]
-        else:
-            p = tf.add_paragraph()
-        p.text = f"▸  {item}"
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.text = f"{bullet_char}  {item}"
         p.font.size = Pt(font_size)
-        p.font.color.rgb = color or THEMES["default"]["text"]
-        p.space_after = Pt(6)
-        p.level = 0
-
+        p.font.color.rgb = bullet_color
+        p.space_after = Pt(font_size * 0.4)
+        if line_spacing:
+            p.line_spacing = Pt(font_size * line_spacing)
     return txBox
 
 
+def _add_accent_bar(slide, theme, top=0, height=0.08):
+    """在幻灯片顶部添加装饰条"""
+    bar = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE,
+        Inches(0), Inches(top), Inches(13.333), Inches(height)
+    )
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = theme["secondary"]
+    bar.line.fill.background()
+    return bar
+
+
+def _add_page_number(slide, page_num, total, theme):
+    """添加页码"""
+    _add_text_box(
+        slide, 11.5, 7.0, 1.5, 0.4,
+        f"{page_num} / {total}",
+        font_size=9, color=theme["text_light"],
+        alignment=PP_ALIGN.RIGHT
+    )
+
+
+def _add_decorative_shape(slide, left, top, width, height, color, shape_type=MSO_SHAPE.RECTANGLE):
+    """添加装饰形状"""
+    shape = slide.shapes.add_shape(
+        shape_type, Inches(left), Inches(top), Inches(width), Inches(height)
+    )
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = color
+    shape.line.fill.background()
+    return shape
+
+
 # ════════════════════════════════════════════════════════════════
-# PPTX 生成
+# PPTX 幻灯片布局
 # ════════════════════════════════════════════════════════════════
 
-def generate_pptx(content: dict) -> str:
-    """根据 AI 生成的内容创建 PPTX 文件"""
+def _make_title_slide(slide, slide_data, theme, page_num, total):
+    """封面页 - 全幅深色背景 + 装饰几何元素 + 居中大标题"""
+    title = slide_data.get("title", "")
+    content = slide_data.get("content", [])
+    subtitle = "\n".join(content) if isinstance(content, list) else str(content) if content else ""
+
+    # 深色背景
+    _set_slide_bg(slide, theme["dark_bg"])
+
+    # 装饰元素：右上角大圆
+    _add_decorative_shape(
+        slide, 9.5, -1.2, 5.5, 5.5,
+        RGBColor(
+            min(theme["secondary"][0] + 30, 255),
+            min(theme["secondary"][1] + 30, 255),
+            min(theme["secondary"][2] + 30, 255)
+        ),
+        MSO_SHAPE.OVAL
+    )
+    # 装饰元素：左下角小圆
+    _add_decorative_shape(
+        slide, -1.0, 5.5, 3.0, 3.0,
+        theme["secondary"],
+        MSO_SHAPE.OVAL
+    )
+
+    # 顶部细装饰线
+    _add_accent_bar(slide, theme, top=0, height=0.04)
+
+    # 主标题区域 - 大号居中
+    _add_text_box(
+        slide, 1.5, 1.8, 10.3, 1.8, title,
+        font_size=44, bold=True, color=theme["white"],
+        alignment=PP_ALIGN.CENTER
+    )
+
+    # 副标题
+    if subtitle:
+        _add_text_box(
+            slide, 1.5, 3.8, 10.3, 1.2, subtitle,
+            font_size=20, color=theme["accent"],
+            alignment=PP_ALIGN.CENTER
+        )
+
+    # 底部装饰线 + 学科标签
+    _add_text_box(
+        slide, 4.5, 5.5, 4.3, 0.3,
+        "━" * 26,
+        font_size=12, color=theme["accent"],
+        alignment=PP_ALIGN.CENTER
+    )
+
+    # 页码
+    _add_page_number(slide, page_num, total, theme)
+
+
+def _make_content_slide(slide, slide_data, theme, page_num, total):
+    """标准内容页 - 顶部色条 + 标题 + 要点列表 + 页码"""
+    slide_title = slide_data.get("title", "")
+    slide_content = slide_data.get("content", [])
+
+    # 浅色背景
+    _set_slide_bg(slide, theme["bg"])
+
+    # 顶部粗装饰条
+    _add_accent_bar(slide, theme, top=0, height=0.06)
+
+    # 左侧色块装饰
+    _add_decorative_shape(
+        slide, 0, 0.06, 0.12, 1.2, theme["secondary"]
+    )
+
+    # 标题 - 带底部细线
+    _add_text_box(
+        slide, 0.8, 0.3, 11.7, 0.7, slide_title,
+        font_size=28, bold=True, color=theme["primary"]
+    )
+    # 标题下划线
+    _add_decorative_shape(
+        slide, 0.8, 1.05, 2.5, 0.04, theme["accent"]
+    )
+
+    # 要点内容
+    if slide_content:
+        _add_bullet_list(
+            slide, 1.0, 1.5, 11.5, 5.0,
+            slide_content,
+            font_size=18, color=theme["text"],
+            bullet_char="▸"
+        )
+
+    # 页码
+    _add_page_number(slide, page_num, total, theme)
+
+
+def _make_comparison_slide(slide, slide_data, theme, page_num, total):
+    """对比布局页 - 左右分栏 + 中间分隔"""
+    slide_title = slide_data.get("title", "")
+    slide_content = slide_data.get("content", [])
+
+    _set_slide_bg(slide, theme["bg"])
+    _add_accent_bar(slide, theme, top=0, height=0.06)
+    _add_decorative_shape(slide, 0, 0.06, 0.12, 1.2, theme["secondary"])
+
+    _add_text_box(
+        slide, 0.8, 0.3, 11.7, 0.7, slide_title,
+        font_size=28, bold=True, color=theme["primary"]
+    )
+    _add_decorative_shape(slide, 0.8, 1.05, 2.5, 0.04, theme["accent"])
+
+    if len(slide_content) >= 2:
+        mid = len(slide_content) // 2
+        left_items = slide_content[:mid]
+        right_items = slide_content[mid:]
+
+        # 左侧卡片背景
+        _add_decorative_shape(
+            slide, 0.8, 1.5, 5.5, 5.0, theme["card_bg"]
+        )
+        # 右侧卡片背景
+        _add_decorative_shape(
+            slide, 7.0, 1.5, 5.5, 5.0, theme["card_bg"]
+        )
+
+        _add_bullet_list(slide, 1.0, 1.6, 5.0, 4.8, left_items,
+                         font_size=15, color=theme["text"])
+        _add_bullet_list(slide, 7.2, 1.6, 5.0, 4.8, right_items,
+                         font_size=15, color=theme["text"])
+
+    _add_page_number(slide, page_num, total, theme)
+
+
+def _make_summary_slide(slide, slide_data, theme, page_num, total):
+    """总结页 - 浅色背景 + 居中标题 + 要点"""
+    slide_title = slide_data.get("title", "")
+    slide_content = slide_data.get("content", [])
+
+    _set_slide_bg(slide, theme["accent_light"])
+
+    # 装饰顶条
+    _add_accent_bar(slide, theme, top=0, height=0.06)
+
+    _add_text_box(
+        slide, 1.0, 0.5, 11.3, 0.8, slide_title,
+        font_size=30, bold=True, color=theme["primary"],
+        alignment=PP_ALIGN.CENTER
+    )
+
+    # 标题下装饰线
+    _add_text_box(
+        slide, 5.0, 1.3, 3.3, 0.2,
+        "━" * 18,
+        font_size=12, color=theme["accent"],
+        alignment=PP_ALIGN.CENTER
+    )
+
+    if slide_content:
+        _add_bullet_list(
+            slide, 2.5, 1.8, 8.3, 4.5, slide_content,
+            font_size=20, color=theme["text"],
+            bullet_char="✦"
+        )
+
+    _add_page_number(slide, page_num, total, theme)
+
+
+def _make_section_slide(slide, slide_data, theme, page_num, total):
+    """章节分隔页 - 深色横条 + 大章节号"""
+    slide_title = slide_data.get("title", "")
+
+    _set_slide_bg(slide, theme["bg"])
+
+    # 全宽色条
+    _add_decorative_shape(
+        slide, 0, 2.5, 13.333, 2.5, theme["primary"]
+    )
+
+    # 章节标题
+    _add_text_box(
+        slide, 1.0, 2.8, 11.3, 1.5, slide_title,
+        font_size=36, bold=True, color=theme["white"],
+        alignment=PP_ALIGN.CENTER
+    )
+
+    _add_page_number(slide, page_num, total, theme)
+
+
+# 布局分发映射
+SLIDE_BUILDERS = {
+    "title": _make_title_slide,
+    "content": _make_content_slide,
+    "comparison": _make_comparison_slide,
+    "summary": _make_summary_slide,
+    "section": _make_section_slide,
+}
+
+
+# ════════════════════════════════════════════════════════════════
+# PPTX 生成主函数
+# ════════════════════════════════════════════════════════════════
+
+def generate_pptx(content: dict) -> tuple:
+    """根据 AI 生成的内容创建 PPTX 文件，自动匹配学科主题"""
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
 
-    theme = THEMES["default"]
+    subject = content.get("subject", "")
+    style = content.get("style", "")
+    theme = _pick_theme(subject, style)
     slides_data = content.get("slides", [])
+    total = len(slides_data)
 
     for idx, slide_data in enumerate(slides_data):
         slide_type = slide_data.get("type", "content")
-        slide_title = slide_data.get("title", "")
-        slide_content = slide_data.get("content", [])
         slide_notes = slide_data.get("notes", "")
 
-        slide = prs.slides.add_slide(prs.slide_layouts[6])  # 空白布局
+        # 使用空白布局
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-        if slide_type == "title":
-            # 封面页 — 居中大标题
-            _set_slide_bg(slide, theme["primary"])
-            # 主标题
-            _add_text_box(slide, 1.5, 2.0, 10.3, 1.5, slide_title,
-                          font_size=40, bold=True,
-                          color=theme["white"], alignment=PP_ALIGN.CENTER)
-            # 副标题/内容
-            if slide_content:
-                _add_text_box(slide, 1.5, 3.8, 10.3, 1.0,
-                              "\n".join(slide_content) if isinstance(slide_content, list) else slide_content,
-                              font_size=18, color=RGBColor(0xD0, 0xE0, 0xFF),
-                              alignment=PP_ALIGN.CENTER)
-            # 底部装饰线
-            _add_text_box(slide, 5.5, 5.5, 2.3, 0.08, "━" * 10,
-                          font_size=14, color=theme["accent"],
-                          alignment=PP_ALIGN.CENTER)
-
-        elif slide_type == "summary":
-            # 总结页
-            _set_slide_bg(slide, RGBColor(0xF0, 0xF4, 0xFF))
-            _add_text_box(slide, 1.0, 0.6, 11.3, 0.8, slide_title,
-                          font_size=30, bold=True, color=theme["primary"],
-                          alignment=PP_ALIGN.CENTER)
-            if slide_content:
-                _add_bullet_list(slide, 3.0, 1.8, 7.3, 4.5, slide_content,
-                                 font_size=20, color=theme["text"])
-
-        else:
-            # 普通内容页
-            _set_slide_bg(slide, theme["bg"])
-            # 顶部标题栏
-            _add_text_box(slide, 0, 0, 13.333, 1.2, "",
-                          font_size=10, color=theme["bg"])
-            # 装饰条
-            bar = slide.shapes.add_shape(
-                1, Inches(0), Inches(0), Inches(13.333), Inches(0.08)
-            )
-            bar.fill.solid()
-            bar.fill.fore_color.rgb = theme["secondary"]
-            bar.line.fill.background()
-
-            # 标题
-            _add_text_box(slide, 0.8, 0.3, 11.7, 0.8, slide_title,
-                          font_size=28, bold=True, color=theme["primary"])
-
-            if slide_type == "comparison" and len(slide_content) >= 2:
-                # 对比布局
-                mid = len(slide_content) // 2
-                left_items = slide_content[:mid]
-                right_items = slide_content[mid:]
-                _add_bullet_list(slide, 0.8, 1.5, 5.5, 5.0, left_items,
-                                 font_size=16)
-                _add_bullet_list(slide, 7.0, 1.5, 5.5, 5.0, right_items,
-                                 font_size=16)
-            else:
-                # 标准布局
-                _add_bullet_list(slide, 0.8, 1.5, 11.7, 5.0, slide_content,
-                                 font_size=18)
+        # 调用对应的布局构建器
+        builder = SLIDE_BUILDERS.get(slide_type, _make_content_slide)
+        builder(slide, slide_data, theme, idx + 1, total)
 
         # 备注
         if slide_notes:
-            notes_slide = slide.notes_slide
-            notes_slide.notes_text_frame.text = slide_notes
+            try:
+                notes_slide = slide.notes_slide
+                notes_slide.notes_text_frame.text = slide_notes
+            except Exception:
+                pass
 
     # 保存
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    filename = f"{content.get('title', '课件')}.pptx"
+    safe_title = re.sub(r'[<>:"/\\|?*]', '_', content.get('title', '课件'))
+    filename = f"{safe_title}.pptx"
     filepath = os.path.join(OUTPUT_DIR, filename)
     prs.save(filepath)
+    print(f"[PPT] 使用主题: {theme['name']} → {filepath}")
     return filepath, filename
 
 
 # ════════════════════════════════════════════════════════════════
-# DOCX 生成
+# DOCX 生成 - 结构化教案
 # ════════════════════════════════════════════════════════════════
 
-def generate_docx(content: dict) -> str:
-    """根据 AI 生成的教案内容创建 DOCX 文件"""
+def generate_docx(content: dict) -> tuple:
+    """生成美观的结构化教案 DOCX 文件"""
     doc = Document()
 
-    # 标题
-    title = doc.add_heading(content.get("title", "教案"), level=0)
-    for run in title.runs:
-        run.font.color.rgb = DocxRGB(0x1E, 0x40, 0xAF)
+    # 页面设置
+    section = doc.sections[0]
+    section.top_margin = Cm(2.5)
+    section.bottom_margin = Cm(2.5)
+    section.left_margin = Cm(2.8)
+    section.right_margin = Cm(2.8)
 
-    # 基本信息
-    info = doc.add_paragraph()
-    info.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    info.add_run(f"学科：{content.get('subject', '')}    ").font.size = DocxPt(11)
-    info.add_run(f"年级：{content.get('grade', '')}    ").font.size = DocxPt(11)
-    info.add_run(f"课时：{content.get('duration', '')}").font.size = DocxPt(11)
+    # 设置默认字体
+    style = doc.styles['Normal']
+    style.font.name = 'Microsoft YaHei'
+    style.font.size = DocxPt(11)
+    style.paragraph_format.line_spacing = 1.6
+    # 设置中文字体
+    style.element.rPr.rFonts.set(qn('w:eastAsia'), 'Microsoft YaHei')
 
-    doc.add_paragraph()  # 空行
+    # ── 标题页 ──
+    title_text = content.get("title", "教案")
+    title_para = doc.add_paragraph()
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title_para.add_run(title_text)
+    title_run.font.size = DocxPt(26)
+    title_run.font.bold = True
+    title_run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
 
-    # 各章节
-    for section in content.get("sections", []):
-        heading = section.get("heading", "")
-        doc.add_heading(heading, level=1)
+    # 副标题
+    subtitle_text = content.get("subject", "") + " · " + content.get("grade", "")
+    sub_para = doc.add_paragraph()
+    sub_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    sub_run = sub_para.add_run(subtitle_text)
+    sub_run.font.size = DocxPt(13)
+    sub_run.font.color.rgb = DocxRGB(0x64, 0x74, 0x8B)
 
-        for item in section.get("content", []):
-            p = doc.add_paragraph(item, style="List Bullet")
+    # 分隔线
+    div_para = doc.add_paragraph()
+    div_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    div_run = div_para.add_run("─" * 40)
+    div_run.font.color.rgb = DocxRGB(0xCB, 0xD5, 0xE1)
+    div_run.font.size = DocxPt(10)
+
+    # ── 基本信息表 ──
+    doc.add_paragraph()
+    info_items = [
+        ("学科", content.get("subject", "")),
+        ("年级", content.get("grade", "")),
+        ("课时", content.get("duration", "1课时")),
+        ("教学风格", content.get("style", "")),
+    ]
+    for label, value in info_items:
+        if value:
+            p = doc.add_paragraph()
+            label_run = p.add_run(f"【{label}】")
+            label_run.font.bold = True
+            label_run.font.size = DocxPt(11)
+            label_run.font.color.rgb = DocxRGB(0x2B, 0x6C, 0xB0)
+            val_run = p.add_run(f"  {value}")
+            val_run.font.size = DocxPt(11)
+
+    doc.add_paragraph()
+
+    # ── 教学目标区域 ──
+    teaching_goals = content.get("teachingGoals", "")
+    if teaching_goals:
+        h = doc.add_heading("教学目标", level=1)
+        for run in h.runs:
+            run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
+            run.font.size = DocxPt(16)
+        goals_list = [g.strip() for g in teaching_goals.replace("；", ";").split(";") if g.strip()]
+        for goal in goals_list:
+            p = doc.add_paragraph(f"✦  {goal.strip()}")
+            p.paragraph_format.left_indent = Cm(0.8)
             p.paragraph_format.space_after = DocxPt(4)
+
+    # 重难点
+    key_points = content.get("keyPoints", "")
+    if key_points:
+        h = doc.add_heading("重点与难点", level=1)
+        for run in h.runs:
+            run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
+            run.font.size = DocxPt(16)
+        points_list = [p.strip() for p in key_points.replace("；", ";").split(";") if p.strip()]
+        for pt in points_list:
+            p = doc.add_paragraph(f"●  {pt.strip()}")
+            p.paragraph_format.left_indent = Cm(0.8)
+            p.paragraph_format.space_after = DocxPt(4)
+
+    # ── 教学内容章节 ──
+    doc.add_paragraph()
+    h = doc.add_heading("教学过程", level=1)
+    for run in h.runs:
+        run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
+        run.font.size = DocxPt(16)
+
+    for i, section_item in enumerate(content.get("sections", []), 1):
+        heading = section_item.get("heading", f"第{i}部分")
+        h2 = doc.add_heading(f"{i}. {heading}", level=2)
+        for run in h2.runs:
+            run.font.color.rgb = DocxRGB(0x2B, 0x6C, 0xB0)
+            run.font.size = DocxPt(14)
+
+        for item in section_item.get("content", []):
+            p = doc.add_paragraph()
+            p.paragraph_format.left_indent = Cm(0.8)
+            p.paragraph_format.space_after = DocxPt(3)
+            bullet_run = p.add_run("▸ ")
+            bullet_run.font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
+            bullet_run.font.size = DocxPt(11)
+            content_run = p.add_run(item)
+            content_run.font.size = DocxPt(11)
+
+    # ── 教学反思区 ──
+    doc.add_paragraph()
+    h = doc.add_heading("教学反思", level=1)
+    for run in h.runs:
+        run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
+        run.font.size = DocxPt(16)
+    reflect_para = doc.add_paragraph("（此部分建议课后填写）")
+    reflect_para.paragraph_format.left_indent = Cm(0.8)
+    reflect_run = reflect_para.runs[0]
+    reflect_run.font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
+    reflect_run.font.italic = True
+    reflect_run.font.size = DocxPt(10)
+    # 反思模板提示
+    for tip in ["本节课的教学目标达成情况：", "学生参与度与互动效果：", "需要改进的环节："]:
+        p = doc.add_paragraph(f"  · {tip}")
+        p.paragraph_format.left_indent = Cm(0.8)
+        p.paragraph_format.space_after = DocxPt(2)
+        p.runs[0].font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
+        p.runs[0].font.size = DocxPt(10)
 
     # 保存
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    filename = f"{content.get('title', '教案')}.docx"
+    safe_title = re.sub(r'[<>:"/\\|?*]', '_', content.get('title', '教案'))
+    filename = f"{safe_title}.docx"
     filepath = os.path.join(OUTPUT_DIR, filename)
     doc.save(filepath)
+    print(f"[DOC] 已生成: {filepath}")
     return filepath, filename
 
 
 # ════════════════════════════════════════════════════════════════
-# HTML 题目生成
+# HTML 题目生成 - 强化样式
 # ════════════════════════════════════════════════════════════════
 
-def generate_quiz_html(content: dict) -> str:
-    """生成教学题 HTML 页面（可直接预览）"""
-    html_parts = [f"""<!DOCTYPE html>
+def generate_quiz_html(content: dict) -> tuple:
+    """生成精美教学题 HTML 页面"""
+    title = content.get('title', '练习题')
+    question_count = len(content.get('questions', []))
+
+    html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>{content.get('title', '练习题')}</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
 <style>
-  body {{ font-family: "PingFang SC","Microsoft YaHei",sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1e293b; }}
-  h1 {{ color: #1e40af; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }}
-  .question {{ margin: 24px 0; padding: 16px 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #3b82f6; }}
-  .q-type {{ display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background: #dbeafe; color: #1e40af; margin-bottom: 8px; }}
-  .options {{ margin: 8px 0 0 20px; }}
-  .answer {{ margin-top: 8px; padding: 8px 14px; background: #f0fdf4; border-radius: 8px; color: #166534; display: none; }}
-  .show-btn {{ padding: 4px 12px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }}
-</style></head>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    color: #1E293B;
+    background: #F7F5F2;
+  }}
+  .header {{
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid #E2E8F0;
+  }}
+  .header h1 {{
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1A365D;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }}
+  .header .meta {{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: #64748B;
+    font-size: 0.9rem;
+  }}
+  .header .count {{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: #F1F5F9;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }}
+  .question {{
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+  }}
+  .question:hover {{
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }}
+  .q-header {{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }}
+  .q-num {{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #2B6CB0;
+    color: #FFF;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }}
+  .q-type {{
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }}
+  .q-type.choice {{ background: #DBEAFE; color: #1E40AF; }}
+  .q-type.fill   {{ background: #D1FAE5; color: #065F46; }}
+  .q-type.essay  {{ background: #EDE9FE; color: #5B21B6; }}
+  .q-text {{
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    color: #1E293B;
+  }}
+  .options {{
+    margin: 8px 0 16px 20px;
+  }}
+  .options p {{
+    padding: 6px 0;
+    font-size: 0.95rem;
+    color: #475569;
+  }}
+  .answer-area {{
+    margin-top: 16px;
+  }}
+  .show-btn {{
+    padding: 6px 16px;
+    background: #2B6CB0;
+    color: #FFF;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }}
+  .show-btn:hover {{ background: #1E4F82; }}
+  .answer-box {{
+    display: none;
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: #F0FDF4;
+    border-radius: 10px;
+    border-left: 3px solid #10B981;
+  }}
+  .answer-box strong {{
+    color: #065F46;
+    font-size: 0.9rem;
+  }}
+  .answer-box .analysis {{
+    margin-top: 6px;
+    color: #64748B;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }}
+  .footer {{
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #E2E8F0;
+    color: #94A3B8;
+    font-size: 0.8rem;
+  }}
+  @media print {{
+    body {{ background: #FFF; }}
+    .question {{ box-shadow: none; border: 1px solid #E2E8F0; page-break-inside: avoid; }}
+    .show-btn {{ display: none; }}
+    .answer-box {{ display: block !important; }}
+  }}
+</style>
+</head>
 <body>
-<h1>{content.get('title', '练习题')}</h1>
-<p style="color: #64748b;">共 {len(content.get('questions', []))} 题</p>
-"""]
+<div class="header">
+  <h1>{title}</h1>
+  <div class="meta">
+    <span class="count">共 {question_count} 题</span>
+  </div>
+</div>
+"""
 
     for i, q in enumerate(content.get("questions", []), 1):
-        q_type = {"choice": "选择题", "fill": "填空题", "essay": "简答题"}.get(q.get("type", ""), "其他")
-        html_parts.append(f'<div class="question">')
-        html_parts.append(f'<span class="q-type">{q_type}</span>')
-        html_parts.append(f'<p><strong>{i}. {q["question"]}</strong></p>')
+        q_type_key = q.get("type", "choice")
+        q_type_cn = {"choice": "选择题", "fill": "填空题", "essay": "简答题"}.get(q_type_key, "其他")
+        q_type_class = {"choice": "choice", "fill": "fill", "essay": "essay"}.get(q_type_key, "choice")
+
+        html += f'''<div class="question">
+  <div class="q-header">
+    <span class="q-num">{i}</span>
+    <span class="q-type {q_type_class}">{q_type_cn}</span>
+  </div>
+  <div class="q-text">{q["question"]}</div>
+'''
 
         if q.get("options"):
-            html_parts.append('<div class="options">')
+            html += '  <div class="options">\n'
             for opt in q["options"]:
-                html_parts.append(f'<p>{opt}</p>')
-            html_parts.append('</div>')
+                html += f'    <p>{opt}</p>\n'
+            html += '  </div>\n'
 
-        html_parts.append(f'<button class="show-btn" onclick="this.nextElementSibling.style.display=\'block\';this.style.display=\'none\'">显示答案</button>')
-        html_parts.append(f'<div class="answer"><strong>答案：</strong>{q["answer"]}<br><strong>解析：</strong>{q.get("analysis", "")}</div>')
-        html_parts.append('</div>')
+        html += f'''  <div class="answer-area">
+    <button class="show-btn" onclick="var box=this.nextElementSibling;box.style.display='block';this.style.display='none'">显示答案</button>
+    <div class="answer-box">
+      <strong>答案：{q["answer"]}</strong>
+      <div class="analysis">解析：{q.get("analysis", "暂无解析")}</div>
+    </div>
+  </div>
+</div>
+'''
 
-    html_parts.append("</body></html>")
+    html += '''<div class="footer">
+  <p>知启灵枢 · AI 智能出题 · 仅供教学参考</p>
+</div>
+</body></html>'''
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    filename = f"{content.get('title', '练习题')}.html"
+    safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
+    filename = f"{safe_title}.html"
     filepath = os.path.join(OUTPUT_DIR, filename)
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("\n".join(html_parts))
+        f.write(html)
+    print(f"[HTML] 已生成: {filepath}")
     return filepath, filename
 
 
+# ════════════════════════════════════════════════════════════════
+# 测试入口
+# ════════════════════════════════════════════════════════════════
+
 if __name__ == "__main__":
-    # 测试用
     test = {
         "title": "牛顿第二定律",
+        "subject": "物理",
+        "grade": "高一",
+        "duration": "45分钟",
         "slides": [
-            {"type": "title", "title": "牛顿第二定律", "content": ["高中物理 · 必修一"], "notes": ""},
-            {"type": "content", "title": "复习回顾", "content": ["什么是力？", "牛顿第一定律", "加速度的概念"], "notes": ""},
-            {"type": "content", "title": "实验探究", "content": ["控制变量法", "质量一定时：a ∝ F", "力一定时：a ∝ 1/m"], "notes": ""},
-            {"type": "summary", "title": "本节课总结", "content": ["F = ma", "矢量性：a 与 F 同向", "瞬时性：F 变则 a 变"], "notes": ""},
+            {"type": "title", "title": "牛顿第二定律",
+             "content": ["高中物理 · 必修一", "F = ma"], "notes": ""},
+            {"type": "section", "title": "第一部分：知识回顾",
+             "content": [], "notes": ""},
+            {"type": "content", "title": "复习回顾",
+             "content": ["力的概念与表示方法", "牛顿第一定律（惯性定律）", "加速度的定义与物理意义"],
+             "notes": ""},
+            {"type": "content", "title": "实验探究",
+             "content": ["控制变量法：分别探究 F 与 m 的影响",
+              "质量一定时：加速度与合外力成正比 a ∝ F",
+              "合外力一定时：加速度与质量成反比 a ∝ 1/m"],
+             "notes": "重点讲解实验设计"},
+            {"type": "content", "title": "牛顿第二定律公式",
+             "content": ["表达式：F = ma", "F — 合外力（单位：N）",
+              "m — 质量（单位：kg）", "a — 加速度（单位：m/s²）"],
+             "notes": ""},
+            {"type": "comparison", "title": "典型例题对比",
+             "content": ["已知 F=10N, m=2kg → a=5m/s²",
+              "已知 a=3m/s², m=4kg → F=12N",
+              "水平面光滑，F=15N, m=3kg → a=5m/s²",
+              "斜面 θ=30°, m=2kg → a=4.9m/s²"],
+             "notes": ""},
+            {"type": "summary", "title": "本节课总结",
+             "content": ["牛顿第二定律：F = ma",
+              "矢量性：a 与 F 方向始终相同",
+              "瞬时性：F 变化则 a 瞬时变化",
+              "独立性：各分力产生的加速度独立叠加"],
+             "notes": ""},
         ],
     }
+
+    print("=" * 60)
+    print("  知启灵枢 · 文件生成器测试")
+    print("=" * 60)
+
     path, name = generate_pptx(test)
-    print(f"✅ 已生成: {path}")
+    print(f"  PPT  → {path}")
+
+    # 测试 DOCX
+    doc_test = {
+        "title": "牛顿第二定律教案",
+        "subject": "物理",
+        "grade": "高一",
+        "duration": "45分钟",
+        "teachingGoals": "理解牛顿第二定律的内容与公式；掌握F=ma的应用方法；培养科学探究精神",
+        "keyPoints": "牛顿第二定律的公式推导；加速度与力、质量的关系",
+        "sections": [
+            {"heading": "导入新课", "content": ["回顾牛顿第一定律", "提问：力与加速度的关系？"]},
+            {"heading": "新课讲授", "content": ["实验演示：控制变量法", "推导公式 F=ma", "讲解各物理量含义"]},
+            {"heading": "巩固练习", "content": ["例题1：已知力求加速度", "例题2：已知加速度求力"]},
+        ],
+    }
+    dpath, dname = generate_docx(doc_test)
+    print(f"  DOC → {dpath}")
+
+    # 测试 HTML
+    quiz_test = {
+        "title": "牛顿第二定律练习",
+        "questions": [
+            {"type": "choice", "question": "牛顿第二定律的表达式是？",
+             "options": ["A. F = mv", "B. F = ma", "C. F = m/a", "D. F = a/m"],
+             "answer": "B", "analysis": "牛顿第二定律表明合外力等于质量乘以加速度。"},
+            {"type": "fill", "question": "质量为2kg的物体受到10N合外力，加速度为___ m/s²",
+             "options": [], "answer": "5", "analysis": "由 F=ma 得 a=F/m=10/2=5 m/s²"},
+            {"type": "essay", "question": "请简述牛顿第二定律中'矢量性'的含义。",
+             "options": [], "answer": "加速度方向与合外力方向始终相同",
+             "analysis": "F=ma是矢量等式，a的方向由F决定。"},
+        ],
+    }
+    qpath, qname = generate_quiz_html(quiz_test)
+    print(f"  HTML→ {qpath}")
+    print("=" * 60)
+    print("  全部生成完成！")
