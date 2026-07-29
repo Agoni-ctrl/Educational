@@ -3366,23 +3366,25 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <label>
-                学科
-                <input
-                  v-model="pptForm.subject"
-                  type="text"
-                  placeholder="例如：物理 / 历史 / 生物"
-                />
-              </label>
+              <div class="form-row">
+                <label>
+                  学科
+                  <input
+                    v-model="pptForm.subject"
+                    type="text"
+                    placeholder="例如：物理 / 历史 / 生物"
+                  />
+                </label>
 
-              <label>
-                课题
-                <input
-                  v-model="pptForm.topic"
-                  type="text"
-                  placeholder="例如：牛顿第二定律"
-                />
-              </label>
+                <label>
+                  课题
+                  <input
+                    v-model="pptForm.topic"
+                    type="text"
+                    placeholder="例如：牛顿第二定律"
+                  />
+                </label>
+              </div>
 
               <label>
                 课时长度
@@ -3983,7 +3985,11 @@ onUnmounted(() => {
               style="
                 margin: 0 0 6px 0;
                 font-size: 1.5rem;
-                background: linear-gradient(135deg, #667eea, #10b981);
+                background: linear-gradient(
+                  135deg,
+                  var(--accent-classroom),
+                  #f59e0b
+                );
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
@@ -5307,11 +5313,21 @@ onUnmounted(() => {
   --accent-deep: #1e4f82;
   --accent-mint: #23c3b2;
   --accent-violet: #8b5cf6;
+  --accent-ppt: #2563eb;
+  --accent-doc: #059669;
+  --accent-interactive: #7c3aed;
+  --accent-classroom: #d97706;
+  --accent-feedback: #dc2626;
+  --accent-history: #0891b2;
+  --accent-iterate: #9333ea;
   --border: rgba(0, 0, 0, 0.06);
   --border-strong: rgba(0, 0, 0, 0.1);
   --panel: #ffffff;
   --panel-strong: #ffffff;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.03);
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   position: relative;
   min-height: 100vh;
@@ -5380,7 +5396,9 @@ onUnmounted(() => {
   gap: 14px;
   background: #ffffff;
   border-right: 1px solid var(--border);
-  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.03);
+  box-shadow:
+    1px 0 0 rgba(0, 0, 0, 0.03),
+    2px 0 8px rgba(0, 0, 0, 0.02);
   z-index: 2;
 }
 
@@ -5447,6 +5465,7 @@ onUnmounted(() => {
   color: var(--ink-soft);
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .overview-btn:hover,
@@ -5474,6 +5493,7 @@ onUnmounted(() => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-muted);
+  opacity: 0.7;
 }
 
 .nav-item {
@@ -5482,21 +5502,25 @@ onUnmounted(() => {
   gap: 12px;
   width: 100%;
   margin-bottom: 6px;
-  padding: 12px;
+  padding: 12px 12px 12px 14px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0 10px 10px 0;
   background: transparent;
   text-align: left;
   cursor: pointer;
+  border-left: 2px solid transparent;
   transition: all 0.2s ease;
 }
 
 .nav-item:hover {
   background: #f1f1f2;
+  border-left-color: #e2e8f0;
+  transform: translateX(2px);
 }
 
 .nav-item--active {
-  background: rgba(43, 108, 176, 0.06);
+  background: #f2f4f7;
+  border-left-color: var(--accent);
 }
 
 .nav-item__icon {
@@ -5506,17 +5530,21 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: #fafafa;
+  background: transparent;
   color: var(--ink-muted);
-  border: 1px solid var(--border);
+  border: 0;
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
+.nav-item:hover .nav-item__icon {
+  background: #ebedf0;
+}
+
 .nav-item--active .nav-item__icon {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border: 0;
 }
 
 .nav-item__icon svg {
@@ -5623,7 +5651,7 @@ onUnmounted(() => {
   padding: 28px;
   border-radius: 10px;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   overflow-y: auto;
 }
 
@@ -5632,6 +5660,18 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 22px;
   margin-top: 12px;
+  animation: panelFadeIn 0.35s var(--ease-out);
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-head {
@@ -5663,6 +5703,36 @@ onUnmounted(() => {
   color: var(--ink);
 }
 
+/* ── 各面板模块色彩个性 ── */
+.panel[data-panel="ppt"] .section-tag {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent-ppt);
+}
+.panel[data-panel="doc"] .section-tag {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--accent-doc);
+}
+.panel[data-panel="interactive"] .section-tag {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--accent-interactive);
+}
+
+.panel[data-panel="ppt"] .ai-badge--active {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.2);
+  color: var(--accent-ppt);
+}
+.panel[data-panel="doc"] .ai-badge--active {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.2);
+  color: var(--accent-doc);
+}
+.panel[data-panel="interactive"] .ai-badge--active {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: var(--accent-interactive);
+}
+
 .section-head small {
   color: var(--ink-muted);
   font-size: 0.76rem;
@@ -5679,12 +5749,13 @@ onUnmounted(() => {
 .preview-card__eyebrow {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 10px;
   background: #f1f1f2;
   color: var(--ink-muted);
   font-size: 0.72rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* ===== 创作工作台头部 ===== */
@@ -5844,18 +5915,18 @@ onUnmounted(() => {
 
 .metric-card {
   padding: 24px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow);
+  transition: all 0.25s var(--ease-out);
   cursor: default;
 }
 
 .metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .metric-card__head {
@@ -6127,10 +6198,11 @@ onUnmounted(() => {
 
 /* --- 表单卡片 --- */
 .reflect-form-card {
-  background: #fafafa;
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 22px 24px 20px;
+  box-shadow: var(--shadow);
 }
 .reflect-form-card__header {
   display: flex;
@@ -6144,7 +6216,7 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(128, 151, 185, 0.1);
 }
 .reflect-form-card__header svg {
-  color: #4c7dff;
+  color: var(--accent-iterate);
 }
 
 .reflect-form-body {
@@ -6171,8 +6243,8 @@ onUnmounted(() => {
 .reflect-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid rgba(128, 151, 185, 0.2);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   font-size: 0.88rem;
   color: #1e293b;
   background: white;
@@ -6185,8 +6257,8 @@ onUnmounted(() => {
 .reflect-select:focus,
 .reflect-input:focus {
   outline: none;
-  border-color: #4c7dff;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+  border-color: var(--accent-iterate);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.08);
 }
 .reflect-select::placeholder,
 .reflect-input::placeholder {
@@ -6196,8 +6268,8 @@ onUnmounted(() => {
 .reflect-textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid rgba(128, 151, 185, 0.2);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   font-size: 0.88rem;
   color: #1e293b;
   background: white;
@@ -6212,8 +6284,8 @@ onUnmounted(() => {
 }
 .reflect-textarea:focus {
   outline: none;
-  border-color: #4c7dff;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+  border-color: var(--accent-iterate);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.08);
 }
 .reflect-textarea::placeholder {
   color: #94a3b8;
@@ -6230,19 +6302,19 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
-  border: 1px dashed rgba(43, 108, 176, 0.3);
+  border: 1px dashed rgba(147, 51, 234, 0.3);
   border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #4c7dff;
-  background: rgba(43, 108, 176, 0.04);
+  color: var(--accent-iterate);
+  background: rgba(147, 51, 234, 0.04);
   cursor: pointer;
   transition: all 0.2s;
   width: fit-content;
 }
 .reflect-upload__btn:hover {
-  background: rgba(43, 108, 176, 0.08);
-  border-color: #4c7dff;
+  background: rgba(147, 51, 234, 0.08);
+  border-color: var(--accent-iterate);
 }
 .reflect-upload__hint {
   font-size: 0.75rem;
@@ -6306,15 +6378,15 @@ onUnmounted(() => {
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #4c7dff;
-  background: rgba(43, 108, 176, 0.07);
-  border: 1px solid rgba(43, 108, 176, 0.12);
+  color: var(--accent-iterate);
+  background: rgba(147, 51, 234, 0.07);
+  border: 1px solid rgba(147, 51, 234, 0.12);
   cursor: pointer;
   transition: all 0.2s;
 }
 .reflect-tips__tags .tip-tag:hover {
-  background: rgba(43, 108, 176, 0.14);
-  border-color: rgba(43, 108, 176, 0.25);
+  background: rgba(147, 51, 234, 0.14);
+  border-color: rgba(147, 51, 234, 0.25);
 }
 
 /* 提交按钮 */
@@ -6335,12 +6407,13 @@ onUnmounted(() => {
 
 /* --- 历史反馈记录卡片 --- */
 .reflect-history-card {
-  background: rgba(248, 251, 255, 0.7);
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 16px;
   max-height: 580px;
   overflow-y: auto;
+  box-shadow: var(--shadow);
 }
 .reflect-history-card__head {
   display: flex;
@@ -6359,11 +6432,11 @@ onUnmounted(() => {
   color: #1e293b;
 }
 .reflect-history-card__title svg {
-  color: #4c7dff;
+  color: var(--accent-iterate);
 }
 .reflect-history-card__badge {
-  background: rgba(43, 108, 176, 0.1);
-  color: #4c7dff;
+  background: rgba(147, 51, 234, 0.1);
+  color: var(--accent-iterate);
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 8px;
@@ -6383,13 +6456,16 @@ onUnmounted(() => {
 }
 .reflect-history-item {
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: white;
-  border: 1px solid rgba(128, 151, 185, 0.08);
-  transition: box-shadow 0.2s;
+  border: 1px solid var(--border);
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
 }
 .reflect-history-item:hover {
-  box-shadow: 0 2px 12px rgba(43, 108, 176, 0.06);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 .reflect-history-item__head {
   display: flex;
@@ -6407,8 +6483,8 @@ onUnmounted(() => {
   padding: 1px 6px;
   border-radius: 999px;
   font-weight: 500;
-  background: rgba(43, 108, 176, 0.08);
-  color: #4c7dff;
+  background: rgba(147, 51, 234, 0.08);
+  color: var(--accent-iterate);
 }
 .rh-subject {
   font-size: 0.7rem;
@@ -6480,9 +6556,12 @@ onUnmounted(() => {
 .feedback-card,
 .summary-pill {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.2s var(--ease-out);
 }
 
 .dashboard-card,
@@ -7734,23 +7813,23 @@ onUnmounted(() => {
 
 /* 新版记录卡片 */
 .record-card {
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(43, 108, 176, 0.1);
-  box-shadow: 0 2px 8px rgba(43, 108, 176, 0.04);
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.25s var(--ease-out);
   cursor: pointer;
 }
 
 .record-card:hover {
-  box-shadow: 0 4px 16px rgba(43, 108, 176, 0.1);
-  border-color: rgba(43, 108, 176, 0.18);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
 
 .record-card.expanded {
-  box-shadow: 0 8px 32px rgba(43, 108, 176, 0.15);
-  border-color: rgba(43, 108, 176, 0.25);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
 }
 
 .record-card__header {
@@ -8219,7 +8298,20 @@ onUnmounted(() => {
 .history-toolbar input:focus,
 .feedback-card textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.08);
+  box-shadow:
+    0 0 0 4px rgba(43, 108, 176, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* 双栏表单行 */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-row label {
+  margin-bottom: 0;
 }
 
 .chip-row {
@@ -8233,16 +8325,17 @@ onUnmounted(() => {
 .objectives-card {
   margin: 12px 0 16px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fafafa;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .objectives-card__header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--ink);
@@ -8255,7 +8348,7 @@ onUnmounted(() => {
 }
 
 .objectives-card__body {
-  padding: 12px 16px 4px;
+  padding: 14px 16px 4px;
 }
 
 .objectives-card__body label {
@@ -8280,7 +8373,7 @@ onUnmounted(() => {
 /* 文件上传区域 */
 .file-upload-area {
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 24px;
   text-align: center;
   cursor: pointer;
@@ -8291,7 +8384,8 @@ onUnmounted(() => {
 
 .file-upload-area:hover {
   border-color: var(--accent);
-  background: #f5f5f5;
+  background: #f5f6f8;
+  box-shadow: 0 0 0 4px rgba(43, 108, 176, 0.04);
 }
 
 .upload-placeholder {
@@ -8379,7 +8473,7 @@ onUnmounted(() => {
 }
 
 .chip-row__chip {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #f1f1f2;
@@ -8387,6 +8481,12 @@ onUnmounted(() => {
   font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chip-row__chip:hover {
+  background: #e8eaed;
+  border-color: var(--border-strong);
+  color: var(--ink);
 }
 
 .btn-primary,
@@ -8413,11 +8513,13 @@ onUnmounted(() => {
   font-weight: 700;
   border: none;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(43, 108, 176, 0.15);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   background: var(--accent-deep);
+  box-shadow: 0 4px 10px rgba(43, 108, 176, 0.2);
 }
 
 .record-card__delete:hover {
@@ -8450,7 +8552,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  background: #fafafa;
+  background: #f8f8f6;
   color: var(--ink-muted);
   font-size: 0.74rem;
 }
@@ -8508,7 +8610,7 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 10px;
   background: #f1f1f2;
   color: var(--ink-muted);
@@ -8517,6 +8619,7 @@ onUnmounted(() => {
   white-space: nowrap;
   align-self: flex-end;
   margin-top: 12px;
+  border: 1px solid transparent;
 }
 
 .ai-badge i {
@@ -8554,48 +8657,72 @@ onUnmounted(() => {
 }
 
 .recommendation-list {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  padding-left: 22px;
+}
+
+/* 竖向连接线 */
+.recommendation-list::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 8px;
+  bottom: 8px;
+  width: 1.5px;
+  background: #e2e8f0;
+  border-radius: 2px;
 }
 
 .recommendation-item {
+  position: relative;
   display: flex;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 12px 14px;
+  margin-left: 0;
   border-radius: 8px;
-  background: #fafafa;
-  border-left: 2px solid transparent;
+  background: transparent;
   transition:
-    border-color 0.2s,
-    background 0.2s;
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
-.recommendation-item:hover,
-.recommendation-item--active {
-  background: #ffffff;
-  border-left-color: var(--accent);
-}
-
-.recommendation-item:hover strong,
-.recommendation-item--active strong {
-  font-weight: 800;
-  color: var(--accent);
-}
-
+/* 时间轴圆点 */
 .recommendation-item span,
 .support-item span {
+  position: relative;
+  z-index: 1;
   width: 32px;
   height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: #f1f1f2;
+  border-radius: 50%;
+  background: #ffffff;
   color: var(--ink-muted);
-  font-size: 0.76rem;
-  font-weight: 600;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 700;
   flex-shrink: 0;
+  margin-left: -38px;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.recommendation-item:hover,
+.recommendation-item--active {
+  transform: translateY(-2px);
+  background: #f8fafc;
+}
+
+.recommendation-item:hover span,
+.recommendation-item--active span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .support-card {
@@ -8608,6 +8735,10 @@ onUnmounted(() => {
   display: flex;
   gap: 14px;
   padding: 16px;
+  transition: background 0.2s ease;
+}
+.support-item:hover {
+  background: #f8fafc;
 }
 
 .upload-zone__drop {
@@ -8670,10 +8801,10 @@ onUnmounted(() => {
   background:
     radial-gradient(
       circle at top right,
-      rgba(43, 108, 176, 0.1),
+      rgba(43, 108, 176, 0.08),
       transparent 28%
     ),
-    rgba(248, 251, 255, 0.82);
+    #fff;
 }
 
 .mini-flow {
@@ -8703,11 +8834,11 @@ onUnmounted(() => {
 /* ==================== 教学档案多维筛选栏 ==================== */
 .archive-filter-bar {
   background: white;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 20px 24px;
-  border: 1px solid rgba(43, 108, 176, 0.08);
+  border: 1px solid var(--border);
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow);
 }
 
 .archive-filter-row {
@@ -8727,7 +8858,7 @@ onUnmounted(() => {
 .archive-filter-label {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ink-muted);
   letter-spacing: 0.3px;
 }
 
@@ -8749,8 +8880,8 @@ onUnmounted(() => {
 }
 
 .archive-filter-select:focus {
-  border-color: #4c7dff;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.08);
+  border-color: var(--accent-history);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.08);
 }
 
 .archive-filter-actions {
@@ -8793,8 +8924,8 @@ onUnmounted(() => {
 }
 
 .archive-search-input:focus {
-  border-color: #4c7dff;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.08);
+  border-color: var(--accent-history);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.08);
 }
 
 .archive-btn {
@@ -9661,15 +9792,15 @@ onUnmounted(() => {
 }
 
 .activity-tab:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.1);
 }
 
 .activity-tab--active {
   background: rgba(255, 255, 255, 0.95);
-  border-color: #667eea;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+  border-color: var(--accent-classroom);
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.15);
 }
 
 .activity-tab__icon {
@@ -9731,7 +9862,7 @@ onUnmounted(() => {
 }
 .qa-progress__fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #10b981);
+  background: linear-gradient(90deg, var(--accent-classroom), #f59e0b);
   border-radius: 3px;
   transition: width 0.5s ease;
 }
@@ -9791,8 +9922,8 @@ onUnmounted(() => {
 .qa-question-card__num {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  color: var(--accent-classroom);
+  background: rgba(217, 119, 6, 0.1);
   padding: 4px 12px;
   border-radius: 8px;
 }
@@ -9828,16 +9959,16 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .qa-option:hover:not(.qa-option--correct):not(.qa-option--wrong) {
-  border-color: #667eea;
-  background: rgba(102, 126, 234, 0.05);
+  border-color: var(--accent-classroom);
+  background: rgba(217, 119, 6, 0.04);
 }
 .qa-option--selected {
-  border-color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  border-color: var(--accent-classroom);
+  background: rgba(217, 119, 6, 0.08);
 }
 .qa-option--correct {
-  border-color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.1);
+  border-color: #059669;
+  background: rgba(5, 150, 105, 0.08);
 }
 .qa-option--wrong {
   border-color: #ef4444;
@@ -9909,21 +10040,22 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 .qa-action-btn--primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--accent-classroom), #f59e0b);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
 }
 .qa-action-btn--primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
 }
 .qa-action-btn--secondary {
-  background: rgba(255, 255, 255, 0.8);
+  background: #fff;
   color: #475569;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
 }
 .qa-action-btn--secondary:hover:not(:disabled) {
   background: #f8fafc;
+  border-color: var(--border-strong);
 }
 .qa-action-btn--danger {
   background: linear-gradient(135deg, #ef4444, #dc2626);
