@@ -580,6 +580,7 @@ onMounted(() => {
   position: relative;
   min-height: 100vh;
   color: var(--ink);
+  background: linear-gradient(160deg, #f0f3ff 0%, #fbf0ff 100%);
 }
 
 .main {
@@ -598,15 +599,9 @@ onMounted(() => {
   margin-bottom: 24px;
   padding: 24px 28px;
   border-radius: 22px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.88),
-      rgba(255, 255, 255, 0.56)
-    ),
-    radial-gradient(circle at 0% 0%, rgba(0, 119, 230, 0.08), transparent 40%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8px 32px rgba(0, 87, 217, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(18px);
 }
 
@@ -626,7 +621,7 @@ onMounted(() => {
 }
 
 .hero-compact__lead strong {
-  color: #0072ff;
+  color: #7c3aed;
   font-weight: 700;
 }
 
@@ -661,7 +656,7 @@ onMounted(() => {
 .stats-pill strong {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  color: #0072ff;
+  color: #fb7185;
   line-height: 1.2;
 }
 
@@ -673,7 +668,7 @@ onMounted(() => {
 }
 
 .stats-pill--heat strong {
-  background: linear-gradient(135deg, #f97316, #ef4444);
+  background: linear-gradient(135deg, #fb7185, #f43f5e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -808,14 +803,14 @@ onMounted(() => {
 }
 
 .btn--dark {
-  background: linear-gradient(135deg, #4facfe 0%, #0072ff 100%);
+  background: #7c3aed;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
 }
 
 .btn--dark:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35);
 }
 
 .btn--ghost {
@@ -970,16 +965,12 @@ onMounted(() => {
 }
 
 .sidebar-card {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.86),
-    rgba(255, 255, 255, 0.62)
-  );
-  border: 1px solid rgba(10, 15, 26, 0.07);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 22px;
   padding: 20px;
   backdrop-filter: blur(18px);
-  box-shadow: 0 14px 44px rgba(0, 87, 217, 0.07);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
 .search-card {
@@ -1024,7 +1015,7 @@ onMounted(() => {
 
 .search-btn {
   padding: 0 20px;
-  background: #0077e6;
+  background: #7c3aed;
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -1035,7 +1026,7 @@ onMounted(() => {
 }
 
 .search-btn:hover {
-  background: #005cb3;
+  background: #6d28d9;
 }
 
 .hot-searches {

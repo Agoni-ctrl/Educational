@@ -311,19 +311,12 @@ function commentAvatarColor(author) {
 <style scoped>
 .post-card {
   position: relative;
-  padding: 20px 22px;
+  padding: 20px 24px;
   border-radius: 18px;
-  border: 1px solid rgba(167, 193, 225, 0.24);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.96),
-      rgba(248, 251, 255, 0.92)
-    ),
-    radial-gradient(circle at 0% 0%, rgba(76, 150, 255, 0.04), transparent 32%);
-  box-shadow:
-    0 10px 32px rgba(64, 116, 184, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(18px);
   overflow: hidden;
   transition:
     transform 0.28s var(--ease-out),
@@ -332,11 +325,9 @@ function commentAvatarColor(author) {
 }
 
 .post-card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(100, 154, 222, 0.36);
-  box-shadow:
-    0 16px 44px rgba(64, 116, 184, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .post-card--expanded {
@@ -389,12 +380,13 @@ function commentAvatarColor(author) {
 
 /* 标签 - 渐变 */
 .post-card__tag {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 700;
   border: none;
-  color: #fff;
+  color: #7C3AED;
+  background: rgba(124, 58, 237, 0.08);
   flex-shrink: 0;
 }
 

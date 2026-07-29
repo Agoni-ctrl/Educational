@@ -564,21 +564,25 @@ const overviewCards = computed(() => [
   {
     label: "已完成",
     value: stats.value.completed,
-    detail: "可直接继续编辑、导出或进入复用",
+    detail: "支持继续编辑，PPT/Word/互动课件一键导出",
     tone: "mint",
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="9 13 11 15 15 9"/><path d="M8 5.5C6.3 6.7 5 9.2 5 12c0 3.9 3.1 7 7 7s7-3.1 7-7-3.1-7-7-7"/></svg>`,
   },
   {
     label: "待优化",
     value: stats.value.iterating,
-    detail: "适合优先处理带反馈的内容，提高成品质量",
+    detail: "可在教学档案中查看反馈，一键重新生成",
     tone: "violet",
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><polyline points="12 7 12 12 15 14"/><path d="M21 3v5h-5"/></svg>`,
   },
   {
     label: "覆盖学科",
     value: new Set(history.value.map((item) => item.subject)).size || 1,
-    detail: "统一沉淀不同学科的生成经验与历史资产",
+    detail:
+      "按学科管理教学档案，" +
+      [...new Set(history.value.map((item) => item.subject))]
+        .slice(0, 3)
+        .join(" · "),
     tone: "amber",
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="14" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>`,
   },
