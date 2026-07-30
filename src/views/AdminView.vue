@@ -361,9 +361,13 @@ function initCharts() {
         label: {
           show: true,
           position: "top",
-          fontSize: 10,
+          fontSize: 11,
+          fontWeight: 600,
           color: "#787774",
-          formatter: (p) => (p.value > 0 ? p.value + "节" : ""),
+          formatter: (p) => {
+            const totals = [6, 6, 6, 4, 6];
+            return totals[p.dataIndex] + "节";
+          },
         },
       },
     ],
@@ -1204,34 +1208,76 @@ function useTemplate(t) {
               <div id="ch-s4" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
-                周课时利用率
-              </h3>
-              <div class="flex items-end gap-1 h-[200px] pt-4">
-                <div
-                  v-for="(v, i) in [85, 72, 90, 68, 78]"
-                  :key="i"
-                  class="flex-1 flex flex-col items-center gap-1"
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-semibold text-gray-400">
+                  周课时利用率
+                </h3>
+                <span class="text-[10px] text-gray-400"
+                  >实际课时 / 计划课时</span
                 >
-                  <span class="text-[10px] text-gray-400">{{ v }}%</span>
+              </div>
+              <div class="relative h-[240px]">
+                <!-- 背景参考线 -->
+                <div
+                  class="absolute inset-0 flex flex-col justify-between pointer-events-none"
+                >
+                  <div class="border-t border-gray-100" style="height: 0"></div>
+                  <div class="border-t border-gray-100" style="height: 0"></div>
+                  <div class="border-t border-gray-100" style="height: 0"></div>
+                  <div class="border-t border-gray-100" style="height: 0"></div>
                   <div
-                    class="w-full rounded-t"
-                    style="opacity: 0.65; min-height: 4px"
-                    :style="{
-                      height: v + '%',
-                      background: [
-                        '#0D9488',
-                        '#06B6D4',
-                        '#059669',
-                        '#64748B',
-                        '#0D9488',
-                      ][i],
-                    }"
+                    class="border-t border-dashed border-gray-200"
+                    style="height: 0"
                   ></div>
-                  <span class="text-[9px] text-gray-400 mt-1">{{
-                    ["周一", "周二", "周三", "周四", "周五"][i]
-                  }}</span>
                 </div>
+                <!-- 柱子 -->
+                <div
+                  class="absolute inset-x-0 bottom-0 flex items-end justify-around px-6"
+                  style="top: 20px"
+                >
+                  <div
+                    v-for="(v, i) in [85, 72, 90, 68, 78]"
+                    :key="i"
+                    class="flex flex-col items-center"
+                    style="width: 40px"
+                  >
+                    <span
+                      class="text-xs font-semibold mb-1.5"
+                      :class="
+                        v >= 85
+                          ? 'text-teal-700'
+                          : v >= 75
+                            ? 'text-cyan-700'
+                            : 'text-amber-700'
+                      "
+                      >{{ v }}%</span
+                    >
+                    <div
+                      class="w-full rounded-t transition-all duration-300 hover:opacity-80"
+                      :style="{
+                        height: v * 1.8 + 'px',
+                        background: [
+                          '#0D9488',
+                          '#06B6D4',
+                          '#0D9488',
+                          '#F59E0B',
+                          '#0D9488',
+                        ][i],
+                      }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="flex justify-around mt-3 pt-2 border-t border-gray-50"
+              >
+                <span
+                  v-for="(day, i) in ['周一', '周二', '周三', '周四', '周五']"
+                  :key="i"
+                  class="text-[10px] text-gray-400"
+                  style="width: 40px; text-align: center"
+                  >{{ day }}</span
+                >
               </div>
             </div>
           </div>
@@ -1640,21 +1686,19 @@ function useTemplate(t) {
               </div>
             </div>
           </div>
-          <div
-            class="bg-white border border-gray-100 rounded-xl p-4 max-w-sm mx-auto"
-          >
-            <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
-              存储使用
-            </h3>
-            <div id="ch-ss" class="h-80"></div>
-          </div>
-          <div
-            class="bg-white border border-gray-100 rounded-xl p-4 max-w-sm mx-auto"
-          >
-            <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
-              月操作频次
-            </h3>
-            <div id="ch-ss2" class="h-80"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
+                存储使用
+              </h3>
+              <div id="ch-ss" class="h-80"></div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
+                月操作频次
+              </h3>
+              <div id="ch-ss2" class="h-80"></div>
+            </div>
           </div>
         </template>
       </main>
