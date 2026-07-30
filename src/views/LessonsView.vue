@@ -751,16 +751,16 @@ const lessonActivityTabs = [
 ];
 
 const students = ref([
-  { id: 1, name: "张三", avatar: "👦" },
-  { id: 2, name: "李四", avatar: "👧" },
-  { id: 3, name: "王五", avatar: "👨" },
-  { id: 4, name: "赵六", avatar: "👩" },
-  { id: 5, name: "陈七", avatar: "🧑" },
-  { id: 6, name: "刘八", avatar: "👱" },
-  { id: 7, name: "孙九", avatar: "👴" },
-  { id: 8, name: "周十", avatar: "👵" },
-  { id: 9, name: "吴十一", avatar: "🧒" },
-  { id: 10, name: "郑十二", avatar: "🧑‍🎓" },
+  { id: 1, name: "张三", avatar: "张" },
+  { id: 2, name: "李四", avatar: "李" },
+  { id: 3, name: "王五", avatar: "王" },
+  { id: 4, name: "赵六", avatar: "赵" },
+  { id: 5, name: "陈七", avatar: "陈" },
+  { id: 6, name: "刘八", avatar: "刘" },
+  { id: 7, name: "孙九", avatar: "孙" },
+  { id: 8, name: "周十", avatar: "周" },
+  { id: 9, name: "吴十一", avatar: "吴" },
+  { id: 10, name: "郑十二", avatar: "郑" },
 ]);
 
 // 1. 随堂抢答 - 按学科分类的题库
@@ -1445,6 +1445,10 @@ function getVideoUrl(cover) {
 function getCoverUrl(cover) {
   return `/video/courses/covers/${cover}.jpg`;
 }
+function onCoverError(e) {
+  e.target.style.display = "none";
+  e.target.parentElement.style.background = "#e2e8f0";
+}
 
 // ===== 预加载视频真实时长 =====
 const realDurations = ref({});
@@ -2125,7 +2129,7 @@ watch(activeMenu, (newVal) => {
             >
               <!-- Hero 区域 -->
               <div class="home-hero">
-                <div class="home-hero-badge">智能教学平台</div>
+                <div class="home-hero-badge">教学工具集</div>
                 <h1 class="home-hero-title">
                   <span class="float-cap">
                     <svg
@@ -2144,10 +2148,10 @@ watch(activeMenu, (newVal) => {
                       />
                     </svg>
                   </span>
-                  课堂<span class="gradient-text">教程</span>
+                  课堂教程
                 </h1>
                 <p class="home-hero-subtitle">
-                  集成课程资源、数据分析、互动问答与AI总结的一站式教学工具，<br />帮助教师高效备课，提升课堂质量。
+                  课程资源、能力分析、课堂互动与AI总结，<br />覆盖课前备课到课后追踪的全流程。
                 </p>
                 <div class="home-stats-row">
                   <div class="home-stat">
@@ -2171,8 +2175,8 @@ watch(activeMenu, (newVal) => {
 
               <!-- 模块卡片 -->
               <div class="home-section">
-                <h2 class="home-section-title">选择功能模块</h2>
-                <p class="home-section-desc">点击卡片进入对应的教学工具模块</p>
+                <h2 class="home-section-title">功能模块</h2>
+                <p class="home-section-desc">选择一个模块开始使用</p>
                 <div class="home-cards">
                   <div
                     v-for="item in menuItems"
@@ -2209,7 +2213,6 @@ watch(activeMenu, (newVal) => {
                         <span class="home-card-arrow">→</span>
                       </span>
                     </div>
-                    <div class="home-card-glow"></div>
                   </div>
                 </div>
               </div>
@@ -2274,6 +2277,7 @@ watch(activeMenu, (newVal) => {
                         :src="getSubjectStyle(course.subject).image"
                         :alt="course.subject"
                         class="cover-img"
+                        @error="onCoverError"
                         :style="{
                           objectPosition:
                             course.subject === '化学'
@@ -2885,7 +2889,19 @@ watch(activeMenu, (newVal) => {
                   <!-- 课件制作建议 -->
                   <div class="tips-card">
                     <h3>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#f59e0b"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        style="vertical-align: middle; margin-right: 6px"
+                      >
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                      </svg>
                       课件制作建议
                     </h3>
                     <div class="design-section">
@@ -2978,12 +2994,14 @@ watch(activeMenu, (newVal) => {
                   <p class="topic-content">{{ topic.content }}</p>
                   <div class="topic-meta">
                     <div class="topic-author">
-                      <span class="author-avatar">👤</span>
+                      <span class="author-avatar" aria-hidden="true">{{
+                        topic.author.charAt(0)
+                      }}</span>
                       <span>{{ topic.author }}</span>
                     </div>
                     <div class="topic-stats">
-                      <span>👁 {{ topic.views }}</span>
-                      <span>💬 {{ topic.replies }}</span>
+                      <span aria-hidden="true">👁</span> {{ topic.views }}
+                      <span aria-hidden="true">💬</span> {{ topic.replies }}
                     </div>
                   </div>
                 </div>
@@ -3461,7 +3479,24 @@ watch(activeMenu, (newVal) => {
             <div v-if="activeMenu === 'ai-summary'" class="content-panel">
               <div class="panel-header">
                 <h1>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M12 2l1.5 5L18 8l-5 1.5L12 14l-1.5-5L6 8l5-1.5L12 2z"/><path d="M19 17l.5 1.5L21 19l-1.5.5-.5 1.5-.5-1.5L17 19l1.5-.5.5-1.5z"/></svg>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#8b5cf6"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="vertical-align: middle; margin-right: 8px"
+                  >
+                    <path
+                      d="M12 2l1.5 5L18 8l-5 1.5L12 14l-1.5-5L6 8l5-1.5L12 2z"
+                    />
+                    <path
+                      d="M19 17l.5 1.5L21 19l-1.5.5-.5 1.5-.5-1.5L17 19l1.5-.5.5-1.5z"
+                    />
+                  </svg>
                   AI总结助手
                 </h1>
                 <p>智能分析学习情况，生成个性化总结</p>
@@ -3613,7 +3648,7 @@ watch(activeMenu, (newVal) => {
 /* ==================== 基础布局 ==================== */
 .lessons-page {
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f7f5f2;
   position: relative;
   font-family:
     system-ui,
@@ -3668,7 +3703,7 @@ watch(activeMenu, (newVal) => {
 
 .menu-header {
   padding: 28px 24px;
-  background: #1e293b;
+  background: #2d3a50;
   color: white;
   text-align: center;
 }
@@ -3718,21 +3753,14 @@ watch(activeMenu, (newVal) => {
 }
 
 .menu-item--active {
-  background: linear-gradient(
-    135deg,
-    rgba(76, 125, 255, 0.1) 0%,
-    rgba(99, 102, 241, 0.1) 100%
-  );
-  border-color: rgba(76, 125, 255, 0.3);
-  box-shadow: 0 2px 8px rgba(76, 125, 255, 0.1);
-}
-
-.menu-item--active .menu-item__icon {
-  transform: scale(1.1);
+  background: #f2f4f7;
+  border-color: transparent;
+  border-left: 3px solid #4c7dff;
+  border-radius: 12px 8px 8px 12px;
 }
 
 .menu-item--active .menu-item__label {
-  color: #4c7dff;
+  color: #1e293b;
   font-weight: 600;
 }
 
@@ -3782,10 +3810,15 @@ watch(activeMenu, (newVal) => {
 
 .menu-item__arrow {
   font-size: 1.2rem;
-  color: #4c7dff;
-  opacity: 0;
-  transform: translateX(-10px);
+  color: #94a3b8;
+  opacity: 0.5;
   transition: all 0.3s ease;
+}
+
+.menu-item:hover .menu-item__arrow {
+  opacity: 1;
+  color: #4c7dff;
+  transform: translateX(4px);
 }
 
 .menu-footer {
@@ -3883,33 +3916,20 @@ watch(activeMenu, (newVal) => {
 /* Hero 区域 */
 .home-hero {
   text-align: center;
-  padding: 70px 20px 60px;
+  padding: 48px 20px 40px;
   position: relative;
   z-index: 1;
 }
 
-.home-hero::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
-  height: 3px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #4c7dff, #a78bfa, #f59e0b);
-}
-
 .home-hero-badge {
   display: inline-block;
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: rgba(76, 125, 255, 0.08);
-  color: #4c7dff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  letter-spacing: 1px;
+  padding: 4px 14px;
+  border-radius: 6px;
+  background: #f2f4f7;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-bottom: 16px;
 }
 
 .home-hero-title {
@@ -3920,26 +3940,8 @@ watch(activeMenu, (newVal) => {
   letter-spacing: -1px;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #4c7dff 0%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .float-cap {
   display: inline-block;
-  animation: floatCap 3s ease-in-out infinite;
-}
-
-@keyframes floatCap {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
 }
 
 .home-hero-subtitle {
@@ -3954,7 +3956,7 @@ watch(activeMenu, (newVal) => {
 .home-stats-row {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 32px;
   flex-wrap: wrap;
 }
 
@@ -3962,18 +3964,18 @@ watch(activeMenu, (newVal) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .home-stat-num {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: #1e293b;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .home-stat-label {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: #94a3b8;
   font-weight: 500;
 }
@@ -3996,139 +3998,50 @@ watch(activeMenu, (newVal) => {
 .home-section-desc {
   text-align: center;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #64748b;
   margin: 0 0 48px 0;
 }
 
-/* 3+2 居中网格：上三下二 */
+/* 3 列等宽网格 */
 .home-cards {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 40px 36px;
-  row-gap: 44px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   max-width: 1100px;
   margin: 0 auto;
 }
 
 .home-card {
-  grid-column: span 2;
   background: white;
-  border-radius: 22px;
-  padding: 36px 28px 28px;
-  border: 1px solid rgba(76, 125, 255, 0.06);
+  border-radius: 12px;
+  padding: 28px 24px 24px;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
-}
-
-/* 自然三列排列 */
-.home-card-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
 }
 
 .home-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px rgba(76, 125, 255, 0.12);
-  border-color: rgba(76, 125, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: #d1d5db;
 }
 
-.home-card:hover .home-card-glow {
-  opacity: 1;
+/* 按模块类型着色 - 统一使用极简标记 */
+.home-card .home-card-icon-wrap {
+  background: #f2f4f7;
+}
+.home-card .home-card-badge {
+  background: #6b7280;
+}
+.home-card:hover .home-card-badge {
+  background: #4b5563;
 }
 
-/* 按模块类型着色 */
-.home-card--course-resource .home-card-icon-wrap {
-  background: #eff6ff;
-}
-.home-card--course-resource .home-card-badge {
-  background: #3b82f6;
-}
-.home-card--course-resource:hover .home-card-badge {
-  background: #2563eb;
-}
-
-.home-card--course-analysis .home-card-icon-wrap {
-  background: #fef3c7;
-}
-.home-card--course-analysis .home-card-badge {
-  background: #f59e0b;
-}
-.home-card--course-analysis:hover .home-card-badge {
-  background: #d97706;
-}
-
-.home-card--qa-session .home-card-icon-wrap {
-  background: #ecfdf5;
-}
-.home-card--qa-session .home-card-badge {
-  background: #10b981;
-}
-.home-card--qa-session:hover .home-card-badge {
-  background: #059669;
-}
-
-.home-card--after-class .home-card-icon-wrap {
-  background: #faf5ff;
-}
-.home-card--after-class .home-card-badge {
-  background: #8b5cf6;
-}
-.home-card--after-class:hover .home-card-badge {
-  background: #7c3aed;
-}
-
-.home-card--ai-summary .home-card-icon-wrap {
-  background: #fee2e2;
-}
-.home-card--ai-summary .home-card-badge {
-  background: #ef4444;
-}
-.home-card--ai-summary:hover .home-card-badge {
-  background: #dc2626;
-}
-
-.home-card--course-resource .home-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(59, 130, 246, 0.08),
-    transparent 70%
-  );
-}
-.home-card--course-analysis .home-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(245, 158, 11, 0.08),
-    transparent 70%
-  );
-}
-.home-card--qa-session .home-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(16, 185, 129, 0.08),
-    transparent 70%
-  );
-}
-.home-card--after-class .home-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(139, 92, 246, 0.08),
-    transparent 70%
-  );
-}
-.home-card--ai-summary .home-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgba(239, 68, 68, 0.08),
-    transparent 70%
-  );
+.home-card .home-card-emoji svg {
+  stroke: #6b7280;
 }
 
 .home-card-top {
@@ -4156,7 +4069,7 @@ watch(activeMenu, (newVal) => {
 }
 
 .home-card:hover .home-card-icon-wrap {
-  transform: scale(1.12) rotate(-3deg);
+  transform: scale(1.06);
 }
 
 .home-card-emoji {
@@ -4174,27 +4087,7 @@ watch(activeMenu, (newVal) => {
 }
 .home-card:hover .home-card-emoji svg,
 .home-card:hover .home-card-icon-wrap svg {
-  transform: scale(1.08);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
-}
-/* 模块颜色对应 SVG 描边色 */
-.home-card--course-resource .home-card-emoji svg {
-  stroke: #3b82f6;
-}
-.home-card--course-analysis .home-card-emoji svg {
-  stroke: #f59e0b;
-}
-.home-card--classroom-activity .home-card-emoji svg {
-  stroke: #8b5cf6;
-}
-.home-card--qa-session .home-card-emoji svg {
-  stroke: #10b981;
-}
-.home-card--after-class .home-card-emoji svg {
-  stroke: #8b5cf6;
-}
-.home-card--ai-summary .home-card-emoji svg {
-  stroke: #ef4444;
+  transform: scale(1.04);
 }
 
 .home-card-badge {
@@ -4230,7 +4123,7 @@ watch(activeMenu, (newVal) => {
 
 .home-card-desc {
   font-size: 0.85rem;
-  color: #64748b;
+  color: #475569;
   line-height: 1.65;
   margin: 0;
 }
@@ -4326,15 +4219,6 @@ watch(activeMenu, (newVal) => {
   }
 
   .home-card {
-    grid-column: span 1;
-  }
-
-  .home-card:nth-child(4),
-  .home-card:nth-child(5) {
-    grid-column: span 1;
-  }
-
-  .home-card {
     padding: 24px 18px 20px;
   }
 }
@@ -4349,11 +4233,6 @@ watch(activeMenu, (newVal) => {
     gap: 20px;
     max-width: 380px;
     margin: 0 auto;
-  }
-
-  .home-card:nth-child(4),
-  .home-card:nth-child(5) {
-    grid-column: span 1;
   }
 
   .home-hero-title {
@@ -5933,7 +5812,17 @@ watch(activeMenu, (newVal) => {
 }
 
 .author-avatar {
-  font-size: 1.2rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8e4ff;
+  color: #5b4ad0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .topic-stats {
@@ -7054,7 +6943,16 @@ watch(activeMenu, (newVal) => {
   }
 }
 .pick-result__avatar {
-  font-size: 3.5rem;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
 }
 .pick-result__name {
   font-size: 1.3rem;
@@ -7130,7 +7028,17 @@ watch(activeMenu, (newVal) => {
   border-color: #667eea;
 }
 .roster-item__avatar {
-  font-size: 1.1rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8e4ff;
+  color: #5b4ad0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 .roster-item__name {
   font-size: 0.85rem;
@@ -7176,7 +7084,17 @@ watch(activeMenu, (newVal) => {
   width: 20px;
 }
 .pick-history-item__avatar {
-  font-size: 1rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e8e4ff;
+  color: #5b4ad0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 .pick-history-item__name {
   flex: 1;
@@ -7336,8 +7254,15 @@ watch(activeMenu, (newVal) => {
   .home-card:hover,
   .course-card:hover,
   .video-card:hover,
-  .menu-item:hover {
+  .menu-item:hover,
+  .qa-question-card:hover,
+  .group-card:hover,
+  .roster-item:hover {
     transform: none !important;
+  }
+
+  .pick-result--spinning {
+    animation: none !important;
   }
 }
 </style>
