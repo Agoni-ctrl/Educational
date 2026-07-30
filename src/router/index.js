@@ -4,6 +4,7 @@ import CommunityView from "../views/CommunityView.vue";
 import AssistantView from "../views/AssistantView.vue";
 import LessonsView from "../views/LessonsView.vue";
 import ProfileView from "../views/ProfileView.vue";
+import AdminView from "../views/AdminView.vue";
 import CourseAnalysisReport from "../views/CourseAnalysisReport.vue";
 
 import FeaturesView from "../views/FeaturesView.vue";
@@ -18,6 +19,7 @@ const router = createRouter({
     { path: "/lessons", name: "lessons", component: LessonsView },
     { path: "/community", name: "community", component: CommunityView },
     { path: "/profile", name: "profile", component: ProfileView },
+    { path: "/admin", name: "admin", component: AdminView },
     { path: "/analysis", name: "analysis", component: CourseAnalysisReport },
     { path: "/about", name: "about", component: AboutView },
   ],
