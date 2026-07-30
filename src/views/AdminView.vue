@@ -1040,24 +1040,28 @@ function useTemplate(t) {
 
 <template>
   <div class="min-h-screen bg-[#F7F6F3] flex flex-col font-sans antialiased">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-blue-700 focus:px-3 focus:py-2 focus:rounded-lg focus:shadow-md focus:text-xs"
+      >跳到主内容</a
+    >
     <!-- 顶栏 -->
     <header
       class="fixed top-0 left-0 right-0 z-50 h-11 bg-white border-b border-gray-100 flex items-center justify-between px-5"
     >
-      <div class="flex items-center gap-2">
-        <span
-          class="text-xs uppercase tracking-[0.06em] font-semibold text-gray-400"
-          >教学管理</span
-        >
-      </div>
+      <h1
+        class="text-xs uppercase tracking-[0.06em] font-semibold text-gray-400"
+      >
+        教学管理
+      </h1>
       <div class="flex items-center gap-4">
         <span class="text-[11px] text-gray-500">{{ userName }}</span>
-        <button
-          @click="router.push('/')"
+        <RouterLink
+          to="/"
           class="text-[11px] text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
         >
           返回首页
-        </button>
+        </RouterLink>
       </div>
     </header>
 
@@ -1070,7 +1074,7 @@ function useTemplate(t) {
           <button
             v-for="m in menuItems"
             :key="m.id"
-            class="flex items-center gap-2.5 w-full px-2.5 py-2 text-xs rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
+            class="flex items-center gap-2.5 w-full px-2.5 py-2 text-xs rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
             :class="{
               '!text-blue-700 !bg-blue-50/60 font-semibold':
                 activeMenu === m.id,
@@ -1087,7 +1091,12 @@ function useTemplate(t) {
       </aside>
 
       <!-- 主区 -->
-      <main class="flex-1 overflow-y-auto p-5 lg:p-6 flex flex-col gap-4">
+      <main
+        class="flex-1 overflow-y-auto p-5 lg:p-6 flex flex-col gap-4"
+        id="main-content"
+        aria-labelledby="main-heading"
+      >
+        <h2 id="main-heading" class="sr-only">管理后台</h2>
         <!-- ═══ 工作台 ═══ -->
         <template v-if="activeMenu === 'dashboard'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1111,13 +1120,13 @@ function useTemplate(t) {
             <div
               class="bg-white border border-gray-100 rounded-xl p-5 md:col-span-2"
             >
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 周生成趋势
               </h3>
               <div id="ch-d1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 课件类型占比
               </h3>
               <div id="ch-d2" class="h-80"></div>
@@ -1125,7 +1134,9 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">学科分布</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                学科分布
+              </h3>
               <div id="ch-d3" class="h-80"></div>
             </div>
           </div>
@@ -1160,7 +1171,9 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="bg-white border border-gray-100 rounded-xl p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3">课程表</h3>
+            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+              课程表
+            </h3>
             <div class="overflow-x-auto">
               <div
                 class="grid"
@@ -1202,7 +1215,7 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 每日课程分布
               </h3>
               <div id="ch-s4" class="h-80"></div>
@@ -1283,17 +1296,19 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">课时热度</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                课时热度
+              </h3>
               <div id="ch-s1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 年级课时分布
               </h3>
               <div id="ch-s2" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 教学完成度
               </h3>
               <div id="ch-s3" class="h-80"></div>
@@ -1346,24 +1361,26 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">能力对比</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                能力对比
+              </h3>
               <div id="ch-c1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 分数段分布
               </h3>
               <div id="ch-c2" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 成绩·参与度
               </h3>
               <div id="ch-c3" class="h-80"></div>
             </div>
           </div>
           <div class="bg-white border border-gray-100 rounded-xl p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3">
+            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
               {{ activeClass }} · 学生成绩
             </h3>
             <div class="text-xs">
@@ -1408,7 +1425,7 @@ function useTemplate(t) {
           <!-- 班级成绩趋势 -->
           <div class="grid grid-cols-1 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
                 各班级成绩趋势
               </h3>
               <div id="ch-c4" class="h-80"></div>
@@ -1446,20 +1463,28 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">分数分布</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                分数分布
+              </h3>
               <div id="ch-g1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">6周趋势</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                6周趋势
+              </h3>
               <div id="ch-g2" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">学科能力</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                学科能力
+              </h3>
               <div id="ch-g3" class="h-80"></div>
             </div>
           </div>
           <div class="bg-white border border-gray-100 rounded-xl p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3">成绩明细</h3>
+            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+              成绩明细
+            </h3>
             <div class="text-xs">
               <div
                 class="grid grid-cols-[1fr_50px_40px_60px_80px] gap-2 px-2.5 py-2 text-[10px] font-semibold text-gray-400 border-b border-gray-50 items-center"
@@ -1541,15 +1566,21 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">使用排行</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                使用排行
+              </h3>
               <div id="ch-t1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">模板类型</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                模板类型
+              </h3>
               <div id="ch-t2" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2">月度趋势</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
+                月度趋势
+              </h3>
               <div id="ch-t3" class="h-80"></div>
             </div>
           </div>
@@ -1615,40 +1646,57 @@ function useTemplate(t) {
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-3">个人信息</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+                个人信息
+              </h3>
               <div class="flex flex-col gap-2">
-                <div
-                  class="flex items-center gap-4 py-1.5 border-b border-gray-50"
+                <label
+                  class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
                 >
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >姓名</span
                   ><input
                     v-model="profile.name"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent"
+                    name="display_name"
+                    autocomplete="name"
+                    spellcheck="false"
+                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
-                </div>
-                <div
-                  class="flex items-center gap-4 py-1.5 border-b border-gray-50"
+                </label>
+                <label
+                  class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
                 >
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >邮箱</span
                   ><input
                     v-model="profile.email"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent"
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    spellcheck="false"
+                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
-                </div>
-                <div class="flex items-center gap-4 py-1.5">
+                </label>
+                <label
+                  class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
+                >
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >手机</span
                   ><input
                     v-model="profile.phone"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent"
+                    type="tel"
+                    name="phone"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
-                </div>
+                </label>
               </div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-3">通知偏好</h3>
+              <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+                通知偏好
+              </h3>
               <div class="flex flex-col gap-2">
                 <label
                   class="flex items-center justify-between py-1.5 cursor-pointer"
@@ -1707,7 +1755,9 @@ function useTemplate(t) {
 </template>
 
 <style scoped>
-/* 所有样式已使用 Tailwind utility classes，此处为最小化自定义 */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
