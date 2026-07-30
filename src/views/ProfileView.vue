@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import {
   ref,
   reactive,
@@ -11,6 +11,7 @@ import {
 import { RouterLink } from "vue-router";
 import { useCommunity, formatTime } from "../composables/useCommunity.js";
 import * as echarts from "echarts";
+import SiteNav from "../components/layout/SiteNav.vue";
 
 // 用户信息
 import { useUserStore } from "../stores/userStore.js";
@@ -1454,25 +1455,7 @@ onUnmounted(() => {
 
 <template>
   <div class="profile-page">
-    <!-- 页面头部 -->
-    <header class="profile-header">
-      <div class="profile-header__inner">
-        <RouterLink to="/" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path
-              d="M19 12H5M12 19l-7-7 7-7"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          返回首页
-        </RouterLink>
-        <h1 class="profile-title">个人中心</h1>
-      </div>
-    </header>
-
+    <SiteNav />
     <div class="profile-container">
       <!-- 左侧菜单 -->
       <aside class="profile-sidebar">
@@ -2492,62 +2475,17 @@ onUnmounted(() => {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: transparent;
-  padding-top: var(--space-20);
-}
-
-.profile-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-fixed);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.profile-header__inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-}
-
-.back-link {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  transition: color var(--transition-fast);
-}
-
-.back-link:hover {
-  color: var(--text-primary);
-}
-
-.back-link svg {
-  width: 18px;
-  height: 18px;
-}
-
-.profile-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
+  background: #f7f5f2;
 }
 
 .profile-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-6);
+  padding: 104px 24px 48px;
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: var(--space-6);
+  gap: 32px;
+  align-items: start;
 }
 
 /* 侧边栏 */
@@ -2558,26 +2496,26 @@ onUnmounted(() => {
 }
 
 .user-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-6);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 20px 20px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--space-4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
 }
 
 .user-card__avatar {
   width: 80px;
   height: 80px;
-  border-radius: var(--radius-full);
-  background: #2563eb;
-  color: white;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  margin: 0 auto var(--space-4);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 auto 16px;
   overflow: hidden;
 }
 
@@ -2639,13 +2577,15 @@ onUnmounted(() => {
 }
 
 .menu-item:hover {
-  background: #f8fafc;
+  background: #f2f4f7;
 }
 
 .menu-item--active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: #f2f4f7;
+  color: #0f172a;
   font-weight: 600;
+  border-left: 3px solid #4c7dff;
+  border-radius: 12px 8px 8px 12px;
 }
 
 .menu-item__icon {
@@ -2700,15 +2640,15 @@ onUnmounted(() => {
 
 .form-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(0, 144, 255, 0.1);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .info-text {
   padding: 12px 16px;
-  background: #f8fafc;
+  background: #f2f4f7;
   border-radius: 12px;
-  color: #64748b;
+  color: #475569;
   font-size: 0.9375rem;
 }
 
@@ -2744,19 +2684,19 @@ onUnmounted(() => {
 
 .form-textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(0, 144, 255, 0.1);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-textarea::placeholder {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .char-count {
   display: block;
   text-align: right;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #64748b;
   margin-top: 4px;
 }
 
@@ -2768,7 +2708,7 @@ onUnmounted(() => {
   gap: 8px;
   width: 100%;
   padding: 12px 24px;
-  background: #2563eb;
+  background: #374151;
   color: white;
   border: none;
   border-radius: 10px;
@@ -2779,7 +2719,7 @@ onUnmounted(() => {
 }
 
 .btn-save:hover {
-  background: #1d4ed8;
+  background: #1f2937;
 }
 
 .btn-save svg {
@@ -2798,8 +2738,8 @@ onUnmounted(() => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #2563eb;
-  color: white;
+  background: #e5e7eb;
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2823,8 +2763,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: #f2f4f7;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -2833,7 +2773,7 @@ onUnmounted(() => {
 }
 
 .upload-btn:hover {
-  background: #e2e8f0;
+  background: #e5e7eb;
 }
 
 .upload-btn svg {
@@ -2851,7 +2791,7 @@ onUnmounted(() => {
 .name-input {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #2563eb;
+  border: 1px solid #6b7280;
   border-radius: 12px;
   font-size: 0.9375rem;
   outline: none;
@@ -2860,7 +2800,7 @@ onUnmounted(() => {
 .name-display {
   flex: 1;
   padding: 10px 16px;
-  background: #f8fafc;
+  background: #f2f4f7;
   border-radius: 12px;
   font-size: 0.9375rem;
   color: #0f172a;
@@ -2871,7 +2811,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  background: #f1f5f9;
+  background: #f2f4f7;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -2881,7 +2821,7 @@ onUnmounted(() => {
 }
 
 .btn-edit:hover {
-  background: #e2e8f0;
+  background: #e5e7eb;
 }
 
 .btn-edit svg {
@@ -2900,21 +2840,21 @@ onUnmounted(() => {
 }
 
 .btn-success {
-  background: #dcfce7;
-  color: #16a34a;
+  background: #f2f4f7;
+  color: #374151;
 }
 
 .btn-success:hover {
-  background: #bbf7d0;
+  background: #e5e7eb;
 }
 
 .btn-cancel {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #f2f4f7;
+  color: #6b7280;
 }
 
 .btn-cancel:hover {
-  background: #fecaca;
+  background: #e5e7eb;
 }
 
 /* 实名认证 */
@@ -3427,6 +3367,7 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .profile-container {
     grid-template-columns: 1fr;
+    padding: 88px 16px 32px;
   }
 
   .profile-sidebar {
@@ -3442,15 +3383,21 @@ onUnmounted(() => {
   .menu-item {
     white-space: nowrap;
   }
+
+  .menu-item--active {
+    border-left: none;
+    border-bottom: 2px solid #4c7dff;
+    border-radius: 12px 12px 8px 8px;
+  }
 }
 
 /* 我的收藏 */
 .favorites-empty {
   text-align: center;
   padding: 64px 32px;
-  background: #f8fafc;
+  background: #f2f4f7;
   border-radius: 20px;
-  border: 2px dashed #e2e8f0;
+  border: 2px dashed #d1d5db;
 }
 
 .empty-icon {
@@ -4587,6 +4534,23 @@ onUnmounted(() => {
   .tip-card {
     flex-direction: column;
     text-align: center;
+  }
+}
+
+/* ==================== 无障碍支持 ==================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .favorite-card:hover,
+  .post-card:hover {
+    transform: none !important;
   }
 }
 </style>
