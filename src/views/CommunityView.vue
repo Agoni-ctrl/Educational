@@ -587,7 +587,7 @@ onMounted(() => {
     "Helvetica Neue",
     sans-serif;
   color: #0f172a;
-  background: #f8fafc;
+  background: #f7f5f2;
 }
 
 .main {
@@ -607,7 +607,7 @@ onMounted(() => {
   padding: 24px 28px;
   border-radius: 12px;
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -654,8 +654,8 @@ onMounted(() => {
   min-width: 80px;
   padding: 10px 16px;
   border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: #f2f4f7;
+  border: 1px solid transparent;
 }
 
 .stats-pill strong {
@@ -683,7 +683,7 @@ onMounted(() => {
   margin-bottom: 20px;
   padding: 4px;
   border-radius: 10px;
-  background: #f1f5f9;
+  background: #e8e6e1;
   overflow-x: auto;
 }
 
@@ -740,7 +740,7 @@ onMounted(() => {
   gap: 16px;
   margin-bottom: 18px;
   padding: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
 }
@@ -770,9 +770,8 @@ onMounted(() => {
 
 .filter-btn--active {
   color: #7c3aed;
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(124, 58, 237, 0.25);
-  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.08);
+  background: #f5f3ff;
+  border-color: transparent;
 }
 
 .btn {
@@ -796,24 +795,21 @@ onMounted(() => {
 .btn--dark {
   background: #7c3aed;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
 }
 
 .btn--dark:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35);
+  background: #6d28d9;
 }
 
 .btn--ghost {
   background: #ffffff;
   color: #475569;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 .btn--ghost:hover {
-  border-color: #7c3aed;
-  color: #7c3aed;
-  background: #ffffff;
+  border-color: #d1d5db;
+  background: #f9fafb;
 }
 
 .post-form {
@@ -823,7 +819,7 @@ onMounted(() => {
   max-width: 760px;
   max-height: 90vh;
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
   background: #ffffff;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   overflow: hidden;
@@ -856,10 +852,8 @@ onMounted(() => {
 
 .field-label__text {
   font-size: 0.78rem;
-  font-weight: 700;
-  color: #4a6a8a;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: #374151;
 }
 
 .post-form__side {
@@ -867,7 +861,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 16px;
   padding-left: 24px;
-  border-left: 1px solid rgba(167, 193, 225, 0.18);
+  border-left: 1px solid #e5e7eb;
 }
 
 .post-form input,
@@ -875,7 +869,7 @@ onMounted(() => {
 .post-form textarea {
   width: 100%;
   padding: 11px 14px;
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #e5e7eb;
   border-radius: 8px;
   font-size: 0.9375rem;
   font-family: inherit;
@@ -907,11 +901,11 @@ onMounted(() => {
 
 .post-form__footer {
   padding: 16px 28px 20px;
-  border-top: 1px solid rgba(167, 193, 225, 0.16);
+  border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  background: rgba(248, 251, 255, 0.6);
+  background: #faf9f7;
 }
 
 .post-form__footer .btn--primary {
@@ -953,7 +947,7 @@ onMounted(() => {
 
 .sidebar-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -961,7 +955,7 @@ onMounted(() => {
 
 .search-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
 }
 
 .card-kicker {
@@ -981,19 +975,19 @@ onMounted(() => {
 .search-box input {
   flex: 1;
   padding: 10px 14px;
-  border: 1.5px solid rgba(171, 194, 225, 0.3);
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   font-size: 0.825rem;
   outline: none;
-  background: rgba(245, 248, 255, 0.5);
+  background: #fafafa;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 }
 
 .search-box input:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
   background: #fff;
 }
 
@@ -1027,20 +1021,8 @@ onMounted(() => {
   margin-right: 10px;
   cursor: pointer;
   display: inline-block;
-  font-weight: 600;
-}
-
-.hot-word--1 {
-  color: #ef4444;
-}
-.hot-word--2 {
-  color: #f97316;
-}
-.hot-word--3 {
-  color: #7c3aed;
-}
-.hot-word--4 {
-  color: #64748b;
+  font-weight: 500;
+  color: #475569;
 }
 
 .hot-word:hover {
@@ -1052,7 +1034,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
-  border-bottom: 1px solid rgba(10, 15, 26, 0.06);
+  border-bottom: 1px solid #e5e7eb;
   padding-bottom: 8px;
 }
 
@@ -1060,15 +1042,15 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #7c3aed;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 .card-title svg {
-  width: 18px;
-  height: 18px;
-  color: #7c3aed;
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
 }
 
 .recent-list,
@@ -1115,7 +1097,7 @@ onMounted(() => {
   width: 100%;
   padding: 8px;
   background: rgba(0, 0, 0, 0.02);
-  border: 1px solid var(--border, #e2e8f0);
+  border: 1px solid #e2e8f0;
   color: #64748b;
   border-radius: 12px;
   font-size: 0.8125rem;
@@ -1138,29 +1120,29 @@ onMounted(() => {
 }
 
 .rank-num {
-  font-weight: 700;
-  font-size: 0.8125rem;
-  width: 18px;
-  height: 18px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  background: #f1f5f9;
-  color: #64748b;
+  background: #f2f4f7;
+  color: #6b7280;
 }
 
 .rank-1 {
-  background: #fee2e2;
-  color: #ef4444;
+  background: #f2f4f7;
+  color: #6b7280;
 }
 .rank-2 {
-  background: #ffedd5;
-  color: #f97316;
+  background: #f2f4f7;
+  color: #6b7280;
 }
 .rank-3 {
-  background: #fef9c3;
-  color: #eab308;
+  background: #f2f4f7;
+  color: #6b7280;
 }
 
 /* ===== 模态弹窗 ===== */
@@ -1179,7 +1161,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 28px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
 
@@ -1242,7 +1224,7 @@ onMounted(() => {
 
 .tag-cloud__btn {
   padding: 6px 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
   color: #475569;
@@ -1280,16 +1262,15 @@ onMounted(() => {
   align-items: center;
   padding: 10px 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(10, 15, 26, 0.04);
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .resource-item:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(124, 58, 237, 0.16);
-  transform: translateX(3px);
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .resource-item__icon {
@@ -1345,18 +1326,18 @@ onMounted(() => {
 }
 
 .resource-card {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .recommend-card {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .teacher-card {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .teacher-list {
@@ -1393,7 +1374,7 @@ onMounted(() => {
 .teacher-item p {
   margin-top: 2px;
   font-size: 0.76rem;
-  color: var(--ink-muted);
+  color: #6b7280;
 }
 
 .sidebar-empty,
@@ -1448,17 +1429,17 @@ onMounted(() => {
     padding: 94px 18px 48px;
   }
 
-  .hero-block {
-    padding: 22px;
-    border-radius: 26px;
+  .hero-compact {
+    padding: 20px;
+    border-radius: 12px;
   }
 
-  .hero-actions,
-  .hero-actions .btn {
+  .hero-compact__actions,
+  .hero-compact__actions .btn {
     width: 100%;
   }
 
-  .community-strip {
+  .sidebar {
     grid-template-columns: 1fr;
   }
 
@@ -1506,7 +1487,8 @@ onMounted(() => {
   }
 
   .resource-item:hover,
-  .sidebar-card:hover {
+  .sidebar-card:hover,
+  .btn:hover {
     transform: none !important;
   }
 }
