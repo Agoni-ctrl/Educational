@@ -31,7 +31,7 @@ function ec(id) {
   charts.push(c);
   return c;
 }
-const tx = { color: "#787774", fontSize: 10, fontFamily: "system-ui" };
+const tx = { color: "#787774", fontSize: 11, fontFamily: "system-ui" };
 function noAxis() {
   return {
     axisLine: { show: false },
@@ -48,7 +48,7 @@ function splitY() {
 const tip = {
   backgroundColor: "#fff",
   borderColor: "#EAEAEA",
-  textStyle: { color: "#111", fontSize: 11, fontFamily: "system-ui" },
+  textStyle: { color: "#111", fontSize: 13, fontFamily: "system-ui" },
   extraCssText:
     "border-radius:6px;padding:4px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.04);",
 };
@@ -72,7 +72,7 @@ function initCharts() {
 
   // 工作台
   ec("ch-d1")?.setOption({
-    grid: { top: 20, bottom: 24, left: 44, right: 16 },
+    grid: { top: 28, bottom: 32, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["一", "二", "三", "四", "五", "六", "日"],
@@ -95,13 +95,13 @@ function initCharts() {
         smooth: true,
         data: [5, 8, 12, 10, 15, 6, 3],
         symbol: "circle",
-        symbolSize: 6,
-        lineStyle: { color: C.work[0], width: 2 },
-        areaStyle: { color: "rgba(59,130,246,0.06)" },
+        symbolSize: 7,
+        lineStyle: { color: C.work[0], width: 2.5 },
+        areaStyle: { color: "rgba(59,130,246,0.08)" },
         label: {
           show: true,
           position: "top",
-          fontSize: 10,
+          fontSize: 11,
           color: "#787774",
         },
       },
@@ -112,12 +112,12 @@ function initCharts() {
     series: [
       {
         type: "pie",
-        radius: ["36%", "72%"],
+        radius: ["40%", "75%"],
         avoidLabelOverlap: true,
         label: {
           show: true,
           color: "#787774",
-          fontSize: 11,
+          fontSize: 13,
           formatter: "{b}\n{d}%",
         },
         data: [
@@ -130,7 +130,7 @@ function initCharts() {
     ],
   });
   ec("ch-d3")?.setOption({
-    grid: { top: 20, bottom: 28, left: 48, right: 20 },
+    grid: { top: 28, bottom: 34, left: 56, right: 24 },
     xAxis: {
       type: "category",
       data: ["语文", "数学", "英语", "物理", "化学", "生物"],
@@ -150,11 +150,11 @@ function initCharts() {
       {
         type: "bar",
         data: [35, 48, 28, 42, 30, 22],
-        barWidth: 22,
+        barWidth: 28,
         label: {
           show: true,
           position: "top",
-          fontSize: 11,
+          fontSize: 12,
           color: "#787774",
           fontWeight: 600,
         },
@@ -204,36 +204,58 @@ function initCharts() {
     [4, 6, 1],
   ];
   ec("ch-s1")?.setOption({
-    grid: g(8, 24, 52, 6),
-    xAxis: { type: "category", data: days, ...noAxis() },
-    yAxis: { type: "category", data: slots, ...noAxis() },
+    grid: { top: 24, bottom: 36, left: 60, right: 16 },
+    xAxis: {
+      type: "category",
+      data: days,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
+    },
+    yAxis: {
+      type: "category",
+      data: slots,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
+    },
     visualMap: {
       min: 0,
       max: 10,
       calculable: false,
       orient: "horizontal",
       left: "center",
-      bottom: 0,
+      bottom: 4,
       inRange: { color: ["#F0EFEC", "#CCFBF1", "#5EEAD4", "#0D9488"] },
-      textStyle: { color: "#A8A6A1", fontSize: 8 },
+      textStyle: { color: "#A8A6A1", fontSize: 10 },
     },
     series: [
       {
         type: "heatmap",
         data: hd,
         label: { show: false },
-        itemStyle: { borderColor: "#fff", borderWidth: 2, borderRadius: 2 },
+        itemStyle: { borderColor: "#fff", borderWidth: 3, borderRadius: 2 },
       },
     ],
     tooltip: { ...tip, position: "top" },
   });
   ec("ch-s2")?.setOption({
-    grid: g(),
-    xAxis: { type: "category", data: ["高一", "高二", "高三"], ...noAxis() },
+    grid: { top: 28, bottom: 28, left: 52, right: 24 },
+    xAxis: {
+      type: "category",
+      data: ["高一", "高二", "高三"],
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
+    },
     yAxis: {
-      ...splitY(),
+      type: "value",
       name: "课时/周",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 9 },
+      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
     },
     series: [
       {
@@ -243,8 +265,9 @@ function initCharts() {
           { value: 10, itemStyle: { color: C.sched[1] } },
           { value: 8, itemStyle: { color: C.sched[2] } },
         ],
-        barWidth: 24,
+        barWidth: 30,
         borderRadius: [4, 4, 0, 0],
+        label: { show: true, position: "top", fontSize: 11, color: "#787774" },
       },
     ],
     tooltip: { ...tip, trigger: "axis" },
@@ -253,12 +276,12 @@ function initCharts() {
     series: [
       {
         type: "gauge",
-        center: ["50%", "55%"],
+        center: ["50%", "58%"],
         startAngle: 210,
         endAngle: -30,
         axisLine: {
           lineStyle: {
-            width: 10,
+            width: 14,
             color: [
               [0.65, "#059669"],
               [0.88, "#F59E0B"],
@@ -270,7 +293,7 @@ function initCharts() {
         splitLine: { show: false },
         axisLabel: { show: false },
         detail: {
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: 700,
           color: "#111",
           offsetCenter: [0, "36%"],
@@ -286,23 +309,32 @@ function initCharts() {
     legend: {
       show: true,
       bottom: 0,
-      itemWidth: 7,
-      itemHeight: 7,
-      textStyle: { color: "#787774", fontSize: 9 },
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: "#787774", fontSize: 11 },
     },
-    grid: g(10, 28, 32, 6),
+    grid: { top: 28, bottom: 36, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["周一", "周二", "周三", "周四", "周五"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: { ...splitY(), min: 0 },
+    yAxis: {
+      type: "value",
+      min: 0,
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     series: [
       {
         name: "新授课",
         type: "bar",
         stack: "total",
-        barWidth: 20,
+        barWidth: 26,
         data: [4, 3, 3, 2, 2],
         itemStyle: { color: C.sched[0], borderRadius: [0, 0, 0, 0] },
       },
@@ -329,7 +361,7 @@ function initCharts() {
         label: {
           show: true,
           position: "top",
-          fontSize: 9,
+          fontSize: 10,
           color: "#787774",
           formatter: (p) => (p.value > 0 ? p.value + "节" : ""),
         },
@@ -347,7 +379,7 @@ function initCharts() {
         { name: "综合解题", max: 100 },
         { name: "创新思维", max: 100 },
       ],
-      axisName: { color: "#787774", fontSize: 9 },
+      axisName: { color: "#787774", fontSize: 10 },
       splitArea: {
         areaStyle: {
           color: ["rgba(124,58,237,0.02)", "rgba(124,58,237,0.04)"],
@@ -382,43 +414,51 @@ function initCharts() {
     ],
   });
   ec("ch-c2")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 36, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["<60", "60-69", "70-79", "80-89", "90-100"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: splitY(),
+    yAxis: {
+      type: "value",
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     legend: {
       show: true,
       bottom: 0,
-      itemWidth: 7,
-      itemHeight: 7,
-      textStyle: { color: "#787774", fontSize: 9 },
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: "#787774", fontSize: 11 },
     },
     series: [
       {
         name: "高一(3)",
         type: "bar",
-        barWidth: 8,
-        barGap: "20%",
+        barWidth: 12,
+        barGap: "30%",
         data: [3, 5, 10, 14, 8],
-        itemStyle: { color: C.cls[0], borderRadius: [2, 2, 0, 0] },
+        itemStyle: { color: C.cls[0], borderRadius: [4, 4, 0, 0] },
       },
       {
         name: "高二(1)",
         type: "bar",
-        barWidth: 8,
+        barWidth: 12,
         data: [5, 8, 12, 8, 5],
-        itemStyle: { color: C.cls[1], borderRadius: [2, 2, 0, 0] },
+        itemStyle: { color: C.cls[1], borderRadius: [4, 4, 0, 0] },
       },
       {
         name: "高三(2)",
         type: "bar",
-        barWidth: 8,
+        barWidth: 12,
         data: [2, 4, 8, 12, 14],
-        itemStyle: { color: C.cls[2], borderRadius: [2, 2, 0, 0] },
+        itemStyle: { color: C.cls[2], borderRadius: [4, 4, 0, 0] },
       },
     ],
   });
@@ -465,25 +505,30 @@ function initCharts() {
     [92, 86, 30],
   ];
   ec("ch-c3")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 32, left: 56, right: 24 },
     xAxis: {
       type: "value",
-      name: "参与度",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 9 },
-      ...noAxis(),
+      name: "参与度 (%)",
+      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       name: "成绩",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 9 },
-      ...splitY(),
+      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
     },
     series: [
       {
         type: "scatter",
-        symbolSize: (v) => Math.max(5, Math.min(18, v[2] / 2)),
+        symbolSize: (v) => Math.max(7, Math.min(22, v[2] / 2)),
         data: sct,
-        itemStyle: { color: "rgba(124,58,237,0.45)" },
+        itemStyle: { color: "rgba(124,58,237,0.5)" },
       },
     ],
     tooltip: {
@@ -493,20 +538,30 @@ function initCharts() {
     },
   });
   ec("ch-c4")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 36, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["第1次", "第2次", "第3次", "第4次", "第5次", "第6次"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: { ...splitY(), min: 60, max: 100 },
+    yAxis: {
+      type: "value",
+      min: 60,
+      max: 100,
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     legend: {
       show: true,
       bottom: 0,
-      itemWidth: 7,
-      itemHeight: 7,
-      textStyle: { color: "#787774", fontSize: 9 },
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: "#787774", fontSize: 11 },
     },
     series: [
       {
@@ -514,9 +569,9 @@ function initCharts() {
         type: "line",
         smooth: true,
         data: [72, 78, 74, 80, 85, 82],
-        lineStyle: { color: C.cls[0], width: 1.5 },
+        lineStyle: { color: C.cls[0], width: 2 },
         symbol: "circle",
-        symbolSize: 4,
+        symbolSize: 6,
         areaStyle: { color: "rgba(124,58,237,0.05)" },
       },
       {
@@ -524,9 +579,9 @@ function initCharts() {
         type: "line",
         smooth: true,
         data: [68, 72, 70, 75, 78, 80],
-        lineStyle: { color: C.cls[1], width: 1.5 },
+        lineStyle: { color: C.cls[1], width: 2 },
         symbol: "diamond",
-        symbolSize: 4,
+        symbolSize: 6,
         areaStyle: { color: "rgba(217,70,239,0.05)" },
       },
       {
@@ -534,9 +589,9 @@ function initCharts() {
         type: "line",
         smooth: true,
         data: [85, 82, 86, 84, 88, 90],
-        lineStyle: { color: C.cls[2], width: 1.5 },
+        lineStyle: { color: C.cls[2], width: 2 },
         symbol: "triangle",
-        symbolSize: 4,
+        symbolSize: 6,
         areaStyle: { color: "rgba(236,72,153,0.05)" },
       },
     ],
@@ -544,48 +599,66 @@ function initCharts() {
 
   // 成绩
   ec("ch-g1")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 32, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["<60", "60-69", "70-79", "80-89", "90-100"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: splitY(),
+    yAxis: {
+      type: "value",
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     series: [
       {
         type: "bar",
         data: [6, 12, 22, 28, 18],
-        barWidth: 22,
+        barWidth: 28,
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: C.grade[0] },
-            { offset: 1, color: "rgba(5,150,105,0.25)" },
+            { offset: 1, color: "rgba(5,150,105,0.35)" },
           ]),
           borderRadius: [4, 4, 0, 0],
         },
-        label: { show: true, position: "top", fontSize: 9, color: "#787774" },
+        label: { show: true, position: "top", fontSize: 11, color: "#787774" },
       },
     ],
   });
   ec("ch-g2")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 32, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["第1周", "第2周", "第3周", "第4周", "第5周", "第6周"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: { ...splitY(), min: 60, max: 100 },
+    yAxis: {
+      type: "value",
+      min: 60,
+      max: 100,
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     series: [
       {
         type: "line",
         smooth: true,
         data: [72, 75, 80, 78, 83, 86],
-        lineStyle: { color: C.grade[0], width: 2 },
-        areaStyle: { color: "rgba(5,150,105,0.06)" },
+        lineStyle: { color: C.grade[0], width: 2.5 },
+        areaStyle: { color: "rgba(5,150,105,0.08)" },
         symbol: "diamond",
-        symbolSize: 7,
+        symbolSize: 8,
         itemStyle: { color: C.grade[0] },
         markLine: {
           silent: true,
@@ -595,7 +668,7 @@ function initCharts() {
               label: {
                 formatter: "年级平均 80",
                 color: "#A8A6A1",
-                fontSize: 8,
+                fontSize: 10,
               },
             },
           ],
@@ -614,7 +687,7 @@ function initCharts() {
         { name: "计算能力", max: 100 },
         { name: "分析推理", max: 100 },
       ],
-      axisName: { color: "#787774", fontSize: 9 },
+      axisName: { color: "#787774", fontSize: 10 },
       splitArea: {
         areaStyle: { color: ["rgba(5,150,105,0.02)", "rgba(5,150,105,0.04)"] },
       },
@@ -645,12 +718,18 @@ function initCharts() {
     legend: {
       show: true,
       bottom: 0,
-      itemWidth: 7,
-      itemHeight: 7,
-      textStyle: { color: "#787774", fontSize: 9 },
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: "#787774", fontSize: 11 },
     },
-    grid: g(10, 28, 52, 10),
-    xAxis: { type: "value", ...noAxis(), splitLine: splitY().splitLine },
+    grid: { top: 20, bottom: 36, left: 68, right: 32 },
+    xAxis: {
+      type: "value",
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+    },
     yAxis: {
       type: "category",
       data: [
@@ -662,18 +741,20 @@ function initCharts() {
         "赵鹏程",
         "周子轩",
       ],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
     series: [
       {
         name: "当前成绩",
         type: "bar",
         data: [92, 88, 85, 78, 72, 65, 58],
-        barWidth: 12,
+        barWidth: 16,
         label: {
           show: true,
           position: "right",
-          fontSize: 9,
+          fontSize: 11,
           color: "#787774",
         },
         itemStyle: { color: C.grade[0], borderRadius: [0, 3, 3, 0] },
@@ -682,7 +763,7 @@ function initCharts() {
         name: "班级均分",
         type: "bar",
         data: [76, 76, 76, 76, 76, 76, 76],
-        barWidth: 12,
+        barWidth: 16,
         barGap: "40%",
         itemStyle: { color: "#F0EFEC", borderRadius: [0, 3, 3, 0] },
       },
@@ -691,8 +772,14 @@ function initCharts() {
 
   // 模板
   ec("ch-t1")?.setOption({
-    grid: g(8, 16, 60, 6),
-    xAxis: { type: "value", ...noAxis(), splitLine: splitY().splitLine },
+    grid: { top: 24, bottom: 28, left: 88, right: 32 },
+    xAxis: {
+      type: "value",
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+    },
     yAxis: {
       type: "category",
       data: [
@@ -702,14 +789,21 @@ function initCharts() {
         "语文精读课",
         "英语听力课",
       ],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
     series: [
       {
         type: "bar",
         data: [18, 15, 12, 9, 6],
-        barWidth: 10,
-        label: { show: true, position: "right", fontSize: 9, color: "#787774" },
+        barWidth: 16,
+        label: {
+          show: true,
+          position: "right",
+          fontSize: 11,
+          color: "#787774",
+        },
         itemStyle: { color: C.templ[0], borderRadius: [0, 3, 3, 0] },
       },
     ],
@@ -720,11 +814,11 @@ function initCharts() {
     series: [
       {
         type: "pie",
-        radius: ["38%", "65%"],
+        radius: ["42%", "76%"],
         label: {
           show: true,
           color: "#787774",
-          fontSize: 9,
+          fontSize: 12,
           formatter: "{b}\n{d}%",
         },
         data: [
@@ -736,20 +830,28 @@ function initCharts() {
     ],
   });
   ec("ch-t3")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 36, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["3月", "4月", "5月", "6月", "7月", "8月"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: splitY(),
+    yAxis: {
+      type: "value",
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     legend: {
       show: true,
       bottom: 0,
-      itemWidth: 7,
-      itemHeight: 7,
-      textStyle: { color: "#787774", fontSize: 9 },
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: "#787774", fontSize: 11 },
     },
     series: [
       {
@@ -757,27 +859,27 @@ function initCharts() {
         smooth: true,
         data: [8, 12, 15, 18, 14, 10],
         name: "物理新授课",
-        lineStyle: { color: C.templ[0], width: 1.5 },
+        lineStyle: { color: C.templ[0], width: 2 },
         symbol: "none",
-        areaStyle: { color: "rgba(217,7,6,0.04)" },
+        areaStyle: { color: "rgba(217,7,6,0.06)" },
       },
       {
         type: "line",
         smooth: true,
         data: [5, 8, 10, 12, 9, 7],
         name: "数学复习课",
-        lineStyle: { color: C.templ[1], width: 1.5 },
+        lineStyle: { color: C.templ[1], width: 2 },
         symbol: "none",
-        areaStyle: { color: "rgba(234,88,12,0.04)" },
+        areaStyle: { color: "rgba(234,88,12,0.06)" },
       },
       {
         type: "line",
         smooth: true,
         data: [3, 6, 8, 10, 7, 4],
         name: "化学实验课",
-        lineStyle: { color: C.templ[2], width: 1.5 },
+        lineStyle: { color: C.templ[2], width: 2 },
         symbol: "none",
-        areaStyle: { color: "rgba(202,138,4,0.04)" },
+        areaStyle: { color: "rgba(202,138,4,0.06)" },
       },
     ],
   });
@@ -788,12 +890,12 @@ function initCharts() {
     series: [
       {
         type: "pie",
-        radius: ["52%", "72%"],
+        radius: ["42%", "76%"],
         avoidLabelOverlap: true,
         label: {
           show: true,
           color: "#787774",
-          fontSize: 9,
+          fontSize: 11,
           formatter: "{b}\n{d}%",
         },
         data: [
@@ -806,20 +908,28 @@ function initCharts() {
     ],
   });
   ec("ch-ss2")?.setOption({
-    grid: g(),
+    grid: { top: 28, bottom: 32, left: 52, right: 24 },
     xAxis: {
       type: "category",
       data: ["1月", "2月", "3月", "4月", "5月", "6月"],
-      ...noAxis(),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: "#787774", fontSize: 11 },
     },
-    yAxis: splitY(),
+    yAxis: {
+      type: "value",
+      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     tooltip: { ...tip, trigger: "axis" },
     series: [
       {
         type: "bar",
         data: [320, 280, 410, 380, 520, 460],
-        barWidth: 16,
-        label: { show: true, position: "top", fontSize: 9, color: "#787774" },
+        barWidth: 24,
+        label: { show: true, position: "top", fontSize: 10, color: "#787774" },
         itemStyle: { color: "#64748B", borderRadius: [4, 4, 0, 0] },
       },
     ],
@@ -936,7 +1046,7 @@ function useTemplate(t) {
           >教学管理</span
         >
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-4">
         <span class="text-[11px] text-gray-500">{{ userName }}</span>
         <button
           @click="router.push('/')"
@@ -976,7 +1086,7 @@ function useTemplate(t) {
       <main class="flex-1 overflow-y-auto p-5 lg:p-6 flex flex-col gap-4">
         <!-- ═══ 工作台 ═══ -->
         <template v-if="activeMenu === 'dashboard'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div
               class="bg-white border border-gray-100 rounded-xl p-4"
               v-for="(k, i) in [
@@ -993,59 +1103,59 @@ function useTemplate(t) {
               <div class="text-[11px] text-gray-500 mt-0.5">{{ k.l }}</div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               class="bg-white border border-gray-100 rounded-xl p-5 md:col-span-2"
             >
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 周生成趋势
               </h3>
-              <div id="ch-d1" class="h-72"></div>
+              <div id="ch-d1" class="h-80"></div>
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 课件类型占比
               </h3>
-              <div id="ch-d2" class="h-72"></div>
+              <div id="ch-d2" class="h-80"></div>
             </div>
           </div>
-          <div class="grid grid-cols-1 gap-3">
+          <div class="grid grid-cols-1 gap-4">
             <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">学科分布</h3>
-              <div id="ch-d3" class="h-64"></div>
+              <div id="ch-d3" class="h-80"></div>
             </div>
           </div>
         </template>
 
         <!-- ═══ 课程表 ═══ -->
         <template v-if="activeMenu === 'schedule'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 35
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">周总课时</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 3
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">任教班级</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 65%
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">学期进度</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 92%
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">出勤率</div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="bg-white border border-gray-100 rounded-xl p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3">课程表</h3>
             <div class="overflow-x-auto">
               <div
@@ -1086,14 +1196,14 @@ function useTemplate(t) {
               </div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 每日课程分布
               </h3>
-              <div id="ch-s4" class="h-60"></div>
+              <div id="ch-s4" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 周课时利用率
               </h3>
@@ -1125,48 +1235,48 @@ function useTemplate(t) {
               </div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">课时热度</h3>
-              <div id="ch-s1" class="h-60"></div>
+              <div id="ch-s1" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 年级课时分布
               </h3>
-              <div id="ch-s2" class="h-60"></div>
+              <div id="ch-s2" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 教学完成度
               </h3>
-              <div id="ch-s3" class="h-60"></div>
+              <div id="ch-s3" class="h-80"></div>
             </div>
           </div>
         </template>
 
         <!-- ═══ 班级 ═══ -->
         <template v-if="activeMenu === 'classes'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 3
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">班级数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 120
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">学生总数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 81.6
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 72%
               </div>
@@ -1188,25 +1298,25 @@ function useTemplate(t) {
               {{ c }}
             </button>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">能力对比</h3>
-              <div id="ch-c1" class="h-60"></div>
+              <div id="ch-c1" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 分数段分布
               </h3>
-              <div id="ch-c2" class="h-60"></div>
+              <div id="ch-c2" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 成绩·参与度
               </h3>
-              <div id="ch-c3" class="h-60"></div>
+              <div id="ch-c3" class="h-80"></div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="bg-white border border-gray-100 rounded-xl p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3">
               {{ activeClass }} · 学生成绩
             </h3>
@@ -1250,59 +1360,59 @@ function useTemplate(t) {
             </div>
           </div>
           <!-- 班级成绩趋势 -->
-          <div class="grid grid-cols-1 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">
                 各班级成绩趋势
               </h3>
-              <div id="ch-c4" class="h-60"></div>
+              <div id="ch-c4" class="h-80"></div>
             </div>
           </div>
         </template>
 
         <!-- ═══ 成绩 ═══ -->
         <template v-if="activeMenu === 'grades'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 86
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">最高分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 72.4
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 12.8
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">标准差</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 86%
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">及格率</div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">分数分布</h3>
-              <div id="ch-g1" class="h-60"></div>
+              <div id="ch-g1" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">6周趋势</h3>
-              <div id="ch-g2" class="h-60"></div>
+              <div id="ch-g2" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">学科能力</h3>
-              <div id="ch-g3" class="h-60"></div>
+              <div id="ch-g3" class="h-80"></div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="bg-white border border-gray-100 rounded-xl p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3">成绩明细</h3>
             <div class="text-xs">
               <div
@@ -1345,63 +1455,63 @@ function useTemplate(t) {
               </div>
             </div>
           </div>
-          <div class="grid grid-cols-1 gap-3">
+          <div class="grid grid-cols-1 gap-4">
             <div
               class="bg-white border border-gray-100 rounded-xl p-4 max-w-md mx-auto"
             >
               <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
                 学生成绩对比
               </h3>
-              <div id="ch-g4" class="h-60"></div>
+              <div id="ch-g4" class="h-80"></div>
             </div>
           </div>
         </template>
         <template v-if="activeMenu === 'templates'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 6
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">模板数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 67
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">总使用</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 11.2
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均使用</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 4
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">PPT模板</div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">使用排行</h3>
-              <div id="ch-t1" class="h-60"></div>
+              <div id="ch-t1" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">模板类型</h3>
-              <div id="ch-t2" class="h-60"></div>
+              <div id="ch-t2" class="h-80"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-2">月度趋势</h3>
-              <div id="ch-t3" class="h-60"></div>
+              <div id="ch-t3" class="h-80"></div>
             </div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <button
               v-for="t in templates"
               :key="t.id"
-              class="bg-white border border-gray-100 rounded-xl p-3.5 flex items-center gap-3 hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none text-left"
+              class="bg-white border border-gray-100 rounded-xl p-3.5 flex items-center gap-4 hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none text-left"
               @click="useTemplate(t)"
             >
               <div
@@ -1431,38 +1541,38 @@ function useTemplate(t) {
 
         <!-- ═══ 设置 ═══ -->
         <template v-if="activeMenu === 'settings'">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 106
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">课件文件</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 42
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">学生数据</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 18
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">模板资源</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
                 2.4 GB
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">总存储</div>
             </div>
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-3">个人信息</h3>
               <div class="flex flex-col gap-2">
                 <div
-                  class="flex items-center gap-3 py-1.5 border-b border-gray-50"
+                  class="flex items-center gap-4 py-1.5 border-b border-gray-50"
                 >
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >姓名</span
@@ -1472,7 +1582,7 @@ function useTemplate(t) {
                   />
                 </div>
                 <div
-                  class="flex items-center gap-3 py-1.5 border-b border-gray-50"
+                  class="flex items-center gap-4 py-1.5 border-b border-gray-50"
                 >
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >邮箱</span
@@ -1481,7 +1591,7 @@ function useTemplate(t) {
                     class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent"
                   />
                 </div>
-                <div class="flex items-center gap-3 py-1.5">
+                <div class="flex items-center gap-4 py-1.5">
                   <span class="text-[11px] text-gray-500 w-10 shrink-0"
                     >手机</span
                   ><input
@@ -1491,7 +1601,7 @@ function useTemplate(t) {
                 </div>
               </div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-3">通知偏好</h3>
               <div class="flex flex-col gap-2">
                 <label
@@ -1536,7 +1646,7 @@ function useTemplate(t) {
             <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
               存储使用
             </h3>
-            <div id="ch-ss" class="h-60"></div>
+            <div id="ch-ss" class="h-80"></div>
           </div>
           <div
             class="bg-white border border-gray-100 rounded-xl p-4 max-w-sm mx-auto"
@@ -1544,7 +1654,7 @@ function useTemplate(t) {
             <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
               月操作频次
             </h3>
-            <div id="ch-ss2" class="h-60"></div>
+            <div id="ch-ss2" class="h-80"></div>
           </div>
         </template>
       </main>
