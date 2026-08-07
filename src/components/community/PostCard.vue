@@ -131,8 +131,14 @@ function commentAvatarColor(author) {
       </div>
 
       <!-- 标题 -->
-      <h3 class="post-card__title" @click="emit('toggle-expand')">
-        {{ post.title }}
+      <h3 class="post-card__title-wrap">
+        <button
+          type="button"
+          class="post-card__title"
+          @click="emit('toggle-expand')"
+        >
+          {{ post.title }}
+        </button>
       </h3>
 
       <!-- 内容 -->
@@ -278,6 +284,7 @@ function commentAvatarColor(author) {
             <button
               class="comment-like"
               :class="{ liked: isCommentLiked(c.id) }"
+              :aria-label="'赞评论' + (c.likes ? '（' + c.likes + '）' : '')"
               @click="handleCommentLike(c.id)"
             >
               <svg viewBox="0 0 20 20" fill="none" width="14" height="14">
@@ -312,26 +319,24 @@ function commentAvatarColor(author) {
 .post-card {
   position: relative;
   padding: 20px 24px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(18px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: #ffffff;
   overflow: hidden;
   transition:
-    transform 0.28s var(--ease-out),
-    box-shadow 0.28s var(--ease-out),
-    border-color 0.28s var(--ease-out);
+    transform 0.25s var(--ease-out),
+    box-shadow 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out);
 }
 
 .post-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: var(--border-strong);
+  box-shadow: 0 12px 32px rgba(10, 15, 26, 0.06);
 }
 
 .post-card--expanded {
-  border-color: rgba(72, 135, 214, 0.44);
+  border-color: rgba(0, 119, 230, 0.4);
 }
 
 /* ===== 主体：纯文字讨论结构 ===== */
@@ -363,7 +368,7 @@ function commentAvatarColor(author) {
 }
 
 .post-card__author-meta strong {
-  color: #1e293b;
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -374,74 +379,100 @@ function commentAvatarColor(author) {
 
 .post-card__time {
   font-size: 0.78rem;
-  color: #6b7280;
+  color: var(--ink-muted);
   font-weight: 500;
 }
 
-/* 标签 - 渐变 */
+/* 标签 - 扁平色调 */
 .post-card__tag {
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   border: none;
-  color: #7c3aed;
-  background: rgba(124, 58, 237, 0.08);
+  color: var(--accent);
+  background: rgba(0, 119, 230, 0.08);
   flex-shrink: 0;
 }
 
 .post-card__tag[data-tag="教学讨论"] {
-  background: linear-gradient(135deg, #0072ff, #4facfe);
+  color: #005bb5;
+  background: rgba(0, 119, 230, 0.1);
 }
 .post-card__tag[data-tag="课件结构"] {
-  background: linear-gradient(135deg, #00c2d4, #22d3ee);
+  color: #0e7f8e;
+  background: rgba(0, 194, 212, 0.12);
 }
 .post-card__tag[data-tag="互动设计"] {
-  background: linear-gradient(135deg, #18a06d, #34d399);
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
 }
 .post-card__tag[data-tag="多模态参考"] {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
 }
 .post-card__tag[data-tag="AI 提示词"] {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.12);
 }
 .post-card__tag[data-tag="提问"] {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
 }
 .post-card__tag[data-tag="先猜想"] {
-  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.12);
 }
 .post-card__tag[data-tag="演示"] {
-  background: linear-gradient(135deg, #fd79a8, #e84393);
+  color: #be185d;
+  background: rgba(236, 72, 153, 0.1);
 }
 .post-card__tag[data-tag="可交互"] {
-  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
 }
 .post-card__tag[data-tag="反馈"] {
-  background: linear-gradient(135deg, #e17055, #d63031);
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
 }
 .post-card__tag[data-tag="即点评"] {
-  background: linear-gradient(135deg, #fdcb6e, #e17055);
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
 }
 .post-card__tag[data-tag="课堂实录"] {
-  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  color: #005bb5;
+  background: rgba(0, 119, 230, 0.1);
 }
 
 /* 标题 */
+.post-card__title-wrap {
+  margin: 0 0 8px;
+}
+
 .post-card__title {
   font-family: var(--font-display);
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.02em;
-  margin-bottom: 8px;
+  color: var(--ink);
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  text-align: left;
   cursor: pointer;
-  color: #0c1e3b;
   transition: color 0.2s ease;
 }
 
 .post-card__title:hover {
-  color: #0072ff;
+  color: var(--accent);
+}
+
+.post-card__title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* 内容 - 知乎风格折叠 */
@@ -449,7 +480,7 @@ function commentAvatarColor(author) {
   margin-bottom: 10px;
   font-size: 0.88rem;
   line-height: 1.75;
-  color: #64748b;
+  color: var(--ink-soft);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -472,10 +503,10 @@ function commentAvatarColor(author) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 10px;
-  border-radius: 10px;
-  background: rgba(238, 245, 255, 0.92);
-  border: 1px solid rgba(171, 194, 225, 0.3);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: #f4f8fd;
+  border: 1px solid var(--border);
 }
 
 .meta-pill small,
@@ -485,12 +516,13 @@ function commentAvatarColor(author) {
 
 .meta-pill small {
   font-size: 0.65rem;
-  color: #7590b0;
+  color: var(--ink-muted);
 }
 
 .meta-pill strong {
   font-size: 0.75rem;
-  color: #1d3658;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 话题标签 */
@@ -506,18 +538,21 @@ function commentAvatarColor(author) {
   align-items: center;
   padding: 5px 10px;
   border-radius: 8px;
-  background: rgba(245, 248, 255, 0.96);
-  border: 1px solid rgba(171, 194, 225, 0.2);
+  background: #f4f8fd;
+  border: 1px solid var(--border);
   font-size: 0.7rem;
   font-weight: 600;
-  color: #5577aa;
-  transition: all 0.2s ease;
+  color: var(--ink-soft);
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
 }
 
 .post-card__chip:hover {
-  background: rgba(0, 114, 255, 0.08);
-  border-color: rgba(0, 114, 255, 0.25);
-  color: #0072ff;
+  background: rgba(0, 119, 230, 0.08);
+  border-color: rgba(0, 119, 230, 0.25);
+  color: var(--accent);
 }
 
 /* ===== 操作栏 ===== */
@@ -527,7 +562,7 @@ function commentAvatarColor(author) {
   gap: 4px;
   padding-top: 12px;
   margin-top: 12px;
-  border-top: 1px solid rgba(171, 194, 225, 0.18);
+  border-top: 1px solid var(--border);
 }
 
 .action-btn {
@@ -538,11 +573,20 @@ function commentAvatarColor(author) {
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #6b7280;
+  color: var(--ink-muted);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.action-btn:focus-visible,
+.comment-like:focus-visible,
+.post-card__comment-form button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .action-icon {
@@ -552,12 +596,7 @@ function commentAvatarColor(author) {
 }
 
 .action-num {
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-body);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -565,8 +604,8 @@ function commentAvatarColor(author) {
 }
 
 .action-btn:hover {
-  background: rgba(0, 114, 255, 0.07);
-  color: #475569;
+  background: rgba(0, 119, 230, 0.07);
+  color: var(--ink-soft);
 }
 
 /* 点赞 - 爱心红 */
@@ -611,7 +650,7 @@ function commentAvatarColor(author) {
 .post-card__comments {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(171, 194, 225, 0.18);
+  border-top: 1px solid var(--border);
 }
 
 .post-card__comment-list {
@@ -636,13 +675,13 @@ function commentAvatarColor(author) {
   display: block;
   margin-bottom: 4px;
   font-size: 0.8rem;
-  color: #1e293b;
+  color: var(--ink);
 }
 
 .post-card__comment-content p {
   font-size: 0.82rem;
   line-height: 1.6;
-  color: #64748b;
+  color: var(--ink-soft);
 }
 
 .comment-like {
@@ -653,19 +692,21 @@ function commentAvatarColor(author) {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #6b7280;
+  color: var(--ink-muted);
   cursor: pointer;
-  transition: all 0.18s;
+  transition:
+    color 0.18s,
+    background 0.18s;
   font-size: 0.72rem;
 }
 
 .comment-like:hover {
-  color: #0072ff;
-  background: rgba(0, 114, 255, 0.07);
+  color: var(--accent);
+  background: rgba(0, 119, 230, 0.07);
 }
 
 .comment-like.liked {
-  color: #0072ff;
+  color: var(--accent);
 }
 
 .post-card__comment-form {
@@ -676,41 +717,47 @@ function commentAvatarColor(author) {
 .post-card__comment-form input {
   flex: 1;
   padding: 9px 14px;
-  border: 1.5px solid rgba(171, 194, 225, 0.28);
-  border-radius: 12px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
   font-size: 0.82rem;
   outline: none;
-  background: rgba(245, 248, 255, 0.5);
+  background: #fafbfd;
+  color: var(--ink);
   transition:
     border-color 0.2s,
-    box-shadow 0.2s;
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.post-card__comment-form input::placeholder {
+  color: var(--ink-muted);
 }
 
 .post-card__comment-form input:focus {
-  border-color: #0072ff;
-  box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 119, 230, 0.1);
   background: #fff;
 }
 
 .post-card__comment-form button {
   padding: 9px 18px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #0072ff, #4facfe);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background 0.2s;
+}
+
+.post-card__comment-form button:hover:not(:disabled) {
+  background: var(--accent-deep);
 }
 
 .post-card__comment-form button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.post-card__comment-form button:not(:disabled):hover {
-  opacity: 0.85;
 }
 
 /* ===== Avatar ===== */
@@ -725,7 +772,7 @@ function commentAvatarColor(author) {
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(10, 15, 26, 0.08);
 }
 
 .avatar--sm {

@@ -28,6 +28,7 @@ export async function submitCoursewareTask(params) {
   if (params.outline) formData.append("outline", params.outline)
   if (params.requirements) formData.append("requirements", params.requirements)
   if (params.difficulty) formData.append("difficulty", params.difficulty)
+  if (params.template) formData.append("template", params.template)
 
   // 如果有参考文件，附加上传
   if (params.files?.length) {

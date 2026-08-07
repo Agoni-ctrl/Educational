@@ -24,9 +24,9 @@ const showcaseItems = [
   {
     id: 2,
     title: "课件管理",
-    subtitle: "海量模板，轻松打造精致课件",
+    subtitle: "海量精美模版，一键套用生成课件",
     description:
-      "管理所有已生成的课件与教案，支持 <em>PPT / Word / 互动游戏</em> 三种格式一键导出。<em>云端同步存储</em>，按学科与时间分类检索。",
+      "管理所有已生成的课件与教案，支持 <em>PPT / Word / 互动游戏</em> 三种格式一键导出。<em>5 套预设风格模版</em>，AI 自动匹配学科，只改内容不改设计。",
     icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h6M8 16h4"/></svg>`,
     gradient: "linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)",
     accent: "#10b981",
@@ -118,7 +118,7 @@ function stopAutoPlay() {
 
 const lessonHighlights = [
   { value: "PPT / Word / 互动课件", label: "三格式一键导出", color: "#4c7dff" },
-  { value: "日 / 周 / 月 / 年", label: "多维度数据分析", color: "#23c3b2" },
+  { value: "5 套风格模版", label: "中国风·春天·历史等", color: "#23c3b2" },
   { value: "PDF / Word / 图片", label: "参考文档智能识别", color: "#8b5cf6" },
 ];
 
@@ -164,8 +164,9 @@ onUnmounted(() => {
           </h1>
 
           <p class="hero__lead reveal" style="--i: 2">
-            描述教学目标与知识点，系统自动生成 PPT / Word / 互动课件。<br />
-            支持 PDF 参考文档上传、在线编辑与多格式下载。
+            描述教学目标与知识点，AI 自动套用精美模版生成 PPT / Word /
+            互动课件。<br />
+            支持 PDF 参考文档上传、多种风格模版选择与多格式下载。
           </p>
 
           <div

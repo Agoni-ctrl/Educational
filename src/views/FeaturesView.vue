@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 import * as echarts from "echarts";
 import {
   useFeatures,
@@ -14,6 +14,8 @@ import {
   getCoursewareHistory as fetchApiHistory,
   deleteCoursewareTask as deleteApiTask,
 } from "../composables/useCoursewareApi.js";
+
+const route = useRoute();
 
 const {
   getHistory,
@@ -54,6 +56,37 @@ const feedbackContact = ref("");
 const feedbackFileName = ref("");
 const fileInputRef = ref(null);
 const expandedRecord = ref(null);
+
+// ==================== PPT 模版数据 ====================
+const pptTemplates = ref([]);
+const pptTemplateLoading = ref(false);
+
+async function fetchPptTemplates() {
+  pptTemplateLoading.value = true;
+  try {
+    const res = await fetch("http://localhost:8000/api/templates");
+    if (res.ok) {
+      const data = await res.json();
+      pptTemplates.value = data.templates || [];
+    }
+  } catch (e) {
+    console.warn("获取 PPT 模版列表失败:", e);
+  } finally {
+    pptTemplateLoading.value = false;
+  }
+}
+
+// 自动匹配的模版提示
+const autoMatchedTemplate = computed(() => {
+  if (!pptForm.value.subject) return null;
+  const subject = pptForm.value.subject;
+  for (const t of pptTemplates.value) {
+    if (t.subjects?.some((s) => subject.includes(s) || s.includes(subject))) {
+      return t;
+    }
+  }
+  return null;
+});
 
 // ==================== 课堂互动数据 ====================
 const activityTab = ref("quick-answer");
@@ -414,6 +447,7 @@ const pptForm = ref({
   teachingGoals: "",
   keyPoints: "",
   referenceFile: null,
+  template: "", // PPT 模版 ID，为空时自动匹配
 });
 
 const docForm = ref({
@@ -485,7 +519,7 @@ const navGroups = [
         id: "ppt",
         label: "课件制作",
         icon: "ppt",
-        desc: "输入学科与知识点，生成可下载的课件文件",
+        desc: "套用精美模版，AI 自动填充课件内容",
       },
       {
         id: "doc",
@@ -557,7 +591,7 @@ const panelTitles = {
 
 const panelSubtitles = {
   overview: "概览任务状态与创作节奏，快速进入工作流",
-  ppt: "输入教学意图，AI 自动生成可下载的课件",
+  ppt: "选择预设风格模版，AI 自动套用精美版式生成课件",
   doc: "描述教学目标，AI 辅助编写完整教案",
   interactive: "根据知识点智能出题，支持分层练习",
   exam: "选择题+填空题+解答题混合组卷，一键生成A/B卷",
@@ -2450,6 +2484,7 @@ function handlePptGenerate() {
     grade: pptForm.value.duration || "45分钟",
     style: pptForm.value.style || "实验探究型",
     outline: pptForm.value.keyPoints || "",
+    template: pptForm.value.template || "",
   });
 }
 
@@ -2802,6 +2837,17 @@ watch(totalHistoryPages, (value) => {
 
 // 生命周期钩子
 onMounted(() => {
+  // 加载 PPT 模版列表
+  fetchPptTemplates();
+  // 处理路由参数：预选模版和面板
+  const queryPanel = route.query.panel;
+  const queryTemplate = route.query.template;
+  if (queryPanel) {
+    activePanel.value = queryPanel;
+  }
+  if (queryTemplate) {
+    pptForm.value.template = queryTemplate;
+  }
   // 延迟初始化确保DOM完全渲染
   setTimeout(() => {
     nextTick(() => {
@@ -3517,6 +3563,57 @@ onUnmounted(() => {
                   <option>翻转课堂型</option>
                 </select>
               </label>
+
+              <!-- PPT 模版选择 -->
+              <div class="template-select-section">
+                <label class="template-select__label">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="vertical-align: -2px; margin-right: 4px"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                  </svg>
+                  PPT 风格模版
+                  <span class="template-select__hint"
+                    >— 选取预设模版，AI 只改内容不改设计</span
+                  >
+                </label>
+                <select
+                  v-model="pptForm.template"
+                  class="template-select__dropdown"
+                >
+                  <option value="">智能匹配（根据学科自动选择）</option>
+                  <option v-for="t in pptTemplates" :key="t.id" :value="t.id">
+                    {{ t.name }} — {{ t.description }}
+                  </option>
+                </select>
+                <!-- 自动匹配提示 -->
+                <div
+                  v-if="!pptForm.template && autoMatchedTemplate"
+                  class="template-auto-hint"
+                >
+                  <span
+                    >检测到学科「{{ pptForm.subject }}」，将自动套用
+                    <strong>「{{ autoMatchedTemplate.name }}」</strong>
+                    模版风格</span
+                  >
+                </div>
+                <div
+                  v-else-if="!pptForm.template && pptForm.subject"
+                  class="template-auto-hint template-auto-hint--fallback"
+                >
+                  <span>将使用通用模版生成，也可在上方手动指定模版</span>
+                </div>
+              </div>
 
               <!-- 教学目标 -->
               <div class="objectives-card">
@@ -11510,5 +11607,66 @@ onUnmounted(() => {
   [class*="float"] {
     animation: none !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PPT 模版选择器样式
+   ══════════════════════════════════════════════════════════════ */
+.template-select-section {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.template-select__label {
+  display: flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.template-select__hint {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-left: 0.25rem;
+}
+
+.template-select__dropdown {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #334155;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.template-select__dropdown:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.template-auto-hint {
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 0.73rem;
+  color: #065f46;
+  line-height: 1.4;
+}
+
+.template-auto-hint--fallback {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
 }
 </style>

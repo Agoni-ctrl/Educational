@@ -980,46 +980,46 @@ const studentData = [
 ];
 const templates = [
   {
-    id: "t1",
-    name: "物理新授课模板",
-    desc: "导入→探究→应用→总结·四段式",
+    id: "chinese_style",
+    name: "中国风模版",
+    desc: "水墨古典风格 · 适合语文/政治/文化课",
     type: "PPT",
-    used: 15,
+    used: 23,
   },
   {
-    id: "t2",
-    name: "数学复习课模板",
-    desc: "梳理→典例→变式→检测·四环节",
+    id: "spring",
+    name: "春天主题模版",
+    desc: "清新自然风格 · 适合生物/地理/科学课",
     type: "PPT",
     used: 18,
   },
   {
-    id: "t3",
-    name: "化学实验课模板",
-    desc: "目的→步骤→观察→结论·全流程",
+    id: "history",
+    name: "历史教育模版",
+    desc: "古朴厚重风格 · 适合历史/文化类课程",
+    type: "PPT",
+    used: 15,
+  },
+  {
+    id: "first_class",
+    name: "开学第一课模版",
+    desc: "通用简洁风格 · 适合数学/英语/理化课",
+    type: "PPT",
+    used: 21,
+  },
+  {
+    id: "chapter4",
+    name: "章节教学模版",
+    desc: "结构分明风格 · 适合系统化章节教学",
     type: "PPT",
     used: 12,
   },
   {
-    id: "t4",
-    name: "语文精读课模板",
+    id: "chinese_style",
+    name: "语文精读课模版",
     desc: "背景→朗读→分析→拓展·深阅读",
     type: "教案",
     used: 9,
-  },
-  {
-    id: "t5",
-    name: "英语听力课模板",
-    desc: "预听→精听→模仿→输出·沉浸式",
-    type: "PPT",
-    used: 6,
-  },
-  {
-    id: "t6",
-    name: "生物探究课模板",
-    desc: "现象→假设→验证→结论·探究式",
-    type: "教案",
-    used: 7,
   },
 ];
 
@@ -1034,7 +1034,12 @@ const profile = ref({
 });
 
 function useTemplate(t) {
-  console.log("使用模板:", t.name);
+  if (t.type === "PPT") {
+    // 跳转到课件制作页面，并预选模版
+    router.push({ path: "/features", query: { template: t.id, panel: "ppt" } });
+  } else {
+    router.push({ path: "/features", query: { panel: "doc" } });
+  }
 }
 </script>
 
@@ -1559,7 +1564,7 @@ function useTemplate(t) {
             </div>
             <div class="bg-white border border-gray-100 rounded-xl p-5">
               <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                4
+                5
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">PPT模板</div>
             </div>

@@ -30,6 +30,7 @@ const hasMessages = computed(
 const suggestions = [
   { icon: "课", text: "帮我设计一节高中物理《牛顿第二定律》的课件结构" },
   { icon: "案", text: "根据 PDF 教案生成配套 PPT 大纲和 Word 教案" },
+  { icon: "模", text: "用中国风模版生成一节《滕王阁序》的语文课件" },
   { icon: "互", text: "为这节新课设计 2 到 3 个课堂互动环节" },
   { icon: "评", text: "分析我的教学目标是否清晰，并给出优化建议" },
   { icon: "练", text: "围绕本课知识点生成分层练习与追问问题" },
