@@ -1153,10 +1153,10 @@ function useTemplate(t) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f7f9fc] flex flex-col font-sans antialiased">
+  <div class="admin-shell min-h-screen bg-[#f7f9fc] flex flex-col antialiased">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-[#0077e6] focus:px-3 focus:py-2 focus:rounded-lg focus:shadow-md focus:text-xs"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-[#0077e6] focus:px-3 focus:py-2 focus:rounded-lg focus:shadow-md focus:text-sm"
       >跳到主内容</a
     >
     <!-- 顶栏 -->
@@ -1164,15 +1164,15 @@ function useTemplate(t) {
       class="fixed top-0 left-0 right-0 z-50 h-11 bg-white border-b border-gray-100 flex items-center justify-between px-5"
     >
       <h1
-        class="text-xs uppercase tracking-[0.06em] font-semibold text-gray-400"
+        class="text-[13px] uppercase tracking-[0.06em] font-semibold text-gray-400"
       >
         教学管理
       </h1>
       <div class="flex items-center gap-4">
-        <span class="text-[11px] text-gray-500">{{ userName }}</span>
+        <span class="text-[13px] text-gray-500">{{ userName }}</span>
         <RouterLink
           to="/"
-          class="text-[11px] text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
+          class="text-[13px] text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
         >
           返回首页
         </RouterLink>
@@ -1222,7 +1222,7 @@ function useTemplate(t) {
               <div class="stat-value">
                 {{ k.v }}
               </div>
-              <div class="text-[11px] text-gray-500 mt-0.5">{{ k.l }}</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">{{ k.l }}</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1281,23 +1281,23 @@ function useTemplate(t) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="admin-card stat-card p-5">
               <div class="stat-value">35</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">周总课时</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">周总课时</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">3</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">任教班级</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">任教班级</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">65%</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">学期进度</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">学期进度</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">92%</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">出勤率</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">出勤率</div>
             </div>
           </div>
           <div class="admin-card p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+            <h3 class="text-sm font-semibold text-gray-500 mb-3 text-pretty">
               课程表
             </h3>
             <div class="overflow-x-auto">
@@ -1313,13 +1313,13 @@ function useTemplate(t) {
                 <div
                   v-for="d in weekDays"
                   :key="d"
-                  class="text-[10px] font-semibold text-gray-400 text-center py-1"
+                  class="text-xs font-semibold text-gray-500 text-center py-1"
                 >
                   {{ d }}
                 </div>
                 <template v-for="p in periods" :key="p">
                   <div
-                    class="text-[10px] text-gray-400 flex items-center justify-center"
+                    class="text-xs text-gray-500 flex items-center justify-center"
                   >
                     {{ p }}
                   </div>
@@ -1330,7 +1330,7 @@ function useTemplate(t) {
                   >
                     <div
                       v-if="scheduleData[d]?.[p]"
-                      class="bg-[#0077e6]/10 text-[#0077e6] text-[10px] font-medium rounded px-1.5 py-0.5 leading-tight"
+                      class="bg-[#0077e6]/10 text-[#0077e6] text-xs font-medium rounded px-1.5 py-0.5 leading-tight"
                     >
                       {{ scheduleData[d][p] }}
                     </div>
@@ -1394,7 +1394,7 @@ function useTemplate(t) {
                     style="width: 40px"
                   >
                     <span
-                      class="text-xs font-semibold mb-1.5"
+                      class="text-sm font-semibold mb-1.5"
                       :class="
                         v >= 85
                           ? 'text-teal-700'
@@ -1426,7 +1426,7 @@ function useTemplate(t) {
                 <span
                   v-for="(day, i) in ['周一', '周二', '周三', '周四', '周五']"
                   :key="i"
-                  class="text-[10px] text-gray-400"
+                  class="text-xs text-gray-500"
                   style="width: 40px; text-align: center"
                   >{{ day }}</span
                 >
@@ -1487,19 +1487,19 @@ function useTemplate(t) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="admin-card stat-card p-5">
               <div class="stat-value">3</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">班级数</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">班级数</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">120</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">学生总数</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">学生总数</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">81.6</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">平均分</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">72%</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">平均进度</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">平均进度</div>
             </div>
           </div>
           <div
@@ -1508,7 +1508,7 @@ function useTemplate(t) {
             <button
               v-for="c in classList"
               :key="c"
-              class="px-3.5 py-1.5 text-xs rounded-lg text-gray-400 hover:text-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
+              class="px-3.5 py-1.5 text-sm rounded-lg text-gray-500 hover:text-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
               :class="{
                 '!text-gray-900 !bg-gray-100 font-semibold': activeClass === c,
               }"
@@ -1565,12 +1565,12 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="admin-card p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+            <h3 class="text-sm font-semibold text-gray-500 mb-3 text-pretty">
               {{ activeClass }} · 学生成绩
             </h3>
-            <div class="text-xs">
+            <div class="text-sm">
               <div
-                class="grid grid-cols-[1fr_50px_40px_60px] gap-2 px-2.5 py-2 text-[10px] font-semibold text-gray-400 border-b border-gray-50"
+                class="grid grid-cols-[1fr_50px_40px_60px] gap-2 px-2.5 py-2 text-xs font-semibold text-gray-500 border-b border-gray-50"
               >
                 <span>姓名</span><span>分数</span
                 ><span class="text-center">趋势</span
@@ -1595,7 +1595,7 @@ function useTemplate(t) {
                   { up: "↑", stable: "→", down: "↓" }[s.trend]
                 }}</span>
                 <span
-                  class="text-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full w-fit justify-self-center"
+                  class="text-center text-xs font-semibold px-1.5 py-0.5 rounded-full w-fit justify-self-center"
                   :class="{
                     'bg-green-50 text-green-700':
                       s.status === '优秀' || s.status === '良好',
@@ -1632,19 +1632,19 @@ function useTemplate(t) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="admin-card stat-card p-5">
               <div class="stat-value">86</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">最高分</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">最高分</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">72.4</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">平均分</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">12.8</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">标准差</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">标准差</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">86%</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">及格率</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">及格率</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1695,12 +1695,12 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="admin-card p-5">
-            <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+            <h3 class="text-sm font-semibold text-gray-500 mb-3 text-pretty">
               成绩明细
             </h3>
-            <div class="text-xs">
+            <div class="text-sm">
               <div
-                class="grid grid-cols-[1fr_50px_40px_60px_80px] gap-2 px-2.5 py-2 text-[10px] font-semibold text-gray-400 border-b border-gray-50 items-center"
+                class="grid grid-cols-[1fr_50px_40px_60px_80px] gap-2 px-2.5 py-2 text-xs font-semibold text-gray-500 border-b border-gray-50 items-center"
               >
                 <span>姓名</span><span>分数</span><span>趋势</span
                 ><span>等级</span><span>薄弱项</span>
@@ -1724,7 +1724,7 @@ function useTemplate(t) {
                   { up: "↑", stable: "→", down: "↓" }[s.trend]
                 }}</span>
                 <span
-                  class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full w-fit"
+                  class="text-xs font-semibold px-1.5 py-0.5 rounded-full w-fit"
                   :class="{
                     'bg-green-50 text-green-700':
                       s.status === '优秀' || s.status === '良好',
@@ -1733,7 +1733,7 @@ function useTemplate(t) {
                   }"
                   >{{ s.status }}</span
                 >
-                <span class="text-gray-400 text-[10px]">{{
+                <span class="text-gray-500 text-xs">{{
                   s.score < 70 ? "需重点关注" : "—"
                 }}</span>
               </div>
@@ -1761,19 +1761,19 @@ function useTemplate(t) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="admin-card stat-card p-5">
               <div class="stat-value">6</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">模板数</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">模板数</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">67</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">总使用</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">总使用</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">11.2</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">平均使用</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">平均使用</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">5</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">PPT模板</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">PPT模板</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1831,7 +1831,7 @@ function useTemplate(t) {
               @click="useTemplate(t)"
             >
               <div
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold shrink-0"
                 :class="
                   t.type === 'PPT'
                     ? 'bg-[#0077e6]/10 text-[#0077e6]'
@@ -1841,13 +1841,13 @@ function useTemplate(t) {
                 {{ t.type === "PPT" ? "P" : "D" }}
               </div>
               <div class="flex-1 min-w-0">
-                <div class="text-xs font-semibold text-gray-900">
+                <div class="text-sm font-semibold text-gray-900">
                   {{ t.name }}
                 </div>
-                <div class="text-[10px] text-gray-400 mt-0.5 truncate">
+                <div class="text-xs text-gray-500 mt-0.5 truncate">
                   {{ t.desc }}
                 </div>
-                <div class="text-[10px] text-gray-400 mt-0.5">
+                <div class="text-xs text-gray-500 mt-0.5">
                   使用 {{ t.used }} 次 · {{ t.type }}
                 </div>
               </div>
@@ -1860,44 +1860,44 @@ function useTemplate(t) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="admin-card stat-card p-5">
               <div class="stat-value">106</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">课件文件</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">课件文件</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">42</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">学生数据</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">学生数据</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">18</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">模板资源</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">模板资源</div>
             </div>
             <div class="admin-card stat-card p-5">
               <div class="stat-value">2.4 GB</div>
-              <div class="text-[11px] text-gray-500 mt-0.5">总存储</div>
+              <div class="text-[13px] text-gray-500 mt-0.5">总存储</div>
             </div>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="admin-card p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+              <h3 class="text-sm font-semibold text-gray-500 mb-3 text-pretty">
                 个人信息
               </h3>
               <div class="flex flex-col gap-2">
                 <label
                   class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
                 >
-                  <span class="text-[11px] text-gray-500 w-10 shrink-0"
+                  <span class="text-[13px] text-gray-500 w-10 shrink-0"
                     >姓名</span
                   ><input
                     v-model="profile.name"
                     name="display_name"
                     autocomplete="name"
                     spellcheck="false"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
+                    class="flex-1 text-sm text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
                 </label>
                 <label
                   class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
                 >
-                  <span class="text-[11px] text-gray-500 w-10 shrink-0"
+                  <span class="text-[13px] text-gray-500 w-10 shrink-0"
                     >邮箱</span
                   ><input
                     v-model="profile.email"
@@ -1905,13 +1905,13 @@ function useTemplate(t) {
                     name="email"
                     autocomplete="email"
                     spellcheck="false"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
+                    class="flex-1 text-sm text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
                 </label>
                 <label
                   class="flex items-center gap-4 py-1.5 border-b border-gray-50 focus-within:border-blue-200 transition-colors"
                 >
-                  <span class="text-[11px] text-gray-500 w-10 shrink-0"
+                  <span class="text-[13px] text-gray-500 w-10 shrink-0"
                     >手机</span
                   ><input
                     v-model="profile.phone"
@@ -1919,19 +1919,19 @@ function useTemplate(t) {
                     name="phone"
                     autocomplete="tel"
                     inputmode="numeric"
-                    class="flex-1 text-xs text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
+                    class="flex-1 text-sm text-gray-900 border-0 outline-none bg-transparent focus-visible:outline-none py-0.5"
                   />
                 </label>
               </div>
             </div>
             <div class="admin-card p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
+              <h3 class="text-sm font-semibold text-gray-500 mb-3 text-pretty">
                 通知偏好
               </h3>
               <div class="flex flex-col gap-2">
                 <label
                   class="flex items-center justify-between py-1.5 cursor-pointer"
-                  ><span class="text-xs text-gray-900">课件审核通知</span
+                  ><span class="text-sm text-gray-900">课件审核通知</span
                   ><input
                     type="checkbox"
                     v-model="profile.notifyReview"
@@ -1942,7 +1942,7 @@ function useTemplate(t) {
                 ></label>
                 <label
                   class="flex items-center justify-between py-1.5 cursor-pointer"
-                  ><span class="text-xs text-gray-900">成绩更新通知</span
+                  ><span class="text-sm text-gray-900">成绩更新通知</span
                   ><input
                     type="checkbox"
                     v-model="profile.notifyGrade"
@@ -1953,7 +1953,7 @@ function useTemplate(t) {
                 ></label>
                 <label
                   class="flex items-center justify-between py-1.5 cursor-pointer"
-                  ><span class="text-xs text-gray-900">系统公告</span
+                  ><span class="text-sm text-gray-900">系统公告</span
                   ><input
                     type="checkbox"
                     v-model="profile.notifySystem"
@@ -2008,12 +2008,19 @@ function useTemplate(t) {
   font-variant-numeric: tabular-nums;
 }
 
+.admin-shell {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
 /* ── 侧边栏 ─────────────────────────── */
 .admin-nav-head {
   padding: 2px 10px 10px;
   margin-bottom: 6px;
   border-bottom: 1px solid rgba(10, 15, 26, 0.08);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2030,7 +2037,7 @@ function useTemplate(t) {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   position: relative;
@@ -2071,13 +2078,13 @@ function useTemplate(t) {
 }
 
 .admin-nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
   background: #f1f5f9;
@@ -2141,7 +2148,7 @@ function useTemplate(t) {
 }
 
 .chart-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.01em;
@@ -2149,7 +2156,7 @@ function useTemplate(t) {
 }
 
 .chart-desc {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
   color: var(--ink-muted);
   margin-bottom: 8px;
@@ -2160,7 +2167,7 @@ function useTemplate(t) {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
   color: var(--ink-soft);
   padding: 6px 9px;
@@ -2181,7 +2188,7 @@ function useTemplate(t) {
 
 .chart-tag {
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.4;
   padding: 1px 6px;
