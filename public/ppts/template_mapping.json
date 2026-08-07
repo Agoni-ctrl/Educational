@@ -1,0 +1,78 @@
+{
+  "description": "PPT模版映射配置 - AI根据学科/场景自动匹配对应模版，只需替换内容",
+  "templates": [
+    {
+      "id": "spring",
+      "name": "春天主题",
+      "file": "春天主题.pptx",
+      "description": "清新自然的春天风格，适合生物、地理、自然科学类课件",
+      "subjects": ["生物", "地理", "自然", "科学", "小学科学"],
+      "scenes": ["新授课", "公开课", "主题班会"],
+      "tags": ["清新", "自然", "绿色", "春天"],
+      "preview": "绿叶、花朵、自然元素为主的清新设计风格"
+    },
+    {
+      "id": "first_class",
+      "name": "开学第一课",
+      "file": "开学第一课.pptx",
+      "description": "通用型教学模版，适合各类学科的常规课堂教学",
+      "subjects": ["数学", "英语", "物理", "化学", "信息技术", "通用技术"],
+      "scenes": ["新授课", "复习课", "开学第一课"],
+      "tags": ["通用", "简洁", "现代", "教学"],
+      "preview": "简洁大方的现代教学风格，适用于日常课堂"
+    },
+    {
+      "id": "chinese_style",
+      "name": "中国风",
+      "file": "中国风.pptx",
+      "description": "典雅中国风设计，适合语文、政治、传统文化类课件",
+      "subjects": ["语文", "政治", "道德与法治", "传统文化", "书法", "国学"],
+      "scenes": ["精读课", "鉴赏课", "主题班会", "文化讲座"],
+      "tags": ["中国风", "古典", "典雅", "文化"],
+      "preview": "水墨山水、古典纹样为主的中国传统文化风格"
+    },
+    {
+      "id": "chapter4",
+      "name": "章节教学",
+      "file": "第4章 5.pptx",
+      "description": "结构化章节模版，适合按章节组织的系统化教学课件",
+      "subjects": ["数学", "物理", "化学", "生物", "英语"],
+      "scenes": ["章节教学", "系统复习", "专题讲解"],
+      "tags": ["结构化", "章节", "系统", "专业"],
+      "preview": "章节分明、层次清晰的专业教学排版风格"
+    },
+    {
+      "id": "history",
+      "name": "历史教育",
+      "file": "历史教育.pptx",
+      "description": "古朴历史风格，专为历史、文化类课程设计",
+      "subjects": ["历史", "考古", "文化遗产", "博物馆"],
+      "scenes": ["历史课", "文化课", "专题讲座", "主题班会"],
+      "tags": ["历史", "古朴", "文化", "厚重"],
+      "preview": "古朴厚重的历史感设计，适合人文历史类教学"
+    }
+  ],
+  "subjectTemplateMap": {
+    "语文": "chinese_style",
+    "历史": "history",
+    "政治": "chinese_style",
+    "道德": "chinese_style",
+    "传统文化": "chinese_style",
+    "国学": "chinese_style",
+    "书法": "chinese_style",
+    "生物": "spring",
+    "地理": "spring",
+    "自然": "spring",
+    "科学": "spring",
+    "物理": "chapter4",
+    "化学": "chapter4",
+    "数学": "chapter4",
+    "英语": "first_class",
+    "信息技术": "first_class",
+    "通用技术": "first_class",
+    "美术": "spring",
+    "音乐": "spring",
+    "体育": "first_class"
+  },
+  "defaultTemplate": "first_class"
+}

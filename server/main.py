@@ -25,7 +25,11 @@ from pydantic import BaseModel
 
 from config import OUTPUT_DIR, HOST, PORT
 from ai_service import generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content
-from file_generator import generate_pptx, generate_docx, generate_quiz_html, generate_exam_html
+from file_generator import (
+    generate_pptx, generate_pptx_from_template,
+    generate_docx, generate_quiz_html, generate_exam_html,
+    get_template_list, pick_template,
+)
 
 app = FastAPI(title="EduAI 课件生成 API", version="1.0.0")
 
@@ -79,6 +83,7 @@ async def create_courseware(
     fillCount: str = Form("6"),
     essayCount: str = Form("4"),
     generateAB: str = Form("false"),
+    template: str = Form(""),       # PPT 模版 ID，为空时自动根据学科匹配
     files: list[UploadFile] = File(default=[]),
 ):
     """
@@ -101,6 +106,7 @@ async def create_courseware(
         "fillCount": fillCount,
         "essayCount": essayCount,
         "generateAB": generateAB,
+        "template": template,
     }
 
     # 后台异步执行
@@ -151,7 +157,11 @@ async def _run_generation(task_id: str, params: dict):
         content["grade"] = params.get("grade", "")
         content["duration"] = params.get("duration", "45分钟")
         if params["type"] == "ppt":
-            filepath, filename = generate_pptx(content)
+            # 使用模版生成：优先显式指定模版，否则根据学科自动匹配
+            template_id = params.get("template", "") or ""
+            _update_task(task_id, progress=70,
+                         stage="正在套用 PPT 模版渲染中...")
+            filepath, filename = generate_pptx_from_template(content, template_id)
         elif params["type"] == "doc":
             filepath, filename = generate_docx(content)
         elif params["type"] == "exam":
@@ -251,6 +261,17 @@ def list_tasks():
         }
         for t in sorted(_tasks.values(), key=lambda x: x["id"], reverse=True)
     ]
+
+
+# ── API: PPT 模版列表 ─────────────────────────────────────────
+
+@app.get("/api/templates")
+def list_templates():
+    """返回可用的 PPT 模版列表"""
+    return {
+        "templates": get_template_list(),
+        "defaultTemplate": pick_template(),
+    }
 
 
 # ── API: 删除任务 ─────────────────────────────────────────────

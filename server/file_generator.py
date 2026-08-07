@@ -1,10 +1,13 @@
 """
 文件生成器 — 将 AI 生成的结构化内容渲染为 PPTX / DOCX / HTML 文件
 支持多套模板配色，自动根据学科匹配主题风格。
+支持基于 public/ppts 目录下的预置 PPTX 模版进行内容填充。
 """
 
 import os
 import re
+import json
+import shutil
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -17,6 +20,79 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
 
 from config import OUTPUT_DIR
+
+# ════════════════════════════════════════════════════════════════
+# PPT 模版映射配置
+# ════════════════════════════════════════════════════════════════
+
+# 项目 public/ppts 目录路径
+_PPT_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public", "ppts")
+_TEMPLATE_MAPPING_FILE = os.path.join(_PPT_TEMPLATES_DIR, "template_mapping.json")
+
+# 加载模版映射配置
+_template_config = {}
+try:
+    if os.path.exists(_TEMPLATE_MAPPING_FILE):
+        with open(_TEMPLATE_MAPPING_FILE, "r", encoding="utf-8") as f:
+            _template_config = json.load(f)
+except Exception:
+    pass
+
+# 模版 ID → 文件名映射
+TEMPLATE_ID_MAP = {}
+TEMPLATE_LIST = []
+for _t in _template_config.get("templates", []):
+    TEMPLATE_ID_MAP[_t["id"]] = _t["file"]
+    TEMPLATE_LIST.append({
+        "id": _t["id"],
+        "name": _t["name"],
+        "description": _t["description"],
+        "subjects": _t.get("subjects", []),
+        "preview": _t.get("preview", ""),
+    })
+
+# 学科 → 模版 ID 映射
+SUBJECT_TEMPLATE_MAP = _template_config.get("subjectTemplateMap", {})
+DEFAULT_TEMPLATE_ID = _template_config.get("defaultTemplate", "first_class")
+
+# 确保模版文件存在
+def _get_template_path(template_id):
+    """获取模版文件的完整路径，不存在则返回 None"""
+    filename = TEMPLATE_ID_MAP.get(template_id)
+    if not filename:
+        return None
+    path = os.path.join(_PPT_TEMPLATES_DIR, filename)
+    return path if os.path.exists(path) else None
+
+
+def get_template_list():
+    """返回可用模版列表（供 API 使用）"""
+    available = []
+    for t in TEMPLATE_LIST:
+        if _get_template_path(t["id"]):
+            available.append(t)
+    return available
+
+
+def pick_template(subject="", template_id=""):
+    """根据学科或显式指定选择模版 ID"""
+    # 显式指定优先
+    if template_id and template_id in TEMPLATE_ID_MAP and _get_template_path(template_id):
+        return template_id
+    # 根据学科自动匹配
+    if subject:
+        for keyword, tid in SUBJECT_TEMPLATE_MAP.items():
+            if keyword in subject:
+                if _get_template_path(tid):
+                    return tid
+    # 返回默认模版
+    if _get_template_path(DEFAULT_TEMPLATE_ID):
+        return DEFAULT_TEMPLATE_ID
+    # 兜底：返回第一个可用模版
+    for t in TEMPLATE_LIST:
+        if _get_template_path(t["id"]):
+            return t["id"]
+    return None
 
 # ════════════════════════════════════════════════════════════════
 # 多模板配色方案
@@ -407,6 +483,97 @@ SLIDE_BUILDERS = {
 # ════════════════════════════════════════════════════════════════
 # PPTX 生成主函数
 # ════════════════════════════════════════════════════════════════
+
+def _remove_all_slides(prs):
+    """移除 Presentation 中的所有幻灯片，保留母版/主题"""
+    xml_slides = prs.slides._sldIdLst
+    slides_to_remove = list(xml_slides)
+    for sld_id_elem in slides_to_remove:
+        rId = sld_id_elem.get(
+            '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'
+        )
+        if rId:
+            try:
+                prs.part.drop_rel(rId)
+            except Exception:
+                pass
+        xml_slides.remove(sld_id_elem)
+
+
+def generate_pptx_from_template(content: dict, template_id: str = "") -> tuple:
+    """
+    基于 public/ppts 目录下的预置 PPTX 模版生成课件。
+    打开模版文件，移除原有幻灯片，保留模版的主题/母版设计，
+    然后用 AI 生成的内容重新填充幻灯片。
+    
+    Args:
+        content: AI 生成的课件内容
+        template_id: 模版 ID（如 spring/first_class/chinese_style 等），
+                     为空时自动根据学科匹配
+    
+    Returns:
+        (filepath, filename) 元组
+    """
+    subject = content.get("subject", "")
+    tid = pick_template(subject, template_id)
+    template_path = _get_template_path(tid)
+    
+    if not template_path:
+        # 模版不可用，回退到内置主题生成
+        print(f"[PPT] 模版 '{tid}' 不可用，回退到内置主题生成")
+        return generate_pptx(content)
+    
+    template_name = TEMPLATE_ID_MAP.get(tid, tid)
+    print(f"[PPT] 使用模版: {template_name} → {template_path}")
+    
+    # 打开模版文件
+    prs = Presentation(template_path)
+    prs.slide_width = Inches(13.333)
+    prs.slide_height = Inches(7.5)
+    
+    # 移除模版中原有的幻灯片，保留主题/母版设计
+    _remove_all_slides(prs)
+    
+    # 从内容生成新幻灯片（使用模版的主题）
+    style = content.get("style", "")
+    theme = _pick_theme(subject, style)
+    slides_data = content.get("slides", [])
+    total = len(slides_data)
+    
+    # 尝试使用模版的空白布局（默认第 7 个，索引 6）
+    try:
+        blank_layout = prs.slide_layouts[6]
+    except IndexError:
+        blank_layout = prs.slide_layouts[0]
+    
+    for idx, slide_data in enumerate(slides_data):
+        slide_type = slide_data.get("type", "content")
+        slide_notes = slide_data.get("notes", "")
+        
+        slide = prs.slides.add_slide(blank_layout)
+        
+        builder = SLIDE_BUILDERS.get(slide_type, _make_content_slide)
+        builder(slide, slide_data, theme, idx + 1, total)
+        
+        if slide_notes:
+            try:
+                notes_slide = slide.notes_slide
+                notes_slide.notes_text_frame.text = slide_notes
+            except Exception:
+                pass
+    
+    # 保存
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    safe_title = re.sub(r'[<>:"/\\|?*]', '_', content.get('title', '课件'))
+    filename = f"{safe_title}.pptx"
+    filepath = os.path.join(OUTPUT_DIR, filename)
+    prs.save(filepath)
+    
+    tmpl_info = next((t for t in TEMPLATE_LIST if t["id"] == tid), None)
+    tmpl_display = tmpl_info["name"] if tmpl_info else template_name
+    print(f"[PPT] 模版「{tmpl_display}」+ 主题「{theme['name']}」→ {filepath}")
+    return filepath, filename
+
 
 def generate_pptx(content: dict) -> tuple:
     """根据 AI 生成的内容创建 PPTX 文件，自动匹配学科主题"""
