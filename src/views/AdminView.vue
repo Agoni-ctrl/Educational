@@ -31,7 +31,7 @@ function ec(id) {
   charts.push(c);
   return c;
 }
-const tx = { color: "#787774", fontSize: 11, fontFamily: "system-ui" };
+const tx = { color: "#6B7C93", fontSize: 11, fontFamily: "system-ui" };
 function noAxis() {
   return {
     axisLine: { show: false },
@@ -41,13 +41,13 @@ function noAxis() {
 }
 function splitY() {
   return {
-    splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+    splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
     axisLabel: tx,
   };
 }
 const tip = {
   backgroundColor: "#fff",
-  borderColor: "#EAEAEA",
+  borderColor: "#E5E8EF",
   textStyle: { color: "#111", fontSize: 13, fontFamily: "system-ui" },
   extraCssText:
     "border-radius:6px;padding:4px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.04);",
@@ -59,7 +59,7 @@ function initCharts() {
   const C = {
     work: ["#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", "#EC4899"],
     sched: ["#0D9488", "#06B6D4", "#059669", "#64748B", "#F97316"],
-    cls: ["#7C3AED", "#D946EF", "#EC4899", "#6366F1", "#A855F7"],
+    cls: ["#0077E6", "#00C2D4", "#10B981", "#6366F1", "#0EA5E9"],
     grade: ["#059669", "#0891B2", "#65A30D", "#0D9488", "#84CC16"],
     templ: ["#D97706", "#EA580C", "#CA8A04", "#78716C", "#A8A29E"],
   };
@@ -78,13 +78,13 @@ function initCharts() {
       data: ["一", "二", "三", "四", "五", "六", "日"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       min: 0,
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -102,7 +102,7 @@ function initCharts() {
           show: true,
           position: "top",
           fontSize: 11,
-          color: "#787774",
+          color: "#6B7C93",
         },
       },
     ],
@@ -116,7 +116,7 @@ function initCharts() {
         avoidLabelOverlap: true,
         label: {
           show: true,
-          color: "#787774",
+          color: "#6B7C93",
           fontSize: 13,
           formatter: "{b}\n{d}%",
         },
@@ -136,12 +136,12 @@ function initCharts() {
       data: ["语文", "数学", "英语", "物理", "化学", "生物"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -155,7 +155,7 @@ function initCharts() {
           show: true,
           position: "top",
           fontSize: 12,
-          color: "#787774",
+          color: "#6B7C93",
           fontWeight: 600,
         },
         itemStyle: { color: C.work[0], borderRadius: [4, 4, 0, 0] },
@@ -210,14 +210,14 @@ function initCharts() {
       data: days,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "category",
       data: slots,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     visualMap: {
       min: 0,
@@ -226,8 +226,8 @@ function initCharts() {
       orient: "horizontal",
       left: "center",
       bottom: 4,
-      inRange: { color: ["#F0EFEC", "#CCFBF1", "#5EEAD4", "#0D9488"] },
-      textStyle: { color: "#A8A6A1", fontSize: 10 },
+      inRange: { color: ["#EEF1F5", "#CCFBF1", "#5EEAD4", "#0D9488"] },
+      textStyle: { color: "#94A3B8", fontSize: 10 },
     },
     series: [
       {
@@ -246,14 +246,14 @@ function initCharts() {
       data: ["高一", "高二", "高三"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       name: "课时/周",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      nameTextStyle: { color: "#94A3B8", fontSize: 10 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -267,7 +267,7 @@ function initCharts() {
         ],
         barWidth: 30,
         borderRadius: [4, 4, 0, 0],
-        label: { show: true, position: "top", fontSize: 11, color: "#787774" },
+        label: { show: true, position: "top", fontSize: 11, color: "#6B7C93" },
       },
     ],
     tooltip: { ...tip, trigger: "axis" },
@@ -311,7 +311,7 @@ function initCharts() {
       bottom: 0,
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: "#787774", fontSize: 11 },
+      textStyle: { color: "#6B7C93", fontSize: 11 },
     },
     grid: { top: 28, bottom: 36, left: 52, right: 24 },
     xAxis: {
@@ -319,13 +319,13 @@ function initCharts() {
       data: ["周一", "周二", "周三", "周四", "周五"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       min: 0,
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -363,7 +363,7 @@ function initCharts() {
           position: "top",
           fontSize: 11,
           fontWeight: 600,
-          color: "#787774",
+          color: "#6B7C93",
           formatter: (p) => {
             const totals = [6, 6, 6, 4, 6];
             return totals[p.dataIndex] + "节";
@@ -383,13 +383,13 @@ function initCharts() {
         { name: "综合解题", max: 100 },
         { name: "创新思维", max: 100 },
       ],
-      axisName: { color: "#787774", fontSize: 10 },
+      axisName: { color: "#6B7C93", fontSize: 10 },
       splitArea: {
         areaStyle: {
-          color: ["rgba(124,58,237,0.02)", "rgba(124,58,237,0.04)"],
+          color: ["rgba(0,119,230,0.02)", "rgba(0,119,230,0.04)"],
         },
       },
-      splitLine: { lineStyle: { color: "#F0EFEC" } },
+      splitLine: { lineStyle: { color: "#EEF1F5" } },
     },
     series: [
       {
@@ -405,13 +405,13 @@ function initCharts() {
             value: [70, 65, 80, 60, 75],
             name: "高二(1)班",
             lineStyle: { color: C.cls[1] },
-            areaStyle: { color: "rgba(52,101,56,0.1)" },
+            areaStyle: { color: "rgba(0,194,212,0.1)" },
           },
           {
             value: [85, 80, 78, 75, 82],
             name: "高三(2)班",
             lineStyle: { color: C.cls[2] },
-            areaStyle: { color: "rgba(91,75,158,0.1)" },
+            areaStyle: { color: "rgba(16,185,129,0.1)" },
           },
         ],
       },
@@ -424,12 +424,12 @@ function initCharts() {
       data: ["<60", "60-69", "70-79", "80-89", "90-100"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -439,7 +439,7 @@ function initCharts() {
       bottom: 0,
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: "#787774", fontSize: 11 },
+      textStyle: { color: "#6B7C93", fontSize: 11 },
     },
     series: [
       {
@@ -513,17 +513,17 @@ function initCharts() {
     xAxis: {
       type: "value",
       name: "参与度 (%)",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
+      nameTextStyle: { color: "#94A3B8", fontSize: 10 },
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       name: "成绩",
-      nameTextStyle: { color: "#A8A6A1", fontSize: 10 },
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      nameTextStyle: { color: "#94A3B8", fontSize: 10 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -532,7 +532,7 @@ function initCharts() {
         type: "scatter",
         symbolSize: (v) => Math.max(7, Math.min(22, v[2] / 2)),
         data: sct,
-        itemStyle: { color: "rgba(124,58,237,0.5)" },
+        itemStyle: { color: "rgba(0,119,230,0.5)" },
       },
     ],
     tooltip: {
@@ -548,14 +548,14 @@ function initCharts() {
       data: ["第1次", "第2次", "第3次", "第4次", "第5次", "第6次"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       min: 60,
       max: 100,
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -565,7 +565,7 @@ function initCharts() {
       bottom: 0,
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: "#787774", fontSize: 11 },
+      textStyle: { color: "#6B7C93", fontSize: 11 },
     },
     series: [
       {
@@ -576,7 +576,7 @@ function initCharts() {
         lineStyle: { color: C.cls[0], width: 2 },
         symbol: "circle",
         symbolSize: 6,
-        areaStyle: { color: "rgba(124,58,237,0.05)" },
+        areaStyle: { color: "rgba(0,119,230,0.05)" },
       },
       {
         name: "高二(1)",
@@ -586,7 +586,7 @@ function initCharts() {
         lineStyle: { color: C.cls[1], width: 2 },
         symbol: "diamond",
         symbolSize: 6,
-        areaStyle: { color: "rgba(217,70,239,0.05)" },
+        areaStyle: { color: "rgba(0,194,212,0.05)" },
       },
       {
         name: "高三(2)",
@@ -609,12 +609,12 @@ function initCharts() {
       data: ["<60", "60-69", "70-79", "80-89", "90-100"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -631,7 +631,7 @@ function initCharts() {
           ]),
           borderRadius: [4, 4, 0, 0],
         },
-        label: { show: true, position: "top", fontSize: 11, color: "#787774" },
+        label: { show: true, position: "top", fontSize: 11, color: "#6B7C93" },
       },
     ],
   });
@@ -642,14 +642,14 @@ function initCharts() {
       data: ["第1周", "第2周", "第3周", "第4周", "第5周", "第6周"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
       min: 60,
       max: 100,
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -671,7 +671,7 @@ function initCharts() {
               yAxis: 80,
               label: {
                 formatter: "年级平均 80",
-                color: "#A8A6A1",
+                color: "#94A3B8",
                 fontSize: 10,
               },
             },
@@ -691,11 +691,11 @@ function initCharts() {
         { name: "计算能力", max: 100 },
         { name: "分析推理", max: 100 },
       ],
-      axisName: { color: "#787774", fontSize: 10 },
+      axisName: { color: "#6B7C93", fontSize: 10 },
       splitArea: {
         areaStyle: { color: ["rgba(5,150,105,0.02)", "rgba(5,150,105,0.04)"] },
       },
-      splitLine: { lineStyle: { color: "#F0EFEC" } },
+      splitLine: { lineStyle: { color: "#EEF1F5" } },
     },
     series: [
       {
@@ -724,15 +724,15 @@ function initCharts() {
       bottom: 0,
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: "#787774", fontSize: 11 },
+      textStyle: { color: "#6B7C93", fontSize: 11 },
     },
     grid: { top: 20, bottom: 36, left: 68, right: 32 },
     xAxis: {
       type: "value",
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
     },
     yAxis: {
       type: "category",
@@ -747,7 +747,7 @@ function initCharts() {
       ],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     series: [
       {
@@ -759,7 +759,7 @@ function initCharts() {
           show: true,
           position: "right",
           fontSize: 11,
-          color: "#787774",
+          color: "#6B7C93",
         },
         itemStyle: { color: C.grade[0], borderRadius: [0, 3, 3, 0] },
       },
@@ -769,7 +769,7 @@ function initCharts() {
         data: [76, 76, 76, 76, 76, 76, 76],
         barWidth: 16,
         barGap: "40%",
-        itemStyle: { color: "#F0EFEC", borderRadius: [0, 3, 3, 0] },
+        itemStyle: { color: "#EEF1F5", borderRadius: [0, 3, 3, 0] },
       },
     ],
   });
@@ -781,8 +781,8 @@ function initCharts() {
       type: "value",
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
     },
     yAxis: {
       type: "category",
@@ -795,7 +795,7 @@ function initCharts() {
       ],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     series: [
       {
@@ -806,7 +806,7 @@ function initCharts() {
           show: true,
           position: "right",
           fontSize: 11,
-          color: "#787774",
+          color: "#6B7C93",
         },
         itemStyle: { color: C.templ[0], borderRadius: [0, 3, 3, 0] },
       },
@@ -821,7 +821,7 @@ function initCharts() {
         radius: ["42%", "76%"],
         label: {
           show: true,
-          color: "#787774",
+          color: "#6B7C93",
           fontSize: 12,
           formatter: "{b}\n{d}%",
         },
@@ -840,12 +840,12 @@ function initCharts() {
       data: ["3月", "4月", "5月", "6月", "7月", "8月"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -855,7 +855,7 @@ function initCharts() {
       bottom: 0,
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: "#787774", fontSize: 11 },
+      textStyle: { color: "#6B7C93", fontSize: 11 },
     },
     series: [
       {
@@ -898,7 +898,7 @@ function initCharts() {
         avoidLabelOverlap: true,
         label: {
           show: true,
-          color: "#787774",
+          color: "#6B7C93",
           fontSize: 11,
           formatter: "{b}\n{d}%",
         },
@@ -918,12 +918,12 @@ function initCharts() {
       data: ["1月", "2月", "3月", "4月", "5月", "6月"],
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
     },
     yAxis: {
       type: "value",
-      splitLine: { lineStyle: { color: "#F0EFEC", type: "dashed" } },
-      axisLabel: { color: "#787774", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#EEF1F5", type: "dashed" } },
+      axisLabel: { color: "#6B7C93", fontSize: 11 },
       axisLine: { show: false },
       axisTick: { show: false },
     },
@@ -933,7 +933,7 @@ function initCharts() {
         type: "bar",
         data: [320, 280, 410, 380, 520, 460],
         barWidth: 24,
-        label: { show: true, position: "top", fontSize: 10, color: "#787774" },
+        label: { show: true, position: "top", fontSize: 10, color: "#6B7C93" },
         itemStyle: { color: "#64748B", borderRadius: [4, 4, 0, 0] },
       },
     ],
@@ -1023,6 +1023,115 @@ const templates = [
   },
 ];
 
+// ── 图表解读配置（写死的初始信息，供教师理解每个图的意义） ─────────
+const chartInfo = {
+  "ch-d1": {
+    desc: "统计本周每日课件生成数量，用于观察备课节奏与工作高峰。",
+    insight: "周五生成量最高（15 个），周一、周日较少，符合教学周节奏。",
+    suggest: "可将需打磨的课件安排在周一/周日低峰期制作，错峰提升质量。",
+  },
+  "ch-d2": {
+    desc: "各类课件的产出占比，反映备课资源的分配结构。",
+    insight: "PPT 课件占 45%，是当前主力产出，教案与试卷合计约 40%。",
+    suggest: "教案类占比偏低，可尝试用 AI 一键生成配套教案补齐缺口。",
+  },
+  "ch-d3": {
+    desc: "各学科课件生成数量对比，用于发现备课资源覆盖的强弱学科。",
+    insight: "数学（48 个）与物理（42 个）产出最高，语文（35 个）偏少。",
+    suggest: "语文、生物资源缺口明显，建议优先补充对应学科的专题模板。",
+  },
+  "ch-s1": {
+    desc: "以热力图呈现一周各节次课程安排的密度，辅助排课与教研调度。",
+    insight: "周一第 1 节、周三第 2 节课时最集中，下午第 7 节课程最少。",
+    suggest: "可将教研活动、公开课试讲安排在课时较少的时段。",
+  },
+  "ch-s2": {
+    desc: "各年级每周课时总量对比，用于评估各年级教学任务的轻重。",
+    insight: "高一周课时最多（12 节），高三最少（8 节），总量分布合理。",
+    suggest: "高三课时偏少，复习资料与习题可提前规划补足。",
+  },
+  "ch-s3": {
+    desc: "学期教学进度完成情况，对比计划进度判断教学是否滞后。",
+    insight: "当前完成 65%，略高于学期时间进度，教学节奏平稳。",
+    suggest: "保持当前进度，可将富余时间用于章节复习与查漏补缺。",
+  },
+  "ch-s4": {
+    desc: "每日课程类型构成（新授 / 复习 / 实验 / 其他）及周课时利用率。",
+    insight: "周一至周三以新授课为主，周五实验课集中，周课时利用率 82%。",
+    suggest: "实验课改到上午效果更佳，可提升学生课堂参与度。",
+  },
+  "ch-s5": {
+    desc: "各天实际课时占计划课时的比例，用于发现利用率偏低的教学日。",
+    insight: "周三利用率最高（90%），周二、周四低于 75%，存在课时空档。",
+    suggest: "可将课时空档用于答疑或教研活动，提升整体课时利用率。",
+  },
+  "ch-c1": {
+    desc: "以雷达图对比各班级五项核心能力维度，快速定位班级优劣势。",
+    insight: "高一（3）班基础知识最强（88），综合解题偏弱（58），维度不均衡。",
+    suggest: "建议高一（3）班增加综合题型专项训练，补齐短板。",
+  },
+  "ch-c2": {
+    desc: "各班级成绩分段人数分布，直观反映班级整体水平与分层情况。",
+    insight: "高三（2）班 90 分以上人数最多（14 人），且无 60 分以下学生。",
+    suggest: "可总结高三（2）班的高分经验，在年级内推广教学方法。",
+  },
+  "ch-c3": {
+    desc: "学生成绩与课堂参与度的散点图，用于发现需要重点关注的学生。",
+    insight: "成绩与参与度整体正相关，右下角少数学生参与度低且成绩下滑。",
+    suggest: "对参与度低的学生进行个别沟通，必要时安排导师结对帮扶。",
+  },
+  "ch-c4": {
+    desc: "历次考试各班级平均分走势，用于跟踪各班成绩变化与提升幅度。",
+    insight: "三个班级成绩均呈上升趋势，高二（1）班提升幅度最大（+12 分）。",
+    suggest: "可提炼高二（1）班的教学方法，作为教研组的借鉴案例。",
+  },
+  "ch-g1": {
+    desc: "本次考试各分数段人数分布，用于评估整体成绩形态（正态程度）。",
+    insight: "70-89 分中段人数最多（50 人），整体呈正态分布，及格率 86%。",
+    suggest: "中段学生提分空间最大，可重点进行中档题强化训练。",
+  },
+  "ch-g2": {
+    desc: "班级平均分近六周的变化趋势，并与年级平均分对比。",
+    insight: "班级均分由 72 分稳步升至 86 分，已稳定超过年级平均线。",
+    suggest: "关注第 3-4 周的上升放缓节点，避免成绩波动回撤。",
+  },
+  "ch-g3": {
+    desc: "各学科能力维度的雷达对比，用于发现学科内部的薄弱环节。",
+    insight: "物理实验探究维度（68）明显弱于概念理解（85），差距最大。",
+    suggest: "增加物理实验操作与探究类作业，强化动手实践能力。",
+  },
+  "ch-g4": {
+    desc: "学生个人成绩与班级平均分（76 分）的对比，用于个别学生诊断。",
+    insight: "张明远（92 分）领先均分 16 分，周子轩（58 分）低于均分 18 分。",
+    suggest: "对落后学生制定一对一提升计划，重点关注弱项学科。",
+  },
+  "ch-t1": {
+    desc: "各课件模板的使用次数排行，反映教师对不同模板的偏好程度。",
+    insight: "数学复习课模板使用最多（18 次），是教师最常用模板。",
+    suggest: "可将热门模板设为默认推荐，减少教师的搜索成本。",
+  },
+  "ch-t2": {
+    desc: "不同类型模板的占比，用于判断模板资源的供需是否匹配。",
+    insight: "PPT 模板占 60%，是核心需求；教案模板仅占 25%。",
+    suggest: "补充教案类模板，可覆盖更多备课场景，提升利用率。",
+  },
+  "ch-t3": {
+    desc: "三类模板近六月的使用趋势，用于观察需求的季节性波动。",
+    insight: "3 月开学季使用量最高，6 月后明显回落，呈季节性周期。",
+    suggest: "可在开学季前提前上新并预热模板，抓住需求高峰。",
+  },
+  "ch-ss": {
+    desc: "存储空间占用分布，用于排查存储瓶颈并规划清理策略。",
+    insight: "课件文件占 48%，是主要存储消耗；系统缓存占 12%。",
+    suggest: "建议每月清理系统缓存与旧版本课件，释放存储空间。",
+  },
+  "ch-ss2": {
+    desc: "每月系统操作次数，用于观察平台使用活跃度与高峰期。",
+    insight: "5 月操作最频繁（520 次），处于教学活跃期；寒假月份明显回落。",
+    suggest: "在活跃高峰期前完成系统维护与扩容，保障使用体验。",
+  },
+};
+
 // ── 设置 ─────────────────────────────────
 const profile = ref({
   name: userName.value,
@@ -1044,10 +1153,10 @@ function useTemplate(t) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#F7F6F3] flex flex-col font-sans antialiased">
+  <div class="min-h-screen bg-[#f7f9fc] flex flex-col font-sans antialiased">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-blue-700 focus:px-3 focus:py-2 focus:rounded-lg focus:shadow-md focus:text-xs"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:text-[#0077e6] focus:px-3 focus:py-2 focus:rounded-lg focus:shadow-md focus:text-xs"
       >跳到主内容</a
     >
     <!-- 顶栏 -->
@@ -1063,7 +1172,7 @@ function useTemplate(t) {
         <span class="text-[11px] text-gray-500">{{ userName }}</span>
         <RouterLink
           to="/"
-          class="text-[11px] text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
+          class="text-[11px] text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
         >
           返回首页
         </RouterLink>
@@ -1073,24 +1182,19 @@ function useTemplate(t) {
     <div class="flex pt-11">
       <!-- 侧栏 -->
       <aside
-        class="w-36 shrink-0 bg-white border-r border-gray-100 sticky top-11 h-[calc(100vh-44px)] overflow-y-auto p-2.5"
+        class="w-44 shrink-0 bg-white border-r border-gray-100 sticky top-11 h-[calc(100vh-44px)] overflow-y-auto p-3"
       >
-        <nav class="flex flex-col gap-0.5">
+        <div class="admin-nav-head">管理导航</div>
+        <nav class="flex flex-col gap-1">
           <button
             v-for="m in menuItems"
             :key="m.id"
-            class="flex items-center gap-2.5 w-full px-2.5 py-2 text-xs rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
-            :class="{
-              '!text-blue-700 !bg-blue-50/60 font-semibold':
-                activeMenu === m.id,
-            }"
+            class="admin-nav-btn"
+            :class="{ 'is-active': activeMenu === m.id }"
             @click="activeMenu = m.id"
           >
-            <span
-              class="font-bold tracking-tight text-[10px] w-4 text-center shrink-0"
-              >{{ m.icon }}</span
-            >
-            <span>{{ m.label }}</span>
+            <span class="admin-nav-icon">{{ m.icon }}</span>
+            <span class="admin-nav-label">{{ m.label }}</span>
           </button>
         </nav>
       </aside>
@@ -1106,7 +1210,7 @@ function useTemplate(t) {
         <template v-if="activeMenu === 'dashboard'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div
-              class="bg-white border border-gray-100 rounded-xl p-4"
+              class="admin-card stat-card p-4"
               v-for="(k, i) in [
                 { v: '106', l: '总课件数' },
                 { v: '42', l: '本月新增' },
@@ -1115,34 +1219,59 @@ function useTemplate(t) {
               ]"
               :key="i"
             >
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
+              <div class="stat-value">
                 {{ k.v }}
               </div>
               <div class="text-[11px] text-gray-500 mt-0.5">{{ k.l }}</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div
-              class="bg-white border border-gray-100 rounded-xl p-5 md:col-span-2"
-            >
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                周生成趋势
-              </h3>
-              <div id="ch-d1" class="h-80"></div>
+            <div class="admin-card p-5 md:col-span-2">
+              <div class="chart-head">
+                <h3 class="chart-title">周生成趋势</h3>
+                <p class="chart-desc">{{ chartInfo["ch-d1"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-d1"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-d1"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-d1" class="h-72"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                课件类型占比
-              </h3>
-              <div id="ch-d2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">课件类型占比</h3>
+                <p class="chart-desc">{{ chartInfo["ch-d2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-d2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-d2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-d2" class="h-72"></div>
             </div>
           </div>
           <div class="grid grid-cols-1 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                学科分布
-              </h3>
-              <div id="ch-d3" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">学科分布</h3>
+                <p class="chart-desc">{{ chartInfo["ch-d3"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-d3"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-d3"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-d3" class="h-72"></div>
             </div>
           </div>
         </template>
@@ -1150,32 +1279,24 @@ function useTemplate(t) {
         <!-- ═══ 课程表 ═══ -->
         <template v-if="activeMenu === 'schedule'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                35
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">35</div>
               <div class="text-[11px] text-gray-500 mt-0.5">周总课时</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                3
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">3</div>
               <div class="text-[11px] text-gray-500 mt-0.5">任教班级</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                65%
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">65%</div>
               <div class="text-[11px] text-gray-500 mt-0.5">学期进度</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                92%
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">92%</div>
               <div class="text-[11px] text-gray-500 mt-0.5">出勤率</div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-5">
+          <div class="admin-card p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
               课程表
             </h3>
@@ -1209,7 +1330,7 @@ function useTemplate(t) {
                   >
                     <div
                       v-if="scheduleData[d]?.[p]"
-                      class="bg-blue-50 text-blue-700 text-[10px] font-medium rounded px-1.5 py-0.5 leading-tight"
+                      class="bg-[#0077e6]/10 text-[#0077e6] text-[10px] font-medium rounded px-1.5 py-0.5 leading-tight"
                     >
                       {{ scheduleData[d][p] }}
                     </div>
@@ -1219,20 +1340,33 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                每日课程分布
-              </h3>
-              <div id="ch-s4" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">每日课程分布</h3>
+                <p class="chart-desc">{{ chartInfo["ch-s4"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-s4"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-s4"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-s4" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xs font-semibold text-gray-400">
-                  周课时利用率
-                </h3>
-                <span class="text-[10px] text-gray-400"
-                  >实际课时 / 计划课时</span
-                >
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">周课时利用率</h3>
+                <p class="chart-desc">{{ chartInfo["ch-s5"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-s5"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-s5"].suggest }}</span>
+                </p>
               </div>
               <div class="relative h-[240px]">
                 <!-- 背景参考线 -->
@@ -1271,7 +1405,7 @@ function useTemplate(t) {
                       >{{ v }}%</span
                     >
                     <div
-                      class="w-full rounded-t transition-all duration-300 hover:opacity-80"
+                      class="w-full rounded-t transition-opacity duration-300 hover:opacity-80"
                       :style="{
                         height: v * 1.8 + 'px',
                         background: [
@@ -1300,23 +1434,50 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                课时热度
-              </h3>
-              <div id="ch-s1" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">课时热度</h3>
+                <p class="chart-desc">{{ chartInfo["ch-s1"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-s1"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-s1"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-s1" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                年级课时分布
-              </h3>
-              <div id="ch-s2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">年级课时分布</h3>
+                <p class="chart-desc">{{ chartInfo["ch-s2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-s2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-s2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-s2" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                教学完成度
-              </h3>
-              <div id="ch-s3" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">教学完成度</h3>
+                <p class="chart-desc">{{ chartInfo["ch-s3"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-s3"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-s3"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-s3" class="h-64"></div>
             </div>
           </div>
         </template>
@@ -1324,28 +1485,20 @@ function useTemplate(t) {
         <!-- ═══ 班级 ═══ -->
         <template v-if="activeMenu === 'classes'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                3
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">3</div>
               <div class="text-[11px] text-gray-500 mt-0.5">班级数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                120
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">120</div>
               <div class="text-[11px] text-gray-500 mt-0.5">学生总数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                81.6
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">81.6</div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                72%
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">72%</div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均进度</div>
             </div>
           </div>
@@ -1355,7 +1508,7 @@ function useTemplate(t) {
             <button
               v-for="c in classList"
               :key="c"
-              class="px-3.5 py-1.5 text-xs rounded-lg text-gray-400 hover:text-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none"
+              class="px-3.5 py-1.5 text-xs rounded-lg text-gray-400 hover:text-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none"
               :class="{
                 '!text-gray-900 !bg-gray-100 font-semibold': activeClass === c,
               }"
@@ -1365,26 +1518,53 @@ function useTemplate(t) {
             </button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                能力对比
-              </h3>
-              <div id="ch-c1" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">能力对比</h3>
+                <p class="chart-desc">{{ chartInfo["ch-c1"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-c1"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-c1"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-c1" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                分数段分布
-              </h3>
-              <div id="ch-c2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">分数段分布</h3>
+                <p class="chart-desc">{{ chartInfo["ch-c2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-c2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-c2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-c2" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                成绩·参与度
-              </h3>
-              <div id="ch-c3" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">成绩·参与度</h3>
+                <p class="chart-desc">{{ chartInfo["ch-c3"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-c3"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-c3"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-c3" class="h-64"></div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-5">
+          <div class="admin-card p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
               {{ activeClass }} · 学生成绩
             </h3>
@@ -1429,11 +1609,20 @@ function useTemplate(t) {
           </div>
           <!-- 班级成绩趋势 -->
           <div class="grid grid-cols-1 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                各班级成绩趋势
-              </h3>
-              <div id="ch-c4" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">各班级成绩趋势</h3>
+                <p class="chart-desc">{{ chartInfo["ch-c4"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-c4"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-c4"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-c4" class="h-64"></div>
             </div>
           </div>
         </template>
@@ -1441,52 +1630,71 @@ function useTemplate(t) {
         <!-- ═══ 成绩 ═══ -->
         <template v-if="activeMenu === 'grades'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                86
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">86</div>
               <div class="text-[11px] text-gray-500 mt-0.5">最高分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                72.4
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">72.4</div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均分</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                12.8
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">12.8</div>
               <div class="text-[11px] text-gray-500 mt-0.5">标准差</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                86%
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">86%</div>
               <div class="text-[11px] text-gray-500 mt-0.5">及格率</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                分数分布
-              </h3>
-              <div id="ch-g1" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">分数分布</h3>
+                <p class="chart-desc">{{ chartInfo["ch-g1"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-g1"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-g1"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-g1" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                6周趋势
-              </h3>
-              <div id="ch-g2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">6周趋势</h3>
+                <p class="chart-desc">{{ chartInfo["ch-g2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-g2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-g2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-g2" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                学科能力
-              </h3>
-              <div id="ch-g3" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">学科能力</h3>
+                <p class="chart-desc">{{ chartInfo["ch-g3"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-g3"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-g3"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-g3" class="h-64"></div>
             </div>
           </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-5">
+          <div class="admin-card p-5">
             <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
               成绩明细
             </h3>
@@ -1532,76 +1740,102 @@ function useTemplate(t) {
             </div>
           </div>
           <div class="grid grid-cols-1 gap-4">
-            <div
-              class="bg-white border border-gray-100 rounded-xl p-4 max-w-md mx-auto"
-            >
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
-                学生成绩对比
-              </h3>
-              <div id="ch-g4" class="h-80"></div>
+            <div class="admin-card p-4 max-w-md mx-auto">
+              <div class="chart-head">
+                <h3 class="chart-title">学生成绩对比</h3>
+                <p class="chart-desc">{{ chartInfo["ch-g4"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-g4"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-g4"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-g4" class="h-64"></div>
             </div>
           </div>
         </template>
         <template v-if="activeMenu === 'templates'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                6
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">6</div>
               <div class="text-[11px] text-gray-500 mt-0.5">模板数</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                67
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">67</div>
               <div class="text-[11px] text-gray-500 mt-0.5">总使用</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                11.2
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">11.2</div>
               <div class="text-[11px] text-gray-500 mt-0.5">平均使用</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                5
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">5</div>
               <div class="text-[11px] text-gray-500 mt-0.5">PPT模板</div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                使用排行
-              </h3>
-              <div id="ch-t1" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">使用排行</h3>
+                <p class="chart-desc">{{ chartInfo["ch-t1"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-t1"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-t1"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-t1" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                模板类型
-              </h3>
-              <div id="ch-t2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">模板类型</h3>
+                <p class="chart-desc">{{ chartInfo["ch-t2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-t2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-t2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-t2" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-pretty">
-                月度趋势
-              </h3>
-              <div id="ch-t3" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">月度趋势</h3>
+                <p class="chart-desc">{{ chartInfo["ch-t3"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-t3"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-t3"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-t3" class="h-64"></div>
             </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <button
               v-for="t in templates"
               :key="t.id"
-              class="bg-white border border-gray-100 rounded-xl p-3.5 flex items-center gap-4 hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none text-left"
+              class="bg-white border border-gray-100 rounded-xl p-3.5 flex items-center gap-4 hover:border-[#c9d5e3] hover:shadow-[0_4px_16px_rgba(10,15,26,0.06)] transition focus-visible:ring-2 focus-visible:ring-[#0077e6]/30 focus-visible:outline-none text-left"
               @click="useTemplate(t)"
             >
               <div
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0"
                 :class="
                   t.type === 'PPT'
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'bg-green-50 text-green-700'
+                    ? 'bg-[#0077e6]/10 text-[#0077e6]'
+                    : 'bg-[#059669]/10 text-[#047857]'
                 "
               >
                 {{ t.type === "PPT" ? "P" : "D" }}
@@ -1624,33 +1858,25 @@ function useTemplate(t) {
         <!-- ═══ 设置 ═══ -->
         <template v-if="activeMenu === 'settings'">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                106
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">106</div>
               <div class="text-[11px] text-gray-500 mt-0.5">课件文件</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                42
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">42</div>
               <div class="text-[11px] text-gray-500 mt-0.5">学生数据</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                18
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">18</div>
               <div class="text-[11px] text-gray-500 mt-0.5">模板资源</div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <div class="text-2xl font-bold text-gray-900 tracking-tight">
-                2.4 GB
-              </div>
+            <div class="admin-card stat-card p-5">
+              <div class="stat-value">2.4 GB</div>
               <div class="text-[11px] text-gray-500 mt-0.5">总存储</div>
             </div>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
+            <div class="admin-card p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
                 个人信息
               </h3>
@@ -1698,7 +1924,7 @@ function useTemplate(t) {
                 </label>
               </div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
+            <div class="admin-card p-5">
               <h3 class="text-xs font-semibold text-gray-400 mb-3 text-pretty">
                 通知偏好
               </h3>
@@ -1711,7 +1937,7 @@ function useTemplate(t) {
                     v-model="profile.notifyReview"
                     aria-label="课件审核通知"
                     class="peer sr-only" /><span
-                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-3"
+                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform peer-checked:bg-[#0077e6] peer-checked:after:translate-x-3"
                   ></span
                 ></label>
                 <label
@@ -1722,7 +1948,7 @@ function useTemplate(t) {
                     v-model="profile.notifyGrade"
                     aria-label="成绩更新通知"
                     class="peer sr-only" /><span
-                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-3"
+                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform peer-checked:bg-[#0077e6] peer-checked:after:translate-x-3"
                   ></span
                 ></label>
                 <label
@@ -1733,24 +1959,42 @@ function useTemplate(t) {
                     v-model="profile.notifySystem"
                     aria-label="系统公告"
                     class="peer sr-only" /><span
-                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-3"
+                    class="w-7 h-4 bg-gray-200 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-transform peer-checked:bg-[#0077e6] peer-checked:after:translate-x-3"
                   ></span
                 ></label>
               </div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
-                存储使用
-              </h3>
-              <div id="ch-ss" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">存储使用</h3>
+                <p class="chart-desc">{{ chartInfo["ch-ss"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-ss"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-ss"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-ss" class="h-64"></div>
             </div>
-            <div class="bg-white border border-gray-100 rounded-xl p-5">
-              <h3 class="text-xs font-semibold text-gray-400 mb-2 text-center">
-                月操作频次
-              </h3>
-              <div id="ch-ss2" class="h-80"></div>
+            <div class="admin-card p-5">
+              <div class="chart-head">
+                <h3 class="chart-title">月操作频次</h3>
+                <p class="chart-desc">{{ chartInfo["ch-ss2"].desc }}</p>
+                <p class="chart-insight">
+                  <span class="chart-tag">洞察</span>
+                  <span>{{ chartInfo["ch-ss2"].insight }}</span>
+                </p>
+                <p class="chart-suggest">
+                  <span class="chart-tag chart-tag--suggest">建议</span>
+                  <span>{{ chartInfo["ch-ss2"].suggest }}</span>
+                </p>
+              </div>
+              <div id="ch-ss2" class="h-64"></div>
             </div>
           </div>
         </template>
@@ -1763,6 +2007,195 @@ function useTemplate(t) {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* ── 侧边栏 ─────────────────────────── */
+.admin-nav-head {
+  padding: 2px 10px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(10, 15, 26, 0.08);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.admin-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.admin-nav-btn:hover {
+  color: var(--ink);
+  background: #f4f6fa;
+}
+
+.admin-nav-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.admin-nav-btn.is-active {
+  color: var(--accent);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 119, 230, 0.1),
+    rgba(0, 194, 212, 0.05)
+  );
+  font-weight: 700;
+}
+
+.admin-nav-btn.is-active::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent), var(--cyan));
+}
+
+.admin-nav-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  color: var(--ink-muted);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.admin-nav-btn.is-active .admin-nav-icon {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 119, 230, 0.3);
+}
+
+/* ── 卡片 ───────────────────────────── */
+.admin-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.admin-card:hover {
+  border-color: var(--border-strong);
+}
+
+/* ── 统计卡装饰 ─────────────────────── */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 119, 230, 0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 图表解读头 ─────────────────────── */
+.chart-head {
+  margin-bottom: 14px;
+}
+
+.chart-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.chart-desc {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  margin-bottom: 8px;
+}
+
+.chart-insight,
+.chart-suggest {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  padding: 6px 9px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.chart-insight {
+  background: rgba(0, 119, 230, 0.06);
+  border: 1px solid rgba(0, 119, 230, 0.12);
+}
+
+.chart-suggest {
+  background: rgba(0, 194, 212, 0.05);
+  border: 1px solid rgba(0, 194, 212, 0.14);
+  margin-bottom: 0;
+}
+
+.chart-tag {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 1px;
+  color: var(--accent);
+  background: rgba(0, 119, 230, 0.12);
+}
+
+.chart-tag--suggest {
+  color: #0e7f8e;
+  background: rgba(0, 194, 212, 0.14);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
