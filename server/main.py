@@ -15,6 +15,7 @@ import json
 import os
 import uuid
 import asyncio
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -46,17 +47,21 @@ app.add_middleware(
 _tasks: dict[str, dict] = {}
 
 
-def _new_task(task_type: str) -> str:
+def _new_task(task_type: str, subject: str = "", topic: str = "", grade: str = "") -> str:
     task_id = uuid.uuid4().hex[:12]
     _tasks[task_id] = {
         "id": task_id,
-        "type": task_type,      # ppt | doc | quiz
+        "type": task_type,      # ppt | doc | quiz | exam
+        "subject": subject,     # 学科
+        "topic": topic,         # 课题
+        "grade": grade,         # 年级
         "status": "queued",     # queued → processing → completed / failed
         "progress": 0,
         "stage": "等待处理",
         "filename": None,
         "filepath": None,
         "error": None,
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
     return task_id
 
@@ -91,7 +96,7 @@ async def create_courseware(
     - type: ppt | doc | quiz | exam
     - 文件可选，当前版本暂不处理文件内容（可后续扩展）
     """
-    task_id = _new_task(type)
+    task_id = _new_task(type, subject, topic, grade)
     params = {
         "type": type,
         "subject": subject,
@@ -117,11 +122,11 @@ async def create_courseware(
 async def _run_generation(task_id: str, params: dict):
     """后台执行生成流程并逐步推送进度"""
     try:
-        _update_task(task_id, status="processing", progress=0, stage="🤖 AI 正在构思课件结构...")
+        _update_task(task_id, status="processing", progress=0, stage="AI 正在构思课件结构...")
         await asyncio.sleep(0.3)
 
         # 1. AI 生成内容
-        _update_task(task_id, progress=25, stage="📝 调用 AI 生成课件内容...")
+        _update_task(task_id, progress=25, stage="调用 AI 生成课件内容...")
         if params["type"] == "ppt":
             content = await generate_ppt_content(
                 params["subject"], params["topic"],
@@ -148,7 +153,7 @@ async def _run_generation(task_id: str, params: dict):
                 params["grade"], params["difficulty"],
             )
 
-        _update_task(task_id, progress=60, stage="🎨 正在渲染文件...")
+        _update_task(task_id, progress=60, stage="正在渲染文件...")
         await asyncio.sleep(0.2)
 
         # 2. 渲染文件
@@ -169,12 +174,12 @@ async def _run_generation(task_id: str, params: dict):
         else:
             filepath, filename = generate_quiz_html(content)
 
-        _update_task(task_id, progress=100, stage="✅ 生成完成",
+        _update_task(task_id, progress=100, stage="生成完成",
                       status="completed", filename=filename, filepath=filepath)
 
     except Exception as e:
         _update_task(task_id, status="failed", error=str(e),
-                      stage=f"❌ 生成失败: {str(e)[:80]}")
+                      stage=f"生成失败: {str(e)[:80]}")
 
 
 # ── API: 查询任务状态 ─────────────────────────────────────────
@@ -254,10 +259,15 @@ def list_tasks():
         {
             "id": t["id"],
             "type": t["type"],
+            "subject": t.get("subject", ""),
+            "topic": t.get("topic", ""),
+            "grade": t.get("grade", ""),
             "status": t["status"],
+            "progress": t.get("progress", 0),
             "stage": t["stage"],
             "filename": t.get("filename"),
             "error": t.get("error"),
+            "created_at": t.get("created_at", ""),
         }
         for t in sorted(_tasks.values(), key=lambda x: x["id"], reverse=True)
     ]
