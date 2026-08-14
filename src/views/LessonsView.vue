@@ -1480,6 +1480,8 @@ const playingVideo = ref(null);
 const biliVideoRef = ref(null);
 const biliProgressRef = ref(null);
 const biliMoreRef = ref(null);
+// 播放器容器宽高比，跟随视频实际比例，默认 16:9
+const biliAspectRatio = ref(16 / 9);
 const biliIsPlaying = ref(false);
 const biliIsFullscreen = ref(false);
 const biliCurrentTime = ref("0:00");
@@ -1550,6 +1552,10 @@ function biliOnEnded() {
 function biliOnMetaLoaded() {
   const video = biliVideoRef.value;
   if (!video) return;
+  // 播放器容器跟随视频实际宽高比，竖屏/4:3 视频也能铺满，不再被 16:9 容器挤压
+  if (video.videoWidth > 0 && video.videoHeight > 0) {
+    biliAspectRatio.value = video.videoWidth / video.videoHeight;
+  }
   biliDuration.value = biliFormatTime(video.duration);
   // 同步更新到 realDurations，和视频卡片显示一致
   if (playingVideo.value && video.duration && isFinite(video.duration)) {
@@ -2426,6 +2432,7 @@ watch(activeMenu, (newVal) => {
                       <!-- 视频区域 -->
                       <div
                         class="bili-player-video-wrap"
+                        :style="{ aspectRatio: biliAspectRatio }"
                         @click="biliTogglePlay"
                         @mousemove="biliShowControls"
                         @mouseleave="biliStartHideTimer"
@@ -2465,6 +2472,7 @@ watch(activeMenu, (newVal) => {
                         <div
                           class="bili-controls"
                           :class="{ 'is-hidden': biliControlsHidden }"
+                          @click.stop
                           @mouseenter="biliCancelHideTimer"
                           @mouseleave="biliStartHideTimer"
                         >
@@ -4796,10 +4804,10 @@ watch(activeMenu, (newVal) => {
   top: 16px;
 }
 .bili-page-player .bili-player-video-wrap {
-  aspect-ratio: 16 / 9;
   background: #000;
   cursor: pointer;
   position: relative;
+  max-height: 70vh;
 }
 .bili-page-player .bili-player-video {
   width: 100%;
@@ -4901,6 +4909,7 @@ watch(activeMenu, (newVal) => {
   font-size: 1.2rem;
   opacity: 0;
   transition: opacity 0.15s;
+  pointer-events: none;
 }
 .bili-playlist-item:hover .bili-playlist-play-icon {
   opacity: 1;
