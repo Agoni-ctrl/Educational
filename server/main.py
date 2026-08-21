@@ -24,12 +24,16 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from config import OUTPUT_DIR, HOST, PORT
+from config import OUTPUT_DIR, DATA_DIR, TASKS_FILE, HOST, PORT
 from ai_service import generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content
 from file_generator import (
     generate_pptx, generate_pptx_from_template,
     generate_docx, generate_quiz_html, generate_exam_html,
     get_template_list, pick_template,
+)
+from skill_ppt import (
+    is_skill_template, generate_skill_pptx,
+    get_template_list as get_skill_template_list,
 )
 
 app = FastAPI(title="EduAI 课件生成 API", version="1.0.0")
@@ -43,8 +47,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── 任务存储（内存，生产环境应使用 Redis/DB） ─────────────────
+# ── 任务存储 ─────────────────────────────────────────────────
+# 任务持久化到本地 JSON 文件，服务重启后记录不丢失，供管理后台统计
 _tasks: dict[str, dict] = {}
+_tasks_lock = asyncio.Lock()
+
+
+def _load_tasks():
+    """启动时从磁盘加载历史任务记录"""
+    global _tasks
+    if not os.path.exists(TASKS_FILE):
+        return
+    try:
+        with open(TASKS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            _tasks = data
+    except (json.JSONDecodeError, OSError):
+        # 损坏文件不阻塞启动，保留空内存态
+        pass
+
+
+def _save_tasks():
+    """将任务记录落盘"""
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(TASKS_FILE, "w", encoding="utf-8") as f:
+            json.dump(_tasks, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass
 
 
 def _new_task(task_type: str, subject: str = "", topic: str = "", grade: str = "") -> str:
@@ -63,12 +94,14 @@ def _new_task(task_type: str, subject: str = "", topic: str = "", grade: str = "
         "error": None,
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
+    _save_tasks()
     return task_id
 
 
 def _update_task(task_id: str, **kwargs):
     if task_id in _tasks:
         _tasks[task_id].update(kwargs)
+        _save_tasks()
 
 
 # ── API: 提交生成任务 ─────────────────────────────────────────
@@ -166,7 +199,11 @@ async def _run_generation(task_id: str, params: dict):
             template_id = params.get("template", "") or ""
             _update_task(task_id, progress=70,
                          stage="正在套用 PPT 模版渲染中...")
-            filepath, filename = generate_pptx_from_template(content, template_id)
+            # skill 精品模版走保版式引擎
+            if template_id and is_skill_template(template_id):
+                filepath, filename = generate_skill_pptx(content, template_id)
+            else:
+                filepath, filename = generate_pptx_from_template(content, template_id)
         elif params["type"] == "doc":
             filepath, filename = generate_docx(content)
         elif params["type"] == "exam":
@@ -180,6 +217,30 @@ async def _run_generation(task_id: str, params: dict):
     except Exception as e:
         _update_task(task_id, status="failed", error=str(e),
                       stage=f"生成失败: {str(e)[:80]}")
+
+
+# ── API: 历史记录 ─────────────────────────────────────────────
+# 注意：此路由必须定义在 /api/courseware/{task_id} 之前，
+# 否则 FastAPI 会按顺序把 "list" 当作 task_id 匹配
+
+@app.get("/api/courseware/list")
+def list_tasks():
+    return [
+        {
+            "id": t["id"],
+            "type": t["type"],
+            "subject": t.get("subject", ""),
+            "topic": t.get("topic", ""),
+            "grade": t.get("grade", ""),
+            "status": t["status"],
+            "progress": t.get("progress", 0),
+            "stage": t["stage"],
+            "filename": t.get("filename"),
+            "error": t.get("error"),
+            "created_at": t.get("created_at", ""),
+        }
+        for t in sorted(_tasks.values(), key=lambda x: x["id"], reverse=True)
+    ]
 
 
 # ── API: 查询任务状态 ─────────────────────────────────────────
@@ -251,37 +312,32 @@ def download_file(task_id: str):
     )
 
 
-# ── API: 历史记录 ─────────────────────────────────────────────
-
-@app.get("/api/courseware/list")
-def list_tasks():
-    return [
-        {
-            "id": t["id"],
-            "type": t["type"],
-            "subject": t.get("subject", ""),
-            "topic": t.get("topic", ""),
-            "grade": t.get("grade", ""),
-            "status": t["status"],
-            "progress": t.get("progress", 0),
-            "stage": t["stage"],
-            "filename": t.get("filename"),
-            "error": t.get("error"),
-            "created_at": t.get("created_at", ""),
-        }
-        for t in sorted(_tasks.values(), key=lambda x: x["id"], reverse=True)
-    ]
-
-
 # ── API: PPT 模版列表 ─────────────────────────────────────────
 
 @app.get("/api/templates")
 def list_templates():
-    """返回可用的 PPT 模版列表"""
+    """返回可用的 PPT 模版列表（含 GordenPPTSkill 精品模版）"""
+    templates = get_template_list()
+    # 合并 skill 精品模版，并标记引擎来源以便前端区分
+    for t in get_skill_template_list():
+        t["engine"] = "skill"
+        templates.append(t)
     return {
-        "templates": get_template_list(),
+        "templates": templates,
         "defaultTemplate": pick_template(),
     }
+
+
+@app.get("/api/skill/templates/{slug}/preview")
+def skill_template_preview(slug: str):
+    """返回 skill 模版的预览图 preview.png"""
+    from skill_ppt import _template_path as _sp
+    import os as _os
+    parent = _os.path.dirname(_sp(slug))
+    p = _os.path.join(parent, "preview.png")
+    if not _os.path.exists(p):
+        raise HTTPException(status_code=404, detail="预览图不存在")
+    return FileResponse(p, media_type="image/png")
 
 
 # ── API: 删除任务 ─────────────────────────────────────────────
@@ -295,6 +351,7 @@ def delete_task(task_id: str):
     fp = task.get("filepath")
     if fp and os.path.exists(fp):
         os.remove(fp)
+    _save_tasks()
     return {"ok": True}
 
 
@@ -303,6 +360,9 @@ def delete_task(task_id: str):
 @app.on_event("startup")
 def startup():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
+    # 加载历史任务记录，保证管理后台统计不丢失
+    _load_tasks()
 
 
 if __name__ == "__main__":

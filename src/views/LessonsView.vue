@@ -1478,10 +1478,9 @@ function preloadVideoDurations(videos) {
 // ===== B站风格播放器 =====
 const playingVideo = ref(null);
 const biliVideoRef = ref(null);
+const biliBgRef = ref(null); // 模糊填充背景视频
 const biliProgressRef = ref(null);
 const biliMoreRef = ref(null);
-// 播放器容器宽高比，跟随视频实际比例，默认 16:9
-const biliAspectRatio = ref(16 / 9);
 const biliIsPlaying = ref(false);
 const biliIsFullscreen = ref(false);
 const biliCurrentTime = ref("0:00");
@@ -1537,11 +1536,13 @@ function biliOnPlay() {
   biliIsPlaying.value = true;
   biliShowCenterBtn.value = false;
   if (biliCenterBtnTimer) clearTimeout(biliCenterBtnTimer);
+  biliSyncBg();
 }
 
 function biliOnPause() {
   biliIsPlaying.value = false;
   biliShowCenterBtn.value = true;
+  biliSyncBg();
 }
 
 function biliOnEnded() {
@@ -1552,10 +1553,6 @@ function biliOnEnded() {
 function biliOnMetaLoaded() {
   const video = biliVideoRef.value;
   if (!video) return;
-  // 播放器容器跟随视频实际宽高比，竖屏/4:3 视频也能铺满，不再被 16:9 容器挤压
-  if (video.videoWidth > 0 && video.videoHeight > 0) {
-    biliAspectRatio.value = video.videoWidth / video.videoHeight;
-  }
   biliDuration.value = biliFormatTime(video.duration);
   // 同步更新到 realDurations，和视频卡片显示一致
   if (playingVideo.value && video.duration && isFinite(video.duration)) {
@@ -1565,6 +1562,21 @@ function biliOnMetaLoaded() {
     };
   }
   video.playbackRate = biliPlaybackRate.value;
+}
+
+// 模糊填充背景跟随主视频的播放状态与进度
+function biliSyncBg() {
+  const bg = biliBgRef.value;
+  const video = biliVideoRef.value;
+  if (!bg || !video) return;
+  if (!video.paused) {
+    bg.play().catch(() => {});
+  } else {
+    bg.pause();
+  }
+  if (Math.abs(bg.currentTime - video.currentTime) > 1) {
+    bg.currentTime = video.currentTime;
+  }
 }
 
 function biliOnTimeUpdate() {
@@ -1577,6 +1589,7 @@ function biliOnTimeUpdate() {
     biliBufferPercent.value =
       (video.buffered.end(video.buffered.length - 1) / video.duration) * 100;
   }
+  biliSyncBg();
 }
 
 function biliFormatTime(s) {
@@ -2432,11 +2445,26 @@ watch(activeMenu, (newVal) => {
                       <!-- 视频区域 -->
                       <div
                         class="bili-player-video-wrap"
-                        :style="{ aspectRatio: biliAspectRatio }"
                         @click="biliTogglePlay"
                         @mousemove="biliShowControls"
                         @mouseleave="biliStartHideTimer"
                       >
+                        <!-- 模糊填充背景：竖屏/异形视频也能铺满统一 16:9 画面 -->
+                        <video
+                          ref="biliBgRef"
+                          :src="
+                            getVideoUrl(
+                              playingVideo?.cover || currentVideos[0]?.cover,
+                            )
+                          "
+                          class="bili-player-bg"
+                          muted
+                          loop
+                          playsinline
+                          aria-hidden="true"
+                          tabindex="-1"
+                          @loadedmetadata="biliSyncBg"
+                        ></video>
                         <video
                           ref="biliVideoRef"
                           :src="
@@ -4804,12 +4832,28 @@ watch(activeMenu, (newVal) => {
   top: 16px;
 }
 .bili-page-player .bili-player-video-wrap {
+  aspect-ratio: 16 / 9;
   background: #000;
   cursor: pointer;
   position: relative;
-  max-height: 70vh;
+  max-height: 60vh;
+}
+/* 模糊填充背景：撑满统一画面，竖屏视频不再显得小 */
+.bili-page-player .bili-player-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15);
+  filter: blur(28px) saturate(1.3) brightness(0.85);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
 }
 .bili-page-player .bili-player-video {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   display: block;
@@ -5053,7 +5097,7 @@ watch(activeMenu, (newVal) => {
   justify-content: center;
   background: rgba(0, 0, 0, 0.18);
   transition: opacity 0.35s;
-  z-index: 1;
+  z-index: 2;
 }
 .bili-center-play.is-hidden {
   opacity: 0;

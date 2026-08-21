@@ -76,17 +76,78 @@ async function fetchPptTemplates() {
   }
 }
 
-// 自动匹配的模版提示
+// 拼完整预览图地址：后端返回 /api/... 相对路径
+function previewUrl(path) {
+  if (!path) return "";
+  if (/^https?:\/\//.test(path)) return path;
+  return `http://localhost:8000${path}`;
+}
+
+// 归一化选择值：选中"自定义"时取自定义输入内容，否则取所选预设
+function resolveText(selected, custom) {
+  return selected === CUSTOM_OPTION ? custom : selected;
+}
+
+// 归一化学科名：自定义学科取输入内容
+function resolveSubjectName(form) {
+  return form.subject === CUSTOM_OPTION ? form.subjectCustom : form.subject;
+}
+
+// 自动匹配 PPT 模版提示（使用归一化学科名，避免"自定义"标记干扰匹配）
+// 学段为小学时优先推荐 skill 精品模版（卡通风格适合低龄课堂）；
+// 非小学学段跳过 skill 模版，避免卡通风格误匹配到初高中
 const autoMatchedTemplate = computed(() => {
-  if (!pptForm.value.subject) return null;
-  const subject = pptForm.value.subject;
+  const subject = resolveSubjectName(pptForm.value);
+  if (!subject) return null;
+  const grade = pptForm.value.grade || "";
+  const isPrimary = grade.includes("小学");
+  // 1) 小学学段 → 优先精品卡通模版
+  if (isPrimary) {
+    const skillTpl = pptTemplates.value.find(
+      (t) =>
+        t.engine === "skill" &&
+        t.subjects?.some((s) => "小学".includes(s) || s.includes("小学")),
+    );
+    if (skillTpl) return skillTpl;
+  }
+  // 2) 非小学学段：仅从标准模版中按学科关键词匹配（跳过卡通精品模版）
   for (const t of pptTemplates.value) {
+    if (t.engine === "skill") continue;
     if (t.subjects?.some((s) => subject.includes(s) || s.includes(subject))) {
       return t;
     }
   }
   return null;
 });
+
+// 选中精品模版时，展示其版式容量建议（帮助用户控制篇幅）
+const skillTemplateCapacity = computed(() => {
+  const t = selectedPptTemplate.value;
+  if (!t || t.engine !== "skill") return null;
+  return {
+    maxSections: 4, // 章节扉页数量
+    maxContentPages: 10, // 内容页数量
+  };
+});
+
+// 当前手动选中的 PPT 模版对象（用于展示预览图 / 引擎信息）
+const selectedPptTemplate = computed(
+  () => pptTemplates.value.find((t) => t.id === pptForm.value.template) || null,
+);
+
+// 当前所选学科对应的教学目标 / 重点难点预设
+const pptGoals = computed(
+  () => subjectPresets[resolveSubjectName(pptForm.value)]?.goals || [],
+);
+const pptKeys = computed(
+  () => subjectPresets[resolveSubjectName(pptForm.value)]?.keyPoints || [],
+);
+const docGoals = computed(
+  () => subjectPresets[resolveSubjectName(docForm.value)]?.goals || [],
+);
+const docKeys = computed(
+  () => subjectPresets[resolveSubjectName(docForm.value)]?.keyPoints || [],
+);
 
 // ==================== 课堂互动数据 ====================
 const activityTab = ref("quick-answer");
@@ -439,26 +500,174 @@ const contentTypeOptions = [
   { value: "exam", label: "试卷" },
 ];
 
+// 自定义选项标记：选中后显示输入框让用户自行填写
+const CUSTOM_OPTION = "__custom__";
+
+// 课件篇幅 → 章节数约束提示（传递给 AI，控制生成结构与模版容量匹配）
+const PAGES_SECTION_HINT = {
+  精炼: "建议 2-3 个章节，每章 1-2 个内容点，适合导入/短课",
+  标准: "建议 3-4 个章节，每章 2 个内容点，适合常规教学",
+  充实: "建议 4 个章节，每章 2-3 个内容点，适合公开课/示范课",
+};
+
+// 学段选项（影响内容深度与模版匹配）
+const GRADE_OPTIONS = ["小学低年级", "小学高年级", "初中", "高中"];
+
+/**
+ * 各学科预设的教学目标与重点难点模板
+ * 用户选择学科后，教学目标/重点难点下拉自动加载对应学科的常用选项，
+ * 也可选择"自定义"自行填写。
+ */
+const subjectPresets = {
+  语文: {
+    goals: [
+      "知识与技能：正确、流利、有感情地朗读课文，读懂并积累重点词句",
+      "过程与方法：抓关键词句、借助参考资料，概括内容、体会表达方法",
+      "情感态度与价值观：感受语言文字之美，培育人文情怀与文化自信",
+    ],
+    keyPoints: [
+      "教学重点：理解重点语句含义，学习作者观察与表达的方法",
+      "教学难点：体会言外之意、把握文章主旨与情感升华",
+    ],
+  },
+  数学: {
+    goals: [
+      "知识与技能：理解并掌握本课核心概念、公式与运算法则，能正确应用",
+      "过程与方法：经历观察、猜想、验证、归纳等数学活动，发展逻辑思维",
+      "情感态度与价值观：体会数学与生活的联系，养成严谨求实的科学态度",
+    ],
+    keyPoints: [
+      "教学重点：掌握例题所涉及的概念、定理及其基本应用",
+      "教学难点：理解抽象概念间的联系，灵活运用所学方法解决问题",
+    ],
+  },
+  英语: {
+    goals: [
+      "知识与技能：掌握本课重点词汇、句型与语法，能进行准确表达",
+      "过程与方法：通过听说读写等语言实践，提升综合语言运用能力",
+      "情感态度与价值观：拓宽国际视野，增强跨文化交际意识",
+    ],
+    keyPoints: [
+      "教学重点：掌握核心词汇与目标句型，能完成基本会话任务",
+      "教学难点：在真实语境中正确、得体地运用目标语言",
+    ],
+  },
+  物理: {
+    goals: [
+      "知识与技能：理解并掌握本课物理概念、规律与公式，能正确运用",
+      "过程与方法：通过实验观察、数据分析与推理，培养科学探究能力",
+      "情感态度与价值观：体会物理与生活的密切联系，激发探究兴趣",
+    ],
+    keyPoints: [
+      "教学重点：理解核心概念与规律的建立过程及适用条件",
+      "教学难点：物理量间的逻辑关系与综合分析、计算能力",
+    ],
+  },
+  化学: {
+    goals: [
+      "知识与技能：掌握本课物质的性质、变化及化学反应原理",
+      "过程与方法：通过实验探究，学会观察、对比与分析现象",
+      "情感态度与价值观：树立安全与环保意识，感受化学的实用价值",
+    ],
+    keyPoints: [
+      "教学重点：掌握核心化学概念与化学方程式的书写、应用",
+      "教学难点：从微观本质理解宏观现象，正确分析实验结论",
+    ],
+  },
+  生物: {
+    goals: [
+      "知识与技能：掌握本课生物结构、功能与生命活动规律",
+      "过程与方法：运用观察、比较等方法，建立生命观念",
+      "情感态度与价值观：尊重生命、热爱自然，树立生态保护意识",
+    ],
+    keyPoints: [
+      "教学重点：掌握核心概念与结构功能相适应的观点",
+      "教学难点：理解生命活动过程的内在机制与相互关系",
+    ],
+  },
+  历史: {
+    goals: [
+      "知识与技能：掌握本课重要史实、人物与历史事件脉络",
+      "过程与方法：学会史料研读与历史解释，培养时序与因果思维",
+      "情感态度与价值观：树立正确历史观，增强家国情怀与责任感",
+    ],
+    keyPoints: [
+      "教学重点：梳理历史事件的基本线索与关键史实",
+      "教学难点：辩证分析历史事件的背景、影响与启示",
+    ],
+  },
+  地理: {
+    goals: [
+      "知识与技能：掌握本课地理分布、成因与区域特征",
+      "过程与方法：运用地图与图表资料，培养区域认知与综合思维",
+      "情感态度与价值观：树立人地协调观，增强环境保护意识",
+    ],
+    keyPoints: [
+      "教学重点：掌握核心地理现象、分布规律及成因",
+      "教学难点：综合分析自然与人文要素的相互影响",
+    ],
+  },
+  政治: {
+    goals: [
+      "知识与技能：理解并掌握本课基本概念、观点与价值导向",
+      "过程与方法：结合生活情境，学会运用所学知识分析社会现象",
+      "情感态度与价值观：坚定理想信念，提升道德与法治素养",
+    ],
+    keyPoints: [
+      "教学重点：理解本课核心观点与基本价值导向",
+      "教学难点：运用正确立场、观点和方法分析现实问题",
+    ],
+  },
+};
+
 const pptForm = ref({
   subject: "",
+  subjectCustom: "",
   topic: "",
+  grade: "", // 学段：小学低年级 / 小学高年级 / 初中 / 高中
   duration: "45分钟",
   style: "实验探究型",
+  pages: "标准", // 课件篇幅：精炼 / 标准 / 充实
   teachingGoals: "",
+  goalCustom: "",
   keyPoints: "",
+  keyCustom: "",
+  outlineCustom: "", // 自定义章节大纲（可选，每行一个章节）
   referenceFile: null,
   template: "", // PPT 模版 ID，为空时自动匹配
 });
 
 const docForm = ref({
   subject: "",
+  subjectCustom: "",
   topic: "",
   format: "标准教案",
   style: "实验探究型",
   teachingGoals: "",
+  goalCustom: "",
   keyPoints: "",
+  keyCustom: "",
   referenceFile: null,
 });
+
+// 学科变化时清空教学目标和重点难点，强制用户重新选择
+watch(
+  () => [pptForm.value.subject, docForm.value.subject],
+  ([pptSubj, docSubj]) => {
+    if (pptSubj !== undefined) {
+      pptForm.value.teachingGoals = "";
+      pptForm.value.goalCustom = "";
+      pptForm.value.keyPoints = "";
+      pptForm.value.keyCustom = "";
+    }
+    if (docSubj !== undefined) {
+      docForm.value.teachingGoals = "";
+      docForm.value.goalCustom = "";
+      docForm.value.keyPoints = "";
+      docForm.value.keyCustom = "";
+    }
+  },
+);
 
 const questionForm = ref({
   subject: "",
@@ -1507,7 +1716,9 @@ const pptRecommendation = computed(() =>
     title,
     note:
       index === 0
-        ? `${pptForm.value.topic || "等待填写课题"} · ${pptForm.value.duration}`
+        ? `${pptForm.value.topic || "等待填写课题"} · ${
+            pptForm.value.grade || "未选学段"
+          } · ${pptForm.value.duration}`
         : "",
   })),
 );
@@ -2478,12 +2689,45 @@ async function callApiGenerate(apiType, params) {
 // 课件生成
 function handlePptGenerate() {
   if (!pptForm.value.topic.trim()) return showToast("请先填写课题名称");
+  const subject = resolveSubjectName(pptForm.value);
+  if (!subject) return showToast("请选择学科");
+  if (!pptForm.value.grade)
+    return showToast("请选择学段（用于匹配模版与内容深度）");
+  const goals = resolveText(
+    pptForm.value.teachingGoals,
+    pptForm.value.goalCustom,
+  );
+  const keys = resolveText(pptForm.value.keyPoints, pptForm.value.keyCustom);
+  if (!goals.trim()) return showToast("请选择或填写教学目标");
+  if (!keys.trim()) return showToast("请选择或填写重点与难点");
+
+  // 组装结构化大纲：含教学目标、重难点、篇幅约束、可选章节结构
+  const outlineParts = [`教学目标：${goals}`, `重点与难点：${keys}`];
+  const pagesHint = PAGES_SECTION_HINT[pptForm.value.pages] || "";
+  if (pagesHint)
+    outlineParts.push(`课件篇幅：${pptForm.value.pages}，${pagesHint}`);
+  const outlineCustom = pptForm.value.outlineCustom.trim();
+  if (outlineCustom) {
+    const sections = outlineCustom
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) =>
+        s.replace(
+          /^[（(]?第?[一二三四五六七八九十\d]+[章节部分]?[）)]?[、.\s]*/,
+          "",
+        ),
+      );
+    outlineParts.push(
+      `请严格按照以下章节结构组织课件内容，每章一节扉页：\n${sections.join("\n")}`,
+    );
+  }
   callApiGenerate("ppt", {
-    subject: pptForm.value.subject || "未分类",
+    subject,
     topic: pptForm.value.topic,
-    grade: pptForm.value.duration || "45分钟",
+    grade: pptForm.value.grade,
     style: pptForm.value.style || "实验探究型",
-    outline: pptForm.value.keyPoints || "",
+    outline: outlineParts.join("；"),
     template: pptForm.value.template || "",
   });
 }
@@ -2491,11 +2735,20 @@ function handlePptGenerate() {
 // 教案生成
 function handleDocGenerate() {
   if (!docForm.value.topic.trim()) return showToast("请先填写课题名称");
+  const subject = resolveSubjectName(docForm.value);
+  if (!subject) return showToast("请选择学科");
+  const goals = resolveText(
+    docForm.value.teachingGoals,
+    docForm.value.goalCustom,
+  );
+  const keys = resolveText(docForm.value.keyPoints, docForm.value.keyCustom);
+  if (!goals.trim()) return showToast("请选择或填写教学目标");
+  if (!keys.trim()) return showToast("请选择或填写重点与难点");
   callApiGenerate("doc", {
-    subject: docForm.value.subject || "未分类",
+    subject,
     topic: docForm.value.topic,
     grade: "",
-    requirements: `${docForm.value.format || "标准教案"} | ${docForm.value.style || ""} | ${docForm.value.teachingGoals || ""}`,
+    requirements: `${docForm.value.format || "标准教案"} | ${docForm.value.style || ""} | 教学目标：${goals} | 重点与难点：${keys}`,
   });
 }
 
@@ -3484,6 +3737,11 @@ onUnmounted(() => {
               </button>
             </div>
 
+            <!-- 任务状态饼图 -->
+            <div class="task-pie-chart">
+              <div ref="taskPieChartRef" class="pie-chart-container"></div>
+            </div>
+
             <!-- ECharts 雷达图 -->
             <div ref="radarChartRef" class="radar-chart-container"></div>
           </section>
@@ -3528,11 +3786,19 @@ onUnmounted(() => {
               <div class="form-row">
                 <label>
                   学科
-                  <input
-                    v-model="pptForm.subject"
-                    type="text"
-                    placeholder="例如：物理 / 历史 / 生物"
-                  />
+                  <select v-model="pptForm.subject">
+                    <option value="" disabled>请选择学科</option>
+                    <option v-for="s in commonSubjects" :key="s" :value="s">
+                      {{ s }}
+                    </option>
+                    <option :value="CUSTOM_OPTION">自定义学科…</option>
+                  </select>
+                  <textarea
+                    v-if="pptForm.subject === CUSTOM_OPTION"
+                    v-model="pptForm.subjectCustom"
+                    rows="1"
+                    placeholder="请输入学科名称"
+                  ></textarea>
                 </label>
 
                 <label>
@@ -3545,14 +3811,26 @@ onUnmounted(() => {
                 </label>
               </div>
 
-              <label>
-                课时长度
-                <select v-model="pptForm.duration">
-                  <option>40分钟</option>
-                  <option>45分钟</option>
-                  <option>50分钟</option>
-                </select>
-              </label>
+              <div class="form-row">
+                <label>
+                  学段
+                  <select v-model="pptForm.grade">
+                    <option value="" disabled>请选择学段</option>
+                    <option v-for="g in GRADE_OPTIONS" :key="g" :value="g">
+                      {{ g }}
+                    </option>
+                  </select>
+                  <small class="field-hint">决定内容深度与模版匹配</small>
+                </label>
+                <label>
+                  课时长度
+                  <select v-model="pptForm.duration">
+                    <option>40分钟</option>
+                    <option>45分钟</option>
+                    <option>50分钟</option>
+                  </select>
+                </label>
+              </div>
 
               <label>
                 讲授风格
@@ -3562,6 +3840,31 @@ onUnmounted(() => {
                   <option>问题驱动型</option>
                   <option>翻转课堂型</option>
                 </select>
+              </label>
+
+              <label>
+                课件篇幅
+                <select v-model="pptForm.pages">
+                  <option>精炼</option>
+                  <option>标准</option>
+                  <option>充实</option>
+                </select>
+                <small class="field-hint">{{
+                  PAGES_SECTION_HINT[pptForm.pages]
+                }}</small>
+              </label>
+
+              <label>
+                章节大纲（可选）
+                <textarea
+                  v-model="pptForm.outlineCustom"
+                  rows="3"
+                  placeholder="每行一个章节，AI 将严格按此组织课件内容，例如：&#10;认识图形与分类&#10;图形的拼组与变换&#10;生活中的图形应用"
+                ></textarea>
+                <small class="field-hint"
+                  >留空则由 AI 自动设计章节；填写后更贴合模版槽位，建议 2-4
+                  个章节</small
+                >
               </label>
 
               <!-- PPT 模版选择 -->
@@ -3594,6 +3897,7 @@ onUnmounted(() => {
                   <option value="">智能匹配（根据学科自动选择）</option>
                   <option v-for="t in pptTemplates" :key="t.id" :value="t.id">
                     {{ t.name }} — {{ t.description }}
+                    {{ t.engine === "skill" ? "【精品】" : "" }}
                   </option>
                 </select>
                 <!-- 自动匹配提示 -->
@@ -3602,7 +3906,7 @@ onUnmounted(() => {
                   class="template-auto-hint"
                 >
                   <span
-                    >检测到学科「{{ pptForm.subject }}」，将自动套用
+                    >检测到学科「{{ resolveSubjectName(pptForm) }}」，将自动套用
                     <strong>「{{ autoMatchedTemplate.name }}」</strong>
                     模版风格</span
                   >
@@ -3612,6 +3916,37 @@ onUnmounted(() => {
                   class="template-auto-hint template-auto-hint--fallback"
                 >
                   <span>将使用通用模版生成，也可在上方手动指定模版</span>
+                </div>
+                <!-- 已选中模版的预览图 -->
+                <div v-if="selectedPptTemplate" class="template-preview">
+                  <img
+                    v-if="selectedPptTemplate.preview"
+                    :src="previewUrl(selectedPptTemplate.preview)"
+                    alt="模版预览"
+                    class="template-preview__img"
+                  />
+                  <div class="template-preview__meta">
+                    <span class="template-preview__badge">
+                      {{
+                        selectedPptTemplate.engine === "skill"
+                          ? "精品模板"
+                          : "标准模板"
+                      }}
+                    </span>
+                    <span class="template-preview__desc">{{
+                      selectedPptTemplate.description
+                    }}</span>
+                    <span
+                      v-if="skillTemplateCapacity"
+                      class="template-preview__capacity"
+                    >
+                      该精品模版版式容量：约
+                      {{ skillTemplateCapacity.maxSections }} 个章节扉页、{{
+                        skillTemplateCapacity.maxContentPages
+                      }}
+                      页内容，建议选择「标准」篇幅并填写章节大纲
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -3637,18 +3972,42 @@ onUnmounted(() => {
                 <div class="objectives-card__body">
                   <label>
                     教学目标
+                    <select v-model="pptForm.teachingGoals">
+                      <option value="" disabled>
+                        {{
+                          pptGoals.length ? "请选择教学目标" : "请先选择学科"
+                        }}
+                      </option>
+                      <option v-for="g in pptGoals" :key="g" :value="g">
+                        {{ g }}
+                      </option>
+                      <option :value="CUSTOM_OPTION">自定义目标…</option>
+                    </select>
                     <textarea
-                      v-model="pptForm.teachingGoals"
+                      v-if="pptForm.teachingGoals === CUSTOM_OPTION"
+                      v-model="pptForm.goalCustom"
                       rows="2"
-                      placeholder="例如：理解牛顿第二定律，掌握F=ma的应用..."
+                      placeholder="请输入本节课的教学目标…"
                     ></textarea>
                   </label>
                   <label>
                     重点与难点
+                    <select v-model="pptForm.keyPoints">
+                      <option value="" disabled>
+                        {{
+                          pptKeys.length ? "请选择重点与难点" : "请先选择学科"
+                        }}
+                      </option>
+                      <option v-for="k in pptKeys" :key="k" :value="k">
+                        {{ k }}
+                      </option>
+                      <option :value="CUSTOM_OPTION">自定义重难点…</option>
+                    </select>
                     <textarea
-                      v-model="pptForm.keyPoints"
+                      v-if="pptForm.keyPoints === CUSTOM_OPTION"
+                      v-model="pptForm.keyCustom"
                       rows="2"
-                      placeholder="例如：重点是力的合成，难点是加速度方向判断..."
+                      placeholder="请输入重点与难点…"
                     ></textarea>
                   </label>
                 </div>
@@ -3733,7 +4092,7 @@ onUnmounted(() => {
                     <h3>{{ pptForm.topic || "等待填写课题" }}</h3>
                     <p>
                       {{ pptForm.style }} ·
-                      {{ pptForm.subject || "待填写学科" }}
+                      {{ resolveSubjectName(pptForm) || "待填写学科" }}
                     </p>
                   </div>
                 </div>
@@ -3804,11 +4163,19 @@ onUnmounted(() => {
 
               <label>
                 学科
-                <input
-                  v-model="docForm.subject"
-                  type="text"
-                  placeholder="例如：物理 / 语文 / 地理"
-                />
+                <select v-model="docForm.subject">
+                  <option value="" disabled>请选择学科</option>
+                  <option v-for="s in commonSubjects" :key="s" :value="s">
+                    {{ s }}
+                  </option>
+                  <option :value="CUSTOM_OPTION">自定义学科…</option>
+                </select>
+                <textarea
+                  v-if="docForm.subject === CUSTOM_OPTION"
+                  v-model="docForm.subjectCustom"
+                  rows="1"
+                  placeholder="请输入学科名称"
+                ></textarea>
               </label>
 
               <label>
@@ -3860,19 +4227,39 @@ onUnmounted(() => {
               >
               <label>
                 教学目标
+                <select v-model="docForm.teachingGoals">
+                  <option value="" disabled>
+                    {{ docGoals.length ? "请选择教学目标" : "请先选择学科" }}
+                  </option>
+                  <option v-for="g in docGoals" :key="g" :value="g">
+                    {{ g }}
+                  </option>
+                  <option :value="CUSTOM_OPTION">自定义目标…</option>
+                </select>
                 <textarea
-                  v-model="docForm.teachingGoals"
+                  v-if="docForm.teachingGoals === CUSTOM_OPTION"
+                  v-model="docForm.goalCustom"
                   rows="2"
-                  placeholder="例如：知识与技能：理解概念；过程与方法：培养探究能力；情感态度：激发学习兴趣..."
+                  placeholder="请输入本节课的教学目标…"
                 ></textarea>
               </label>
 
               <label>
                 重点与难点
+                <select v-model="docForm.keyPoints">
+                  <option value="" disabled>
+                    {{ docKeys.length ? "请选择重点与难点" : "请先选择学科" }}
+                  </option>
+                  <option v-for="k in docKeys" :key="k" :value="k">
+                    {{ k }}
+                  </option>
+                  <option :value="CUSTOM_OPTION">自定义重难点…</option>
+                </select>
                 <textarea
-                  v-model="docForm.keyPoints"
+                  v-if="docForm.keyPoints === CUSTOM_OPTION"
+                  v-model="docForm.keyCustom"
                   rows="2"
-                  placeholder="例如：重点是概念理解与应用，难点是实际问题的分析与解决..."
+                  placeholder="请输入重点与难点…"
                 ></textarea>
               </label>
 
@@ -3955,7 +4342,7 @@ onUnmounted(() => {
                     <h3>{{ docForm.topic || "等待填写课题" }}</h3>
                     <p>
                       {{ docForm.format }} ·
-                      {{ docForm.subject || "待填写学科" }}
+                      {{ resolveSubjectName(docForm) || "待填写学科" }}
                     </p>
                   </div>
                   <div
@@ -11668,5 +12055,61 @@ onUnmounted(() => {
   background: #f8fafc;
   border-color: #e2e8f0;
   color: #64748b;
+}
+
+/* 已选中模版的预览图 */
+.template-preview {
+  margin-top: 0.65rem;
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+}
+.template-preview__img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+.template-preview__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.template-preview__badge {
+  align-self: flex-start;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+.template-preview__desc {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+.template-preview__capacity {
+  font-size: 0.7rem;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  line-height: 1.45;
+}
+
+/* 表单字段辅助说明 */
+.field-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  line-height: 1.4;
 }
 </style>

@@ -50,6 +50,9 @@ env/
 # 生成的课件文件（由 AI 生成，不应提交）
 server/output/
 
+# 任务记录运行时数据（后端持久化用，不应提交）
+server/data/
+
 # API Key 配置（含敏感信息）
 server/config.local.py
 

@@ -13,5 +13,8 @@ DEEPSEEK_MODEL = "deepseek-chat"  # DeepSeek-V3
 # 服务配置
 HOST = "0.0.0.0"
 PORT = 8000
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
+BASE_DIR = os.path.dirname(__file__)
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+TASKS_FILE = os.path.join(DATA_DIR, "tasks.json")  # 任务记录持久化文件
 MAX_FILE_SIZE_MB = 50
