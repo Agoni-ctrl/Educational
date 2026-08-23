@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { ref, reactive, computed, watch, nextTick, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { marked } from "marked";
 import {
@@ -27,101 +27,246 @@ const hasMessages = computed(
   () => (activeSession.value?.messages.length ?? 0) > 0,
 );
 
-// 备课任务模式：每个模式 = 一个定向备课任务，点击即触发对应默认指令
-const teachingModes = [
+// 大功能（构思层）：不生成文件，专注帮教师把想法理清楚、产出内容草稿
+// 产出结果下方提供「转入生成」按钮，桥接到核心功能页落地成真实文件
+const features = [
   {
-    id: "goal",
-    label: "写目标",
-    hint: "三维目标·可观测",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>',
-    trigger: "请帮我撰写本节课的教学目标",
-  },
-  {
-    id: "difficulty",
-    label: "拆难点",
-    hint: "重难点·易错点",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L2 20h20z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
-    trigger: "请帮我梳理本节课的教学重点、难点与易错点",
-  },
-  {
-    id: "intro",
-    label: "设计导入",
-    hint: "情境·悬念·案例",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.4 1 2.2V17h6v-1.3c0-.8.3-1.6 1-2.2A6 6 0 0 0 12 3z"/></svg>',
-    trigger: "请帮我设计本节课的课堂导入",
-  },
-  {
-    id: "quiz",
-    label: "出题",
-    hint: "分层·变式·考点",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v4h4"/><path d="M9 13l2 2 4-4"/></svg>',
-    trigger: "请帮我围绕本节课知识设计分层练习",
+    id: "plan",
+    label: "备课构思",
+    hint: "目标·重难点·导入·环节",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>',
   },
   {
     id: "lesson",
-    label: "教案",
-    hint: "完整可直接用",
+    label: "教案草稿",
+    hint: "完整教案文字稿",
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M20 17v5H6.5A2.5 2.5 0 0 1 4 19.5"/></svg>',
-    trigger: "请帮我编写本节课的完整教案",
   },
   {
-    id: "board",
-    label: "板书",
-    hint: "结构·布局",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 8h18M3 12h10"/><path d="M12 16l-3 5M12 16l3 5"/></svg>',
-    trigger: "请帮我设计本节课的板书",
-  },
-  {
-    id: "interact",
-    label: "互动",
-    hint: "提问·活动·游戏",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z"/></svg>',
-    trigger: "请帮我设计本节课的课堂互动",
-  },
-  {
-    id: "exam",
-    label: "对接考点",
-    hint: "考法·易错提醒",
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 7-7"/><path d="M20 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6"/></svg>',
-    trigger: "请帮我分析本节课知识点的考试考法",
+    id: "quiz",
+    label: "出题草稿",
+    hint: "分层题目清单",
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v4h4"/><path d="M9 13l2 2 4-4"/></svg>',
   },
 ];
 
-// 教师角色画像选项（与课件制作学科/学段保持一致）
-const SUBJECT_OPTIONS = [
-  "语文",
-  "数学",
-  "英语",
-  "物理",
-  "化学",
-  "生物",
-  "历史",
-  "地理",
-  "政治",
+// 「通用问答」入口图标（自由对话，对话历史仅在此功能下展示）
+const chatIcon =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3 3v-3H7a3 3 0 0 1-3-3V6z"/></svg>';
+
+// 当前功能（'' = 通用问答）
+const activeFeature = ref("");
+// 最近一次通过功能表单触发的课题（用于「转入生成」桥接预填）
+const lastFeatureTopic = ref("");
+
+// 自定义兜底选项标识：下拉选中它时，旁边显示自定义输入框
+const CUSTOM = "__custom__";
+
+// 各功能的子需求表单：课题必填，其余字段用户可自行指定或选「自定义…」兜底
+const featureForms = reactive({
+  plan: {
+    topic: "",
+    lessonType: "新授课",
+    lessonTypeCustom: "",
+    textbook: "人教A版",
+    textbookCustom: "",
+    studentLevel: "普通班",
+    studentLevelCustom: "",
+    examAware: true,
+    requirements: "",
+  },
+  lesson: {
+    topic: "",
+    lessonType: "新授课",
+    lessonTypeCustom: "",
+    textbook: "人教A版",
+    textbookCustom: "",
+    studentLevel: "普通班",
+    studentLevelCustom: "",
+    duration: "1课时",
+    detail: "详案",
+    detailCustom: "",
+    requirements: "",
+  },
+  quiz: {
+    topic: "",
+    purpose: "课堂练习",
+    purposeCustom: "",
+    questionMix: "高考标准",
+    questionMixCustom: "",
+    studentLevel: "普通班",
+    studentLevelCustom: "",
+    difficulty: "中等",
+    count: "8",
+    countCustom: "",
+    examAware: true,
+    requirements: "",
+  },
+});
+
+// 各字段的可选值（供下拉渲染；每个字段都带「自定义…」兜底）
+const FIELD_OPTIONS = {
+  lessonType: ["新授课", "复习课", "习题讲评课", "专题课"],
+  textbook: [
+    "人教A版",
+    "人教B版",
+    "苏教版",
+    "北师大版",
+    "湘教版",
+    "沪教版",
+    "其他",
+  ],
+  studentLevel: ["重点班", "普通班", "基础薄弱"],
+  duration: ["1课时", "2课时", "3课时"],
+  detail: ["详案（公开课/检查用）", "简案（日常用）"],
+  purpose: ["课堂练习", "课后作业", "周测", "月考"],
+  questionMix: ["高考标准（选择+填空+解答）", "全选择题", "全解答题"],
+  difficulty: ["基础", "中等", "综合提升"],
+  count: ["5", "8", "10", "15"],
+};
+
+// 三个功能各自的字段配置（顺序即展示顺序）
+const planFields = [
+  { key: "lessonType", label: "课型" },
+  { key: "textbook", label: "教材版本" },
+  { key: "studentLevel", label: "学生层次" },
 ];
-const GRADE_OPTIONS = ["小学低年级", "小学高年级", "初中", "高中"];
+const lessonFields = [
+  { key: "lessonType", label: "课型" },
+  { key: "textbook", label: "教材版本" },
+  { key: "studentLevel", label: "学生层次" },
+  { key: "duration", label: "课时" },
+  { key: "detail", label: "教案详略" },
+];
+const quizFields = [
+  { key: "purpose", label: "用途" },
+  { key: "questionMix", label: "题型分布" },
+  { key: "studentLevel", label: "学生层次" },
+  { key: "difficulty", label: "难度" },
+  { key: "count", label: "题量" },
+];
+// 当前功能要渲染的字段
+const currentFields = computed(() => {
+  if (activeFeature.value === "plan") return planFields;
+  if (activeFeature.value === "lesson") return lessonFields;
+  if (activeFeature.value === "quiz") return quizFields;
+  return [];
+});
 
-// 当前备课任务模式（空 = 自由对话）
-const activeMode = ref("");
-// 教师教学身份：并入 userStore 用户资料统一管理（学科 + 任教年级/学段）
-const teacherSubject = computed(() => userStore.getSubject());
-const teacherGrade = computed(() => userStore.getGrade());
-
-function setSubject(subject) {
-  userStore.setSubject(subject);
+// 取某字段的实际值：选中「自定义…」时用旁边的自定义输入，否则用选项值
+function resolveField(form, key) {
+  const v = form[key];
+  if (v === CUSTOM) {
+    return form[key + "Custom"]?.trim() || "（自定义，未填写）";
+  }
+  return v;
 }
 
-function setGrade(grade) {
-  userStore.setGrade(grade);
-}
-
-// 当前定向任务模式的展示信息
-const currentMode = computed(
-  () => teachingModes.find((m) => m.id === activeMode.value) || null,
+// 当前功能的展示信息
+const currentFeature = computed(
+  () => features.find((f) => f.id === activeFeature.value) || null,
 );
-const currentModeLabel = computed(() => currentMode.value?.label || "");
-const currentModeDesc = computed(() => currentMode.value?.hint || "");
-const currentModeIcon = computed(() => currentMode.value?.icon || "");
+const currentFeatureLabel = computed(() => currentFeature.value?.label || "");
+const currentFeatureDesc = computed(() => currentFeature.value?.hint || "");
+const currentFeatureIcon = computed(() => currentFeature.value?.icon || "");
+const canRunFeature = computed(() => {
+  const form = featureForms[activeFeature.value];
+  return !!form && !!form.topic.trim();
+});
+// 对话历史仅在「通用问答」下展示
+const isGeneral = computed(() => activeFeature.value === "");
+
+// 桥接信息：把当前功能的草稿送入核心功能页生成文件（type 对应 /features）
+const bridgeInfo = computed(() => {
+  const topic = lastFeatureTopic.value;
+  const feat = activeFeature.value;
+  if (!feat || !topic) return null;
+  const map = {
+    plan: { type: "ppt", label: "生成课件", hint: "将构思转为课件" },
+    lesson: { type: "doc", label: "生成教案", hint: "将草稿转为 DOCX 教案" },
+    quiz: { type: "quiz", label: "生成练习", hint: "将题目转为练习卷" },
+  };
+  return map[feat] ? { ...map[feat], topic } : null;
+});
+// 最后一条是 AI 回复时才显示桥接按钮
+const showBridge = computed(() => {
+  const msgs = activeSession.value?.messages ?? [];
+  return (
+    bridgeInfo.value &&
+    msgs.length > 0 &&
+    msgs[msgs.length - 1].role === "assistant"
+  );
+});
+
+// 选择功能：不直接触发 AI，先展示该功能的子需求表单
+function selectFeature(feature) {
+  if (activeFeature.value === feature) {
+    activeFeature.value = "";
+    return;
+  }
+  activeFeature.value = feature;
+}
+
+// 填写子需求后生成：把表单信息组装成结构化 prompt 交给 AI
+async function runFeature() {
+  const feat = activeFeature.value;
+  const form = featureForms[feat];
+  if (!form || !form.topic.trim()) return;
+  const topic = form.topic.trim();
+  lastFeatureTopic.value = topic;
+
+  // 组装本功能的全部需求字段（含自定义兜底后的实际值）
+  const params = [];
+  if (feat === "plan") {
+    params.push(`课型：${resolveField(form, "lessonType")}`);
+    params.push(`教材版本：${resolveField(form, "textbook")}`);
+    params.push(`学生层次：${resolveField(form, "studentLevel")}`);
+  } else if (feat === "lesson") {
+    params.push(`课型：${resolveField(form, "lessonType")}`);
+    params.push(`教材版本：${resolveField(form, "textbook")}`);
+    params.push(`学生层次：${resolveField(form, "studentLevel")}`);
+    params.push(`课时：${resolveField(form, "duration")}`);
+    params.push(`教案详略：${resolveField(form, "detail")}`);
+  } else if (feat === "quiz") {
+    params.push(`用途：${resolveField(form, "purpose")}`);
+    params.push(`题型分布：${resolveField(form, "questionMix")}`);
+    params.push(`学生层次：${resolveField(form, "studentLevel")}`);
+    params.push(`难度：${resolveField(form, "difficulty")}`);
+    params.push(`题量：${resolveField(form, "count")} 道`);
+  }
+
+  const extra = form.requirements?.trim()
+    ? `\n补充要求：${form.requirements.trim()}`
+    : "";
+  const examNote =
+    feat !== "lesson" && form.examAware
+      ? "\n请在产出中标注高考考频、常考题型与分值（复习/出题场景尤其重要）。"
+      : "";
+
+  let prompt = "";
+  if (feat === "plan") {
+    prompt = `请帮我把课题「${topic}」的这节课构思成一份教学方案。\n${params.join(
+      "；",
+    )}。\n内容须包含：教学目标、教学重难点、课堂导入、教学环节流程（标注时间）、板书设计建议。${examNote}${extra}\n请以清晰的结构输出，便于我参考后直接生成课件。`;
+  } else if (feat === "lesson") {
+    prompt = `请编写课题「${topic}」的完整教案草稿。\n${params.join(
+      "；",
+    )}。\n请按标准教案结构输出（教学目标、教学重难点、教学准备、教学过程并标注时间、板书设计、作业布置）。${extra}`;
+  } else if (feat === "quiz") {
+    prompt = `请围绕课题「${topic}」设计分层练习草稿。\n${params.join(
+      "；",
+    )}。\n按基础/提升/拓展分层，题型含选择、填空、简答，每题附参考答案与考察点。${examNote}${extra}`;
+  }
+  await handleSend(prompt);
+}
+
+// 桥接：把助手产出的草稿送入核心功能页生成真实文件（type=ppt|doc|quiz）
+function goToFeatures(type, topic, outline = "") {
+  const query = { type };
+  if (topic) query.topic = topic;
+  if (outline) query.outline = outline;
+  router.push({ path: "/features", query });
+}
 
 // const quickNotes = [
 //   '支持资料',
@@ -197,11 +342,7 @@ async function handleSend(text = inputText.value) {
   }
 
   await assistant.sendMessage(content, {
-    mode: activeMode.value,
-    profile: {
-      subject: userStore.getSubject(),
-      grade: userStore.getGrade(),
-    },
+    feature: activeFeature.value,
   });
   refresh();
   isLoading.value = false;
@@ -258,20 +399,6 @@ function togglePin(id) {
   refresh();
 }
 
-function switchMode(mode) {
-  // 再次点击已选中的模式 = 取消定向任务，回到自由对话
-  if (activeMode.value === mode) {
-    activeMode.value = "";
-    return;
-  }
-  activeMode.value = mode;
-  const m = teachingModes.find((x) => x.id === mode);
-  if (m) {
-    // 点击即用：自动发送该任务的默认指令，免写 prompt
-    handleSend(m.trigger);
-  }
-}
-
 function handleInternalLink(e) {
   const link = e.target.closest(".internal-link");
   if (link) {
@@ -299,6 +426,52 @@ watch(activeId, scrollToBottom);
 
 <template>
   <div class="assistant-page">
+    <nav class="feature-nav" aria-label="备课功能导航">
+      <div class="feature-nav__head">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M20 17v5H6.5A2.5 2.5 0 0 1 4 19.5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>AI 备课</span>
+      </div>
+
+      <button
+        class="feature-nav__item"
+        :class="{ 'feature-nav__item--active': isGeneral }"
+        @click="selectFeature('')"
+        title="自由对话，对话历史在此展示"
+      >
+        <span class="feature-nav__icon" v-html="chatIcon"></span>
+        <span class="feature-nav__label">通用问答</span>
+      </button>
+
+      <div class="feature-nav__divider" />
+
+      <button
+        v-for="f in features"
+        :key="f.id"
+        class="feature-nav__item"
+        :class="{ 'feature-nav__item--active': activeFeature === f.id }"
+        @click="selectFeature(f.id)"
+        :title="f.hint"
+      >
+        <span class="feature-nav__icon" v-html="f.icon"></span>
+        <span class="feature-nav__label">{{ f.label }}</span>
+      </button>
+    </nav>
+
     <aside
       class="assistant-sidebar"
       :class="{ 'assistant-sidebar--open': sidebarOpen }"
@@ -334,7 +507,7 @@ watch(activeId, scrollToBottom);
         </button>
       </div>
 
-      <div class="sidebar-search">
+      <div v-if="isGeneral" class="sidebar-search">
         <svg
           class="sidebar-search__icon"
           width="14"
@@ -359,7 +532,7 @@ watch(activeId, scrollToBottom);
         />
       </div>
 
-      <div class="assistant-sidebar__history">
+      <div v-if="isGeneral" class="assistant-sidebar__history">
         <section
           v-for="group in groupedSections"
           :key="group.key"
@@ -431,48 +604,6 @@ watch(activeId, scrollToBottom);
       </div>
 
       <div class="assistant-sidebar__foot">
-        <div class="profile-box">
-          <p class="profile-box__label">
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2.5 14c.6-2.5 2.9-4 5.5-4s4.9 1.5 5.5 4"
-                stroke="currentColor"
-                stroke-width="1.2"
-                stroke-linecap="round"
-              />
-            </svg>
-            我的教学身份
-          </p>
-          <div class="profile-box__fields">
-            <select
-              class="profile-select"
-              :value="teacherSubject"
-              @change="setSubject($event.target.value)"
-              aria-label="我的学科"
-            >
-              <option value="">学科</option>
-              <option v-for="s in SUBJECT_OPTIONS" :key="s" :value="s">
-                {{ s }}
-              </option>
-            </select>
-            <select
-              class="profile-select"
-              :value="teacherGrade"
-              @change="setGrade($event.target.value)"
-              aria-label="我的任教年级"
-            >
-              <option value="">学段</option>
-              <option v-for="g in GRADE_OPTIONS" :key="g" :value="g">
-                {{ g }}
-              </option>
-            </select>
-          </div>
-          <p v-if="teacherSubject" class="profile-box__status">
-            已按「{{ teacherSubject }} ·
-            {{ teacherGrade || "未选学段" }}」身份辅助备课
-          </p>
-        </div>
-
         <RouterLink to="/" class="home-btn" @click="sidebarOpen = false">
           <svg viewBox="0 0 20 20" fill="none">
             <path
@@ -494,7 +625,7 @@ watch(activeId, scrollToBottom);
               stroke-width="1.2"
             />
           </svg>
-          对话与身份仅保存在本地
+          对话记录仅保存在本地
         </p>
       </div>
     </aside>
@@ -521,28 +652,168 @@ watch(activeId, scrollToBottom);
             />
           </svg>
         </button>
-        <span class="assistant-mobile-bar__title">智课 AI 助手</span>
+        <span class="assistant-mobile-bar__title">知课 AI 备课助手</span>
       </header>
 
       <div class="mode-bar">
         <button
-          v-for="m in teachingModes"
-          :key="m.id"
           class="mode-btn"
-          :class="{ 'mode-btn--active': activeMode === m.id }"
-          @click="switchMode(m.id)"
+          :class="{ 'mode-btn--active': isGeneral }"
+          @click="selectFeature('')"
         >
           <span
             class="mode-btn__icon"
             aria-hidden="true"
-            v-html="m.icon"
+            v-html="chatIcon"
           ></span>
-          <span class="mode-btn__label">{{ m.label }}</span>
+          <span class="mode-btn__label">通用问答</span>
+        </button>
+        <button
+          v-for="f in features"
+          :key="f.id"
+          class="mode-btn"
+          :class="{ 'mode-btn--active': activeFeature === f.id }"
+          @click="selectFeature(f.id)"
+        >
+          <span
+            class="mode-btn__icon"
+            aria-hidden="true"
+            v-html="f.icon"
+          ></span>
+          <span class="mode-btn__label">{{ f.label }}</span>
         </button>
       </div>
 
       <div class="assistant-shell" @click="handleInternalLink">
-        <div v-if="!hasMessages && !isLoading" class="welcome">
+        <!-- 子需求选择栏：非通用功能时展示，填好指定信息后再触发 AI -->
+        <div v-if="activeFeature" class="feature-panel">
+          <div class="feature-panel__head">
+            <span
+              class="feature-panel__icon"
+              aria-hidden="true"
+              v-html="currentFeatureIcon"
+            ></span>
+            <strong class="feature-panel__title">
+              {{ currentFeatureLabel }}
+            </strong>
+            <span class="feature-panel__desc">{{ currentFeatureDesc }}</span>
+            <button
+              class="feature-panel__close"
+              title="关闭并返回通用问答"
+              @click="selectFeature('')"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="feature-panel__form">
+            <label class="fp-field fp-field--grow">
+              <span class="fp-field__label">课题</span>
+              <input
+                class="fp-field__input"
+                v-model="featureForms[activeFeature].topic"
+                placeholder="请输入课题，如：函数的单调性…"
+                @keyup.enter="runFeature()"
+              />
+            </label>
+
+            <div class="fp-field--row">
+              <template v-for="field in currentFields" :key="field.key">
+                <label class="fp-field">
+                  <span class="fp-field__label">{{ field.label }}</span>
+                  <select
+                    class="fp-field__select"
+                    v-model="featureForms[activeFeature][field.key]"
+                  >
+                    <option
+                      v-for="opt in FIELD_OPTIONS[field.key]"
+                      :key="opt"
+                      :value="opt"
+                    >
+                      {{ opt }}
+                    </option>
+                    <option :value="CUSTOM">自定义…</option>
+                  </select>
+                  <input
+                    v-if="featureForms[activeFeature][field.key] === CUSTOM"
+                    class="fp-field__input fp-field__input--custom"
+                    v-model="featureForms[activeFeature][field.key + 'Custom']"
+                    :placeholder="'自定义' + field.label"
+                  />
+                </label>
+              </template>
+
+              <label
+                v-if="activeFeature !== 'lesson'"
+                class="fp-field fp-field--switch"
+              >
+                <span class="fp-field__label">高考考点标注</span>
+                <div class="fp-switch">
+                  <button
+                    type="button"
+                    class="fp-switch__opt"
+                    :class="{
+                      'fp-switch__opt--on':
+                        featureForms[activeFeature].examAware,
+                    }"
+                    @click="featureForms[activeFeature].examAware = true"
+                  >
+                    标注
+                  </button>
+                  <button
+                    type="button"
+                    class="fp-switch__opt"
+                    :class="{
+                      'fp-switch__opt--on':
+                        !featureForms[activeFeature].examAware,
+                    }"
+                    @click="featureForms[activeFeature].examAware = false"
+                  >
+                    不标
+                  </button>
+                </div>
+              </label>
+
+              <label class="fp-field fp-field--grow">
+                <span class="fp-field__label">补充要求（可选）</span>
+                <input
+                  class="fp-field__input"
+                  v-model="featureForms[activeFeature].requirements"
+                  placeholder="如：重点讲情境导入 / 用生活案例举例…"
+                />
+              </label>
+            </div>
+          </div>
+
+          <button
+            class="feature-panel__submit"
+            :disabled="!canRunFeature"
+            @click="runFeature()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            开始生成
+          </button>
+        </div>
+
+        <div v-if="!hasMessages && !isLoading && isGeneral" class="welcome">
           <div class="welcome__brand">
             <div class="welcome__logo">
               <span class="welcome__logo-icon">
@@ -594,29 +865,8 @@ watch(activeId, scrollToBottom);
 
             <h1 class="welcome__title">知课 AI 备课助手</h1>
             <p class="welcome__desc">
-              专为教师备课打造：选择下方备课任务即可一键生成目标、重难点、导入、教案、板书与试题。先在上方设置您的学科与学段，AI
-              将按您的教学身份精准辅助。
+              帮你把备课想法理清楚：选择左侧「备课构思」「教案草稿」「出题草稿」，填写课题后一键生成内容草稿，满意后还可「转入生成」落地成真实文件；「通用问答」可自由对话。
             </p>
-          </div>
-
-          <div class="suggestions-block">
-            <p class="suggestions-block__label">常用备课任务</p>
-            <div class="suggestions-grid">
-              <button
-                v-for="(item, index) in teachingModes"
-                :key="item.id"
-                class="suggestion-card"
-                :class="{ 'suggestion-card--active': activeMode === item.id }"
-                :style="{ '--i': index }"
-                @click="switchMode(item.id)"
-              >
-                <span class="suggestion-card__icon" v-html="item.icon"></span>
-                <span class="suggestion-card__text">
-                  <strong>{{ item.label }}</strong>
-                  <small>{{ item.hint }}</small>
-                </span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -844,21 +1094,49 @@ watch(activeId, scrollToBottom);
           </div>
         </div>
 
+        <!-- 桥接：把助手草稿送入核心功能页生成真实文件 -->
+        <div v-if="showBridge" class="bridge-bar">
+          <div class="bridge-bar__text">
+            <strong>{{ currentFeatureLabel }}已生成</strong>
+            <span>满意的话，可一键转入核心功能生成真实文件</span>
+          </div>
+          <button
+            class="bridge-bar__btn"
+            @click="goToFeatures(bridgeInfo.type, bridgeInfo.topic)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M7 17L17 7" />
+              <path d="M8 7h9v9" />
+            </svg>
+            {{ bridgeInfo.label }}
+          </button>
+        </div>
+
         <div class="input-area">
           <div
-            v-if="activeMode"
+            v-if="activeFeature"
             class="mode-indicator"
-            :title="currentModeDesc"
+            :title="currentFeatureDesc"
           >
-            <span class="mode-indicator__icon" v-html="currentModeIcon"></span>
+            <span
+              class="mode-indicator__icon"
+              v-html="currentFeatureIcon"
+            ></span>
             <span class="mode-indicator__label">
-              定向任务：{{ currentModeLabel }} —— {{ currentModeDesc }}
+              当前功能：{{ currentFeatureLabel }} —— {{ currentFeatureDesc }}
             </span>
             <button
               class="mode-indicator__clear"
-              title="取消定向任务，回到自由对话"
-              aria-label="取消定向任务"
-              @click="activeMode = ''"
+              title="返回通用问答"
+              aria-label="返回通用问答"
+              @click="selectFeature('')"
             >
               <svg viewBox="0 0 16 16" fill="none">
                 <path
@@ -1183,60 +1461,6 @@ watch(activeId, scrollToBottom);
   border-top: 1px solid var(--border-subtle);
 }
 
-/* ---- 教师教学身份 ---- */
-.profile-box {
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: #f6f8fb;
-}
-
-.profile-box__label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-}
-
-.profile-box__label svg {
-  width: 13px;
-  height: 13px;
-  color: var(--accent-blue);
-}
-
-.profile-box__fields {
-  display: flex;
-  gap: 6px;
-}
-
-.profile-select {
-  flex: 1;
-  min-width: 0;
-  padding: 5px 6px;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  background: #fff;
-  font-size: 0.76rem;
-  color: var(--ink);
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.profile-select:focus {
-  outline: none;
-  border-color: var(--accent-blue);
-}
-
-.profile-box__status {
-  margin-top: 8px;
-  font-size: 0.68rem;
-  line-height: 1.4;
-  color: var(--accent-blue);
-}
-
 .home-btn {
   display: none;
 }
@@ -1326,10 +1550,105 @@ watch(activeId, scrollToBottom);
 }
 
 /* ═══════════════════════════════════════════════
-   Mode Bar (inside shell top)
+   备课功能竖向导航（页面左端）
+   ═══════════════════════════════════════════════ */
+.feature-nav {
+  width: 176px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  background: #ffffff;
+  border-right: 1px solid var(--border-subtle);
+  gap: 2px;
+}
+
+.feature-nav__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.feature-nav__head svg {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-blue);
+}
+
+.feature-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.feature-nav__item:hover {
+  color: var(--accent-blue);
+  background: #f5f7fb;
+}
+
+.feature-nav__item--active {
+  color: var(--accent-blue);
+  background: rgba(37, 99, 235, 0.08);
+  font-weight: 600;
+}
+
+.feature-nav__item:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px var(--accent-blue);
+}
+
+.feature-nav__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.feature-nav__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.feature-nav__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feature-nav__divider {
+  height: 1px;
+  margin: 8px 10px;
+  background: var(--border-subtle);
+}
+
+/* ═══════════════════════════════════════════════
+   Mode Bar（仅移动端横向兜底）
    ═══════════════════════════════════════════════ */
 .mode-bar {
-  display: flex;
+  display: none;
   gap: 2px;
   padding: 12px 20px 0;
   border-bottom: 1px solid var(--border-subtle);
@@ -1340,6 +1659,292 @@ watch(activeId, scrollToBottom);
 
 .mode-bar::-webkit-scrollbar {
   display: none;
+}
+
+/* ═══════════════════════════════════════════════
+   子需求选择栏（非通用功能时展示）
+   ═══════════════════════════════════════════════ */
+.feature-panel {
+  margin: 16px 20px 0;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #fbfdff, #f7fafc);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.feature-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.feature-panel__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent-blue);
+}
+
+.feature-panel__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.feature-panel__title {
+  font-size: 0.94rem;
+  color: var(--ink);
+}
+
+.feature-panel__desc {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.feature-panel__close {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.feature-panel__close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.feature-panel__close:hover {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--ink);
+}
+
+.feature-panel__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fp-field--grow {
+  flex: 1 1 100%;
+}
+
+.fp-field--row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fp-field--row .fp-field {
+  flex: 1 1 120px;
+  max-width: 200px;
+}
+
+.fp-field__label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fp-field__input,
+.fp-field__select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.fp-field__input:focus,
+.fp-field__select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* 自定义兜底：选「自定义…」后出现的输入框 */
+.fp-field__input--custom {
+  margin-top: 6px;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  border-color: rgba(37, 99, 235, 0.35);
+  background: #f8fbff;
+}
+
+/* 高考考点标注开关 */
+.fp-switch {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.fp-switch__opt {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  background: #ffffff;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.fp-switch__opt + .fp-switch__opt {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.fp-switch__opt--on {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.fp-switch__opt:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--accent-blue);
+}
+
+.feature-panel__submit {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-blue);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.feature-panel__submit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.feature-panel__submit:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.feature-panel__submit:disabled {
+  background: #c3d3ee;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════
+   桥接栏（草稿 → 核心功能生成文件）
+   ═══════════════════════════════════════════════ */
+.bridge-bar {
+  margin: 12px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #f0f6ff, #eaf2ff);
+}
+
+.bridge-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bridge-bar__text strong {
+  font-size: 0.86rem;
+  color: var(--accent-blue);
+}
+
+.bridge-bar__text span {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+.bridge-bar__btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent-blue);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.bridge-bar__btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bridge-bar__btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* 键盘可达性：可交互元素统一可见焦点环 */
+.feature-panel__submit:focus-visible,
+.feature-panel__close:focus-visible,
+.mode-btn:focus-visible,
+.mode-indicator__clear:focus-visible,
+.send-btn:focus-visible,
+.new-chat-btn:focus-visible,
+.home-btn:focus-visible,
+.bridge-bar__btn:focus-visible,
+.msg-action:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px var(--accent-blue);
 }
 
 .mode-btn {
@@ -1438,6 +2043,7 @@ watch(activeId, scrollToBottom);
   font-weight: 700;
   line-height: 1.25;
   color: var(--ink);
+  text-wrap: balance;
 }
 
 .welcome__desc {
@@ -1448,95 +2054,6 @@ watch(activeId, scrollToBottom);
   max-width: 400px;
   margin-left: auto;
   margin-right: auto;
-}
-
-/* ---- Suggestions ---- */
-.suggestions-block {
-  max-width: 560px;
-  width: 100%;
-  margin-top: 36px;
-}
-
-.suggestions-block__label {
-  margin-bottom: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--ink-faint);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.suggestions-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.suggestion-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--ink-soft);
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
-}
-
-.suggestion-card:hover {
-  border-color: rgba(37, 99, 235, 0.35);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
-  transform: translateY(-1px);
-}
-
-.suggestion-card--active {
-  border-color: var(--accent-blue);
-  background: rgba(37, 99, 235, 0.05);
-  box-shadow: 0 0 0 1px var(--accent-blue) inset;
-}
-
-.suggestion-card__icon {
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.08);
-  color: var(--accent-blue);
-}
-
-.suggestion-card__icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.suggestion-card__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: inherit;
-}
-
-.suggestion-card__text strong {
-  font-size: 0.88rem;
-  color: var(--ink);
-}
-
-.suggestion-card__text small {
-  font-size: 0.72rem;
-  color: var(--ink-faint);
 }
 
 /* ═══════════════════════════════════════════════
@@ -1904,13 +2421,15 @@ watch(activeId, scrollToBottom);
 /* ═══════════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════════ */
-@media (max-width: 980px) {
-  .suggestions-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
+  .feature-nav {
+    display: none;
+  }
+
+  .mode-bar {
+    display: flex;
+  }
+
   .assistant-sidebar {
     position: fixed;
     top: 0;
@@ -1985,6 +2504,7 @@ watch(activeId, scrollToBottom);
   }
   .msg-action,
   .mode-btn,
+  .feature-nav__item,
   .history-item,
   .history-row,
   .icon-btn,

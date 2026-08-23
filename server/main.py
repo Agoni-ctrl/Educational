@@ -329,13 +329,13 @@ class TeacherProfile(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
-    mode: str = ""               # 备课任务模式：goal/difficulty/intro/quiz/lesson/board/interact/exam，空为自由对话
-    profile: TeacherProfile | None = None  # 教师角色画像
+    feature: str = ""            # 大功能（构思层）：plan / lesson / quiz，空为通用问答
+    profile: TeacherProfile | None = None  # 教师角色画像（可空）
 
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
-    """AI 备课助手：按教师画像 + 备课任务模式调用 Qwen，返回自由文本回复"""
+    """AI 备课助手：按教师画像 + 大功能定向调用 Qwen，返回自由文本回复"""
     messages = [{"role": m.role, "content": m.content} for m in req.messages]
     profile = (
         {"subject": req.profile.subject, "grade": req.profile.grade}
@@ -343,7 +343,7 @@ async def chat_endpoint(req: ChatRequest):
         else {}
     )
     try:
-        reply = await chat_with_qwen(messages, mode=req.mode, profile=profile)
+        reply = await chat_with_qwen(messages, feature=req.feature, profile=profile)
         return {"reply": reply}
     except HTTPException:
         raise

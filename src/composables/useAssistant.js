@@ -69,7 +69,7 @@ export async function sendToTongyi(messages, options = {}) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
-        mode: options.mode || "",
+        feature: options.feature || "",
         profile: options.profile || {},
       }),
     });

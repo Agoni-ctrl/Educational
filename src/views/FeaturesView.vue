@@ -3101,6 +3101,25 @@ onMounted(() => {
   if (queryTemplate) {
     pptForm.value.template = queryTemplate;
   }
+  // 处理 AI 助手「转入生成」跳转参数：type=topic/outline 自动预填
+  const queryType = route.query.type;
+  const queryTopic = route.query.topic;
+  const queryOutline = route.query.outline;
+  if (queryType) {
+    const panelMap = { ppt: "ppt", doc: "doc", quiz: "interactive", exam: "exam" };
+    if (panelMap[queryType]) {
+      activePanel.value = panelMap[queryType];
+    }
+    if (queryTopic) {
+      if (queryType === "ppt") pptForm.value.topic = queryTopic;
+      else if (queryType === "doc") docForm.value.topic = queryTopic;
+      else if (queryType === "quiz") questionForm.value.topic = queryTopic;
+      else if (queryType === "exam") examForm.value.topic = queryTopic;
+    }
+    if (queryType === "ppt" && queryOutline) {
+      pptForm.value.outlineCustom = queryOutline;
+    }
+  }
   // 延迟初始化确保DOM完全渲染
   setTimeout(() => {
     nextTick(() => {
