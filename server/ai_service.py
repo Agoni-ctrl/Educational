@@ -332,7 +332,7 @@ TEACHING_MODE_PROMPTS = {
 
 
 def build_teacher_profile_prompt(profile: dict) -> str:
-    """将教师角色画像（学科/任教年级学段）注入系统提示，锁定针对性辅助"""
+    """将教师主动声明的画像（学科/任教年级学段）注入系统提示，并明确其为用户声明而非 AI 假设"""
     if not profile:
         return ""
     lines = []
@@ -343,8 +343,7 @@ def build_teacher_profile_prompt(profile: dict) -> str:
     if not lines:
         return ""
     return (
-        "教师角色画像（请始终基于该身份辅助备课，使用对应学科的专业表述"
-        "与对应学段学生的认知水平、学习心理）：\n"
+        "该用户已主动声明以下教学身份（以此为准，这不是你自行假设的）：\n"
         + "\n".join(lines)
     )
 

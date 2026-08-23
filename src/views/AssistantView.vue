@@ -100,35 +100,19 @@ const SUBJECT_OPTIONS = [
   "政治",
 ];
 const GRADE_OPTIONS = ["小学低年级", "小学高年级", "初中", "高中"];
-const PROFILE_KEY = "zhike-teacher-profile";
-
-function loadTeacherProfile() {
-  try {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    /* ignore */
-  }
-  return { subject: "", grade: "" };
-}
 
 // 当前备课任务模式（空 = 自由对话）
 const activeMode = ref("");
-// 教师角色画像：锁定学科与任教年级/学段，注入每次对话
-const teacherProfile = ref(loadTeacherProfile());
-
-function saveTeacherProfile() {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(teacherProfile.value));
-}
+// 教师教学身份：并入 userStore 用户资料统一管理（学科 + 任教年级/学段）
+const teacherSubject = computed(() => userStore.getSubject());
+const teacherGrade = computed(() => userStore.getGrade());
 
 function setSubject(subject) {
-  teacherProfile.value.subject = subject;
-  saveTeacherProfile();
+  userStore.setSubject(subject);
 }
 
 function setGrade(grade) {
-  teacherProfile.value.grade = grade;
-  saveTeacherProfile();
+  userStore.setGrade(grade);
 }
 
 // 当前定向任务模式的展示信息
@@ -214,7 +198,10 @@ async function handleSend(text = inputText.value) {
 
   await assistant.sendMessage(content, {
     mode: activeMode.value,
-    profile: teacherProfile.value,
+    profile: {
+      subject: userStore.getSubject(),
+      grade: userStore.getGrade(),
+    },
   });
   refresh();
   isLoading.value = false;
@@ -459,7 +446,7 @@ watch(activeId, scrollToBottom);
           <div class="profile-box__fields">
             <select
               class="profile-select"
-              :value="teacherProfile.subject"
+              :value="teacherSubject"
               @change="setSubject($event.target.value)"
               aria-label="我的学科"
             >
@@ -470,7 +457,7 @@ watch(activeId, scrollToBottom);
             </select>
             <select
               class="profile-select"
-              :value="teacherProfile.grade"
+              :value="teacherGrade"
               @change="setGrade($event.target.value)"
               aria-label="我的任教年级"
             >
@@ -480,9 +467,9 @@ watch(activeId, scrollToBottom);
               </option>
             </select>
           </div>
-          <p v-if="teacherProfile.subject" class="profile-box__status">
-            已按「{{ teacherProfile.subject }} ·
-            {{ teacherProfile.grade || "未选学段" }}」身份辅助备课
+          <p v-if="teacherSubject" class="profile-box__status">
+            已按「{{ teacherSubject }} ·
+            {{ teacherGrade || "未选学段" }}」身份辅助备课
           </p>
         </div>
 
