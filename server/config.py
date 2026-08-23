@@ -18,7 +18,7 @@ DEEPSEEK_MODEL = "deepseek-chat"  # DeepSeek-V3
 # ==================================================================
 QWEN_API_KEY = os.getenv("QWEN_API_KEY") or "sk-ws-H.EYLDXPX.uTtl.MEYCIQCDdcBAkELSb4AjzM5gIFXIydrgZVLDMFMWbtBUJ4918AIhAKAVh7wpX4DmX0gPcp2bIMc31SgGGT78xCkCRlyUb6TE"
 QWEN_BASE_URL = os.getenv("QWEN_BASE_URL") or "https://dashscope.aliyuncs.com/compatible-mode/v1"
-QWEN_MODEL = os.getenv("QWEN_MODEL") or "qwen-plus"  # 可用 qwen-plus / qwen-max / qwen-turbo 等
+QWEN_MODEL = os.getenv("QWEN_MODEL") or "qwen3.8-27b"  # 可用 qwen-plus / qwen-max / qwen-turbo 等
 
 # 服务配置
 HOST = "0.0.0.0"
