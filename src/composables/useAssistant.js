@@ -55,13 +55,35 @@ function mockReply(userText) {
   return MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)];
 }
 
-/** 预留通义 API 接入点 */
-export async function sendToTongyi(messages) {
-  // TODO: 接入通义千问 API
-  // const response = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ messages }) })
+const CHAT_API = "http://localhost:8000/api/chat";
+
+/**
+ * AI 备课助手：调用后端 Qwen 接口（带多轮上下文 + 备课任务模式 + 教师画像），
+ * 后端不可用 / API Key 缺失时回退到本地演示逻辑，保证页面可用。
+ */
+export async function sendToTongyi(messages, options = {}) {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
-  await new Promise((r) => setTimeout(r, 800 + Math.random() * 600));
-  return mockReply(lastUser?.content || "");
+  try {
+    const res = await fetch(CHAT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        mode: options.mode || "",
+        profile: options.profile || {},
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data && typeof data.reply === "string" && data.reply.trim()) {
+      return data.reply;
+    }
+    throw new Error("空回复");
+  } catch (err) {
+    // 后端未启动 / API Key 缺失时回退本地演示
+    await new Promise((r) => setTimeout(r, 800 + Math.random() * 600));
+    return mockReply(lastUser?.content || "");
+  }
 }
 
 export function useAssistant() {
@@ -149,7 +171,7 @@ export function useAssistant() {
     }
   }
 
-  async function sendMessage(content) {
+  async function sendMessage(content, options = {}) {
     const text = content.trim();
     if (!text) return null;
 
@@ -167,7 +189,7 @@ export function useAssistant() {
     }
     updateSession(session);
 
-    const reply = await sendToTongyi(session.messages);
+    const reply = await sendToTongyi(session.messages, options);
     const aiMsg = {
       id: uid("m"),
       role: "assistant",

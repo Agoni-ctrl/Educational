@@ -25,7 +25,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from config import OUTPUT_DIR, DATA_DIR, TASKS_FILE, HOST, PORT
-from ai_service import generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content
+from ai_service import (
+    generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content,
+    chat_with_qwen,
+)
 from file_generator import (
     generate_pptx, generate_pptx_from_template,
     generate_docx, generate_quiz_html, generate_exam_html,
@@ -310,6 +313,42 @@ def download_file(task_id: str):
         filename=task["filename"],
         media_type="application/octet-stream",
     )
+
+
+# ── API: AI 备课助手 ─────────────────────────────────────────
+
+class ChatMessage(BaseModel):
+    role: str  # user | assistant
+    content: str
+
+
+class TeacherProfile(BaseModel):
+    subject: str = ""  # 教师学科
+    grade: str = ""    # 任教年级/学段
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    mode: str = ""               # 备课任务模式：goal/difficulty/intro/quiz/lesson/board/interact/exam，空为自由对话
+    profile: TeacherProfile | None = None  # 教师角色画像
+
+
+@app.post("/api/chat")
+async def chat_endpoint(req: ChatRequest):
+    """AI 备课助手：按教师画像 + 备课任务模式调用 Qwen，返回自由文本回复"""
+    messages = [{"role": m.role, "content": m.content} for m in req.messages]
+    profile = (
+        {"subject": req.profile.subject, "grade": req.profile.grade}
+        if req.profile
+        else {}
+    )
+    try:
+        reply = await chat_with_qwen(messages, mode=req.mode, profile=profile)
+        return {"reply": reply}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI 备课助手服务异常: {e}")
 
 
 # ── API: PPT 模版列表 ─────────────────────────────────────────
