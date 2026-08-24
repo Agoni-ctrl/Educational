@@ -12,14 +12,18 @@ const router = useRouter();
 const assistant = useAssistant();
 const userStore = useUserStore();
 
-const sessions = ref(assistant.getSessions());
-const activeId = ref(assistant.getActiveSession()?.id || null);
 const inputText = ref("");
 const isLoading = ref(false);
 const sidebarOpen = ref(false);
 const messagesEl = ref(null);
 const searchQuery = ref("");
 
+// 直接绑定 composable 的模块级响应式状态，切页/刷新保持同一份数据
+const sessions = computed(() => assistant.getSessions());
+const activeId = computed({
+  get: () => assistant.state.activeId,
+  set: (v) => assistant.setActive(v),
+});
 const activeSession = computed(
   () => sessions.value.find((s) => s.id === activeId.value) || null,
 );
@@ -261,12 +265,34 @@ async function runFeature() {
 }
 
 // 桥接：把助手产出的草稿送入核心功能页生成真实文件（type=ppt|doc|quiz）
-function goToFeatures(type, topic, outline = "") {
+function goToFeatures(type, topic, content = "") {
   const query = { type };
   if (topic) query.topic = topic;
-  if (outline) query.outline = outline;
+  // 草稿文本可能很长，放入 sessionStorage 避免超长 URL；
+  // 核心功能页读取后自动预填学科/学段/教学目标/重难点等字段
+  try {
+    if (content) {
+      sessionStorage.setItem(
+        "zhike-features-bridge",
+        JSON.stringify({ type, topic: topic || "", content, ts: Date.now() }),
+      );
+    }
+  } catch {
+    /* ignore */
+  }
   router.push({ path: "/features", query });
 }
+
+// 取最后一条 AI 回复的完整文本，用于桥接预填核心功能的内容
+const lastAssistantContent = computed(() => {
+  const msgs = activeSession.value?.messages ?? [];
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].role === "assistant" && msgs[i].content) {
+      return msgs[i].content;
+    }
+  }
+  return "";
+});
 
 // const quickNotes = [
 //   '支持资料',
@@ -284,36 +310,27 @@ const groupedSections = computed(() => {
 });
 
 function refresh() {
-  sessions.value = assistant.getSessions();
+  // 状态已响应式共享，无需手动同步；若当前无激活会话则自动落到第一个
   const current = assistant.getActiveSession();
-  if (current) {
-    activeId.value = current.id;
-    return;
+  if (!current && sessions.value.length) {
+    assistant.setActive(sessions.value[0].id);
   }
-  if (sessions.value.length) {
-    activeId.value = sessions.value[0].id;
-    assistant.setActive(activeId.value);
-    return;
-  }
-  activeId.value = null;
 }
 
 function ensureSessionExists() {
   if (!assistant.getSessions().length) {
-    const session = assistant.createSession();
-    activeId.value = session.id;
+    assistant.createSession();
   }
   refresh();
 }
 
 function handleNewChat() {
-  activeId.value = null;
+  assistant.setActive(null);
   inputText.value = "";
   sidebarOpen.value = false;
 }
 
 function selectSession(id) {
-  activeId.value = id;
   assistant.setActive(id);
   sidebarOpen.value = false;
   scrollToBottom();
@@ -321,12 +338,10 @@ function selectSession(id) {
 
 function handleDeleteSession(id) {
   assistant.deleteSession(id);
-  refresh();
   if (!sessions.value.length) {
-    const session = assistant.createSession();
-    activeId.value = session.id;
-    refresh();
+    assistant.createSession();
   }
+  refresh();
 }
 
 async function handleSend(text = inputText.value) {
@@ -343,8 +358,10 @@ async function handleSend(text = inputText.value) {
 
   await assistant.sendMessage(content, {
     feature: activeFeature.value,
+    onDelta: () => {
+      scrollToBottom();
+    },
   });
-  refresh();
   isLoading.value = false;
   await nextTick();
   scrollToBottom();
@@ -945,13 +962,24 @@ watch(activeId, scrollToBottom);
                 />
               </svg>
             </div>
-            <div class="message__bubble">
+            <div
+              class="message__bubble"
+              :class="{
+                'message__bubble--typing':
+                  msg.role === 'assistant' && !msg.content,
+              }"
+            >
               <div
+                v-if="msg.content"
                 class="markdown-body"
                 v-html="renderMarkdown(msg.content)"
               ></div>
+              <template v-else><span /><span /><span /></template>
             </div>
-            <div v-if="msg.role === 'assistant'" class="message__actions">
+            <div
+              v-if="msg.role === 'assistant' && msg.content"
+              class="message__actions"
+            >
               <button
                 class="msg-action"
                 title="复制"
@@ -1040,58 +1068,6 @@ watch(activeId, scrollToBottom);
               </button>
             </div>
           </div>
-
-          <div v-if="isLoading" class="message message--assistant">
-            <div class="message__avatar">
-              <span class="avatar-icon ai-avatar">
-                <svg
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  aria-hidden="true"
-                  class="ai-avatar-svg"
-                >
-                  <rect
-                    width="32"
-                    height="32"
-                    rx="8"
-                    fill="url(#loading-ai-g)"
-                  />
-                  <path
-                    d="M10 9c0-.55.45-1 1-1h4.5c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1H11c-.55 0-1-.45-1-1V9z"
-                    fill="rgba(255,255,255,0.88)"
-                  />
-                  <path
-                    d="M15.5 9c0-.55.45-1 1-1H21c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1h-4.5c-.55 0-1-.45-1-1V9z"
-                    fill="rgba(255,255,255,0.55)"
-                  />
-                  <rect
-                    x="14.5"
-                    y="9"
-                    width="3"
-                    height="12"
-                    rx="0.5"
-                    fill="rgba(255,255,255,0.2)"
-                  />
-                  <circle cx="24.5" cy="9" r="2.5" fill="#FDE68A" />
-                  <defs>
-                    <linearGradient
-                      id="loading-ai-g"
-                      x1="0"
-                      y1="0"
-                      x2="32"
-                      y2="32"
-                    >
-                      <stop stop-color="#2563EB" />
-                      <stop stop-color="#1D4ED8" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-            </div>
-            <div class="message__bubble message__bubble--typing">
-              <span /><span /><span />
-            </div>
-          </div>
         </div>
 
         <!-- 桥接：把助手草稿送入核心功能页生成真实文件 -->
@@ -1102,7 +1078,13 @@ watch(activeId, scrollToBottom);
           </div>
           <button
             class="bridge-bar__btn"
-            @click="goToFeatures(bridgeInfo.type, bridgeInfo.topic)"
+            @click="
+              goToFeatures(
+                bridgeInfo.type,
+                bridgeInfo.topic,
+                lastAssistantContent,
+              )
+            "
           >
             <svg
               viewBox="0 0 24 24"

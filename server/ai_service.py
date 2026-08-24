@@ -311,9 +311,9 @@ CHAT_SYSTEM_PROMPT = """你是「知课 AI 备课助手」，一个专为教师�
 
 回答原则：
 1. 聚焦备课：围绕教学目标、重难点、导入、教学过程、板书、作业、课堂互动、出题、考点对接等备课环节，提供可直接落地、明天就能上课堂的内容
-2. 先给结果再展开：优先输出可直接复制使用的结构化内容（分点、分步骤），避免空泛套话
-3. 主动追问关键信息：当缺少学科、年级、课题、课时长度等影响针对性的信息时，用简短提问补齐，不臆造
-4. 身份以用户声明为准，不得自行假定：系统提供的教师画像（学科、任教年级/学段）是用户主动声明的身份，请以此为准。若未提供画像，你**绝不能自行假设**用户的学科、学段或教龄，应先用一两句简短提问确认（如"您是哪个学科、哪个学段？"），再针对性作答；纯通用的教学/备课问题可直接回答
+2. 先给结果再展开：优先输出可直接复制使用的结构化内容（分点、分步骤），避免空泛套话，不要一上来就抛一堆问题
+3. 优先从课题推断学科与学段，而不是反问：当用户给出课题或知识点时，先根据课题名称直接推断学科与学段（例如「函数的单调性」「导数」「三角函数」→ 高中数学；「分数的意义」「加减法」→ 小学数学；文言文、古诗词 → 语文），推断出来就直接按该学科作答。只有在课题信息确实含糊、无法判断学科时，才用一句最简短的话追问，绝不要连续抛多个问题
+4. 身份以用户声明为准，不得自行假定：系统提供的教师画像（学科、任教年级/学段）是用户主动声明的身份，请以此为准。若未提供画像，优先按原则 3 从课题推断；无法推断时再简短追问，而非直接假设
 5. 务实老练：像一位有经验、乐于助人的教研组老同事，语气亲和、鼓励，条理清晰
 6. 不确定的事实（如具体考点地区差异、教材版本）明确提示核验"""
 
@@ -331,7 +331,7 @@ FEATURE_PROMPTS = {
     "lesson": """【当前任务：教案草稿】请严格按用户给出的「课题、课型、教材版本、学生层次、课时、教案详略」输出完整教案草稿。
 教案详略决定详略程度：详案需精确到分钟、含过渡语与逐环节设计，适合公开课/检查；简案给出环节提纲与要点即可，适合日常使用。
 结构须包含：教学目标（知识与技能、过程与方法、情感态度与价值观）、教学重难点、课时安排、教学准备、教学过程（导入→新授→巩固→总结，并标注时间）、板书设计、作业布置、教学反思要点。
-若缺少学科、学段、教材版本等关键信息，可用简短追问补齐；不确定时提示教师核验。""",
+若缺少学科、学段、教材版本等关键信息，优先从课题名称推断（如「函数的单调性」→高中数学），推断不出再简短追问；不确定的考点提示教师核验。""",
     "quiz": """【当前任务：出题草稿】请严格按用户给出的「课题、用途、题型分布、学生层次、难度、题量」设计分层练习草稿。
 - 用途决定题型与配比：课堂练习题量适中重基础；课后作业分层梯度完整；周测/月考按考试标准配比并控制难度分布
 - 题型分布按用户选择执行（高考标准≈选择+填空+解答题配比，或全选择/全解答）
@@ -392,3 +392,53 @@ async def chat_with_qwen(
         resp.raise_for_status()
         data = resp.json()
         return data["choices"][0]["message"]["content"].strip()
+
+
+async def chat_with_qwen_stream(
+    messages: list, feature: str = "", profile: dict | None = None
+):
+    """流式版 AI 备课助手：逐段返回 Qwen 生成内容，用于前端即时渲染、避免长时间等待无反馈"""
+    if not QWEN_API_KEY:
+        raise RuntimeError("未设置 QWEN_API_KEY，无法使用 AI 备课助手")
+
+    system_prompt = CHAT_SYSTEM_PROMPT
+    profile_prompt = build_teacher_profile_prompt(profile or {})
+    if profile_prompt:
+        system_prompt += "\n\n" + profile_prompt
+    feature_prompt = FEATURE_PROMPTS.get(feature or "", "")
+    if feature_prompt:
+        system_prompt += "\n\n" + feature_prompt
+
+    async with httpx.AsyncClient(timeout=None) as client:
+        async with client.stream(
+            "POST",
+            f"{QWEN_BASE_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {QWEN_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": QWEN_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    *messages,
+                ],
+                "temperature": 0.7,
+                "max_tokens": 2048,
+                "stream": True,
+            },
+        ) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line or not line.startswith("data:"):
+                    continue
+                data = line[len("data:"):].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data)
+                    delta = chunk["choices"][0]["delta"].get("content", "")
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    continue
+                if delta:
+                    yield delta

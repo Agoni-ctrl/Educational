@@ -335,20 +335,34 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
-    """AI 备课助手：按教师画像 + 大功能定向调用 Qwen，返回自由文本回复"""
+    """AI 备课助手：按教师画像 + 大功能定向调用 Qwen，流式（SSE）返回，前端逐字渲染"""
     messages = [{"role": m.role, "content": m.content} for m in req.messages]
     profile = (
         {"subject": req.profile.subject, "grade": req.profile.grade}
         if req.profile
         else {}
     )
-    try:
-        reply = await chat_with_qwen(messages, feature=req.feature, profile=profile)
-        return {"reply": reply}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI 备课助手服务异常: {e}")
+
+    async def event_stream():
+        try:
+            async for delta in chat_with_qwen_stream(
+                messages, feature=req.feature, profile=profile
+            ):
+                yield f"data: {json.dumps({'content': delta}, ensure_ascii=False)}\n\n"
+            yield "data: [DONE]\n\n"
+        except HTTPException:
+            yield f"data: {json.dumps({'error': 'AI 备课助手服务异常'}, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 # ── API: PPT 模版列表 ─────────────────────────────────────────

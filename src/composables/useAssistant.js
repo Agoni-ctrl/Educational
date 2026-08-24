@@ -1,13 +1,8 @@
+import { reactive } from "vue";
+
 const STORAGE_KEY = "zhike-assistant-sessions";
 const ACTIVE_KEY = "zhike-assistant-active";
-
-const MOCK_REPLIES = [
-  "好的，我先帮您梳理一下教学思路。请问这节课的核心知识点是什么？学生的基础水平如何？",
-  "根据您的描述，我建议采用「情境导入 → 概念建构 → 实验探究 → 应用巩固」的四段式结构。需要我展开每一部分的详细设计吗？",
-  "我可以为您生成 PPT 大纲和 Word 教案初稿。您是否已有参考资料（PDF/Word）需要融合？",
-  "课堂互动方面，可以考虑：① 快速投票检验理解 ② 小组讨论案例 ③ 拖拽排序知识点。您更倾向哪种形式？",
-  "您的教学目标表述可以更具体一些。建议加上可观测的行为动词，例如「学生能够运用公式解决…类型的问题」。",
-];
+const CHAT_API = "http://localhost:8000/api/chat";
 
 function uid(prefix = "s") {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -41,30 +36,17 @@ function titleFromMessage(text) {
   return t.length > 18 ? `${t.slice(0, 18)}…` : t || "新对话";
 }
 
-function mockReply(userText) {
-  const lower = userText.toLowerCase();
-  if (lower.includes("ppt") || lower.includes("课件")) {
-    return "我来帮您规划课件结构。请告诉我：① 学科与课题 ② 课时长度 ③ 是否需要实验或互动环节。如果有参考 PDF，也可以描述其排版风格偏好。";
-  }
-  if (lower.includes("互动") || lower.includes("游戏")) {
-    return "互动设计是亮点！请说明学生年龄段和课堂环境（是否有多媒体）。我可以推荐：情境问答、拖拽排序、限时挑战等小活动，并生成对应的 AI 动画创意脚本。";
-  }
-  if (lower.includes("教案") || lower.includes("pdf")) {
-    return "多模态参考融合已就绪。请描述您希望从参考资料中提取哪些内容（知识结构、案例、排版风格等），我会据此调整生成策略。";
-  }
-  return MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)];
-}
-
-const CHAT_API = "http://localhost:8000/api/chat";
-
 /**
- * AI 备课助手：调用后端 Qwen 接口（带多轮上下文 + 备课任务模式 + 教师画像），
- * 后端不可用 / API Key 缺失时回退到本地演示逻辑，保证页面可用。
+ * 流式调用后端 Qwen 接口，逐段读取 SSE 返回。
+ * @param {Array} messages 多轮对话历史 [{role, content}]
+ * @param {object} options { feature }
+ * @param {Function} onDelta 每收到一段内容时回调（参数为累积的完整文本）
+ * @returns {Promise<string>} 累积的完整回复文本
  */
-export async function sendToTongyi(messages, options = {}) {
-  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+export async function sendToTongyi(messages, options = {}, onDelta) {
+  let res;
   try {
-    const res = await fetch(CHAT_API, {
+    res = await fetch(CHAT_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -73,25 +55,64 @@ export async function sendToTongyi(messages, options = {}) {
         profile: options.profile || {},
       }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (data && typeof data.reply === "string" && data.reply.trim()) {
-      return data.reply;
-    }
-    throw new Error("空回复");
-  } catch (err) {
-    // 后端未启动 / API Key 缺失时回退本地演示
-    await new Promise((r) => setTimeout(r, 800 + Math.random() * 600));
-    return mockReply(lastUser?.content || "");
+  } catch {
+    throw new Error("无法连接 AI 服务，请确认后端已启动");
   }
+  if (!res.ok || !res.body) {
+    throw new Error(`AI 服务返回错误（HTTP ${res.status}）`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let full = "";
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let idx;
+    while ((idx = buffer.indexOf("\n\n")) >= 0) {
+      const rawEvent = buffer.slice(0, idx).trim();
+      buffer = buffer.slice(idx + 2);
+      for (const line of rawEvent.split("\n")) {
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const data = JSON.parse(payload);
+          if (typeof data.content === "string") {
+            full += data.content;
+            if (onDelta) onDelta(full);
+          } else if (data.error) {
+            throw new Error(data.error);
+          }
+        } catch (err) {
+          if (err.message && err.message.includes("AI 服务")) throw err;
+          // 忽略无法解析的片段，等待完整事件
+        }
+      }
+    }
+  }
+  if (!full) throw new Error("AI 服务未返回内容，请稍后重试");
+  return full;
+}
+
+// 模块级单一响应式状态：组件与逻辑共享同一份 sessions，
+// 流式更新与持久化都作用在同一个对象上，切页/刷新都不丢失。
+const state = reactive({
+  sessions: loadSessions(),
+  activeId: loadActiveId(),
+});
+
+function persistSessions() {
+  saveSessions(state.sessions);
 }
 
 export function useAssistant() {
-  const sessions = loadSessions();
-  let activeId = loadActiveId();
-
   function getSessions() {
-    return [...loadSessions()].sort((a, b) => {
+    return [...state.sessions].sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       return b.updatedAt - a.updatedAt;
@@ -99,13 +120,11 @@ export function useAssistant() {
   }
 
   function getActiveSession() {
-    const list = loadSessions();
-    if (!activeId) return null;
-    return list.find((s) => s.id === activeId) || null;
+    return state.sessions.find((s) => s.id === state.activeId) || null;
   }
 
   function setActive(id) {
-    activeId = id;
+    state.activeId = id;
     saveActiveId(id);
   }
 
@@ -117,9 +136,8 @@ export function useAssistant() {
       updatedAt: Date.now(),
       messages: [],
     };
-    const list = loadSessions();
-    list.unshift(session);
-    saveSessions(list);
+    state.sessions.unshift(session);
+    persistSessions();
     setActive(session.id);
     return session;
   }
@@ -133,41 +151,37 @@ export function useAssistant() {
   }
 
   function updateSession(session) {
-    const list = loadSessions();
-    const idx = list.findIndex((s) => s.id === session.id);
+    const idx = state.sessions.findIndex((s) => s.id === session.id);
     if (idx >= 0) {
       session.updatedAt = Date.now();
-      list[idx] = session;
-      saveSessions(list);
+      state.sessions[idx] = session;
+      persistSessions();
     }
   }
 
   function deleteSession(id) {
-    let list = loadSessions().filter((s) => s.id !== id);
-    saveSessions(list);
-    if (activeId === id) {
-      activeId = list[0]?.id || null;
-      saveActiveId(activeId);
+    state.sessions = state.sessions.filter((s) => s.id !== id);
+    persistSessions();
+    if (state.activeId === id) {
+      setActive(state.sessions[0]?.id || null);
     }
   }
 
   function updateSessionTitle(id, newTitle) {
-    const list = loadSessions();
-    const idx = list.findIndex((s) => s.id === id);
+    const idx = state.sessions.findIndex((s) => s.id === id);
     if (idx >= 0) {
-      list[idx].title = newTitle;
-      list[idx].updatedAt = Date.now();
-      saveSessions(list);
+      state.sessions[idx].title = newTitle;
+      state.sessions[idx].updatedAt = Date.now();
+      persistSessions();
     }
   }
 
   function pinSession(id) {
-    const list = loadSessions();
-    const idx = list.findIndex((s) => s.id === id);
+    const idx = state.sessions.findIndex((s) => s.id === id);
     if (idx >= 0) {
-      list[idx].isPinned = !list[idx].isPinned;
-      list[idx].updatedAt = Date.now();
-      saveSessions(list);
+      state.sessions[idx].isPinned = !state.sessions[idx].isPinned;
+      state.sessions[idx].updatedAt = Date.now();
+      persistSessions();
     }
   }
 
@@ -189,15 +203,29 @@ export function useAssistant() {
     }
     updateSession(session);
 
-    const reply = await sendToTongyi(session.messages, options);
-    const aiMsg = {
+    // 先插入空的 AI 占位消息，流式过程中不断填充
+    const aiMsg = reactive({
       id: uid("m"),
       role: "assistant",
-      content: reply,
+      content: "",
       createdAt: Date.now(),
-    };
+    });
     session.messages.push(aiMsg);
     updateSession(session);
+
+    try {
+      const reply = await sendToTongyi(session.messages, options, (full) => {
+        aiMsg.content = full;
+        updateSession(session);
+        if (typeof options.onDelta === "function") options.onDelta(full);
+      });
+      aiMsg.content = reply;
+      updateSession(session);
+    } catch (err) {
+      aiMsg.content = "";
+      aiMsg.error = err.message || "AI 服务调用失败";
+      updateSession(session);
+    }
 
     return { session, userMsg, aiMsg };
   }
@@ -209,7 +237,6 @@ export function useAssistant() {
     yesterday.setDate(yesterday.getDate() - 1);
 
     const groups = { today: [], yesterday: [], earlier: [] };
-
     for (const s of sessionList) {
       const d = new Date(s.updatedAt);
       d.setHours(0, 0, 0, 0);
@@ -221,6 +248,7 @@ export function useAssistant() {
   }
 
   return {
+    state,
     getSessions,
     getActiveSession,
     setActive,
