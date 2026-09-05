@@ -475,6 +475,29 @@ watch(activeId, scrollToBottom);
       </div>
 
       <button
+        class="feature-nav__item feature-nav__item--home"
+        @click="router.push('/')"
+      >
+        <span class="feature-nav__icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"
+            />
+          </svg>
+        </span>
+        <span class="feature-nav__label">返回主页</span>
+      </button>
+
+      <div class="feature-nav__divider" />
+
+      <button
         class="feature-nav__item"
         :class="{ 'feature-nav__item--active': isGeneral }"
         @click="selectFeature('')"
@@ -709,6 +732,23 @@ watch(activeId, scrollToBottom);
             v-html="f.icon"
           ></span>
           <span class="mode-btn__label">{{ f.label }}</span>
+        </button>
+        <button class="mode-btn mode-btn--home" @click="router.push('/')">
+          <span class="mode-btn__icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6"
+              />
+            </svg>
+          </span>
+          <span class="mode-btn__label">主页</span>
         </button>
       </div>
 
@@ -1614,6 +1654,18 @@ watch(activeId, scrollToBottom);
     0 0 0 2px #ffffff,
     0 0 0 4px var(--accent-blue);
 }
+.feature-nav__item--home {
+  margin-bottom: 2px;
+  background: #f0f4ff;
+  border: 1px solid #d6e2ff;
+  border-radius: 9px;
+  color: #3b5fc2;
+  font-weight: 600;
+}
+.feature-nav__item--home:hover {
+  color: #1e40af;
+  background: #dbe5ff;
+}
 
 .feature-nav__icon {
   flex-shrink: 0;
@@ -1985,6 +2037,18 @@ watch(activeId, scrollToBottom);
   height: 2px;
   border-radius: 1px;
   background: var(--accent-blue);
+}
+.mode-btn--home {
+  margin-left: auto;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 16px;
+  border-radius: var(--radius-sm);
+  color: #3b5fc2;
+  font-weight: 600;
+}
+.mode-btn--home:hover {
+  color: #1e40af;
+  background: #dbe5ff;
 }
 
 .mode-btn__icon {
