@@ -353,23 +353,26 @@ async function handleSend(text = inputText.value) {
   inputText.value = "";
   isLoading.value = true;
 
-  const isEphemeral = activeFeature.value !== "";
+  try {
+    const isEphemeral = activeFeature.value !== "";
 
-  if (!isEphemeral && !activeId.value) {
-    const session = assistant.createSession();
-    activeId.value = session.id;
-  } else if (isEphemeral) {
-    assistant.clearEphemeral();
+    if (!isEphemeral && !activeId.value) {
+      const session = assistant.createSession();
+      activeId.value = session.id;
+    } else if (isEphemeral) {
+      assistant.clearEphemeral();
+    }
+
+    await assistant.sendMessage(content, {
+      feature: activeFeature.value,
+      ephemeral: isEphemeral,
+      onDelta: () => {
+        scrollToBottom();
+      },
+    });
+  } finally {
+    isLoading.value = false;
   }
-
-  await assistant.sendMessage(content, {
-    feature: activeFeature.value,
-    ephemeral: isEphemeral,
-    onDelta: () => {
-      scrollToBottom();
-    },
-  });
-  isLoading.value = false;
   await nextTick();
   scrollToBottom();
 }
@@ -497,6 +500,7 @@ watch(activeId, scrollToBottom);
     </nav>
 
     <aside
+      v-if="isGeneral"
       class="assistant-sidebar"
       :class="{ 'assistant-sidebar--open': sidebarOpen }"
     >
@@ -655,7 +659,7 @@ watch(activeId, scrollToBottom);
     </aside>
 
     <div
-      v-if="sidebarOpen"
+      v-if="sidebarOpen && isGeneral"
       class="sidebar-overlay"
       @click="sidebarOpen = false"
     />
@@ -973,7 +977,8 @@ watch(activeId, scrollToBottom);
               class="message__bubble"
               :class="{
                 'message__bubble--typing':
-                  msg.role === 'assistant' && !msg.content,
+                  msg.role === 'assistant' && !msg.content && !msg.error,
+                'message__bubble--error': msg.role === 'assistant' && msg.error,
               }"
             >
               <div
@@ -981,6 +986,9 @@ watch(activeId, scrollToBottom);
                 class="markdown-body"
                 v-html="renderMarkdown(msg.content)"
               ></div>
+              <div v-else-if="msg.error" class="message__error-text">
+                {{ msg.error }}
+              </div>
               <template v-else><span /><span /><span /></template>
             </div>
             <div
@@ -2177,6 +2185,14 @@ watch(activeId, scrollToBottom);
     transform: translateY(-5px);
     opacity: 1;
   }
+}
+.message__bubble--error {
+  padding: 14px 18px;
+}
+.message__error-text {
+  font-size: 0.82rem;
+  color: #dc2626;
+  line-height: 1.6;
 }
 
 @keyframes msg-in {
