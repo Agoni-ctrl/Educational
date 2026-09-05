@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { useRouter } from "vue-router";
 import SiteNav from "../components/layout/SiteNav.vue";
 import * as echarts from "echarts";
+
+const router = useRouter();
 
 // ==================== 状态管理 ====================
 // 当前激活的菜单项
@@ -1284,24 +1287,32 @@ const courseVideos = {
       title: "牛顿第二定律实验演示",
       duration: "12:30",
       cover: "physics-1",
+      desc: "通过演示实验直观感受力、质量与加速度三者的关系，建立对 F=ma 的初步认识。",
+      focus: ["实验演示", "F=ma 初步认识", "控制变量"],
     },
     {
       id: "v2",
       title: "控制变量法详解",
       duration: "08:45",
       cover: "physics-2",
+      desc: "讲解实验设计中如何控制变量，理清自变量、因变量与无关变量的关系。",
+      focus: ["控制变量法", "实验设计", "变量分析"],
     },
     {
       id: "v3",
       title: "打点计时器使用教程",
       duration: "15:20",
       cover: "physics-3",
+      desc: "手把手演示打点计时器的安装与纸带处理，学会用打点纸带测量加速度。",
+      focus: ["打点计时器", "纸带分析", "数据处理"],
     },
     {
       id: "v4",
       title: "F=ma 公式推导与例题",
       duration: "18:10",
       cover: "physics-4",
+      desc: "从实验结论出发推导牛顿第二定律表达式，并通过典型例题巩固应用。",
+      focus: ["公式推导", "典型例题", "定量计算"],
     },
   ],
   2: [
@@ -1310,18 +1321,24 @@ const courseVideos = {
       title: "浓度对反应速率的影响",
       duration: "14:20",
       cover: "chem-1",
+      desc: "通过对比实验观察浓度变化如何影响反应快慢，理解碰撞理论的初步解释。",
+      focus: ["浓度影响", "对比实验", "碰撞理论"],
     },
     {
       id: "v7",
       title: "温度与反应速率的定量关系",
       duration: "11:30",
       cover: "chem-2",
+      desc: "测量不同温度下的反应速率，认识温度变化对反应速率的定量影响规律。",
+      focus: ["温度影响", "定量关系", "速率测量"],
     },
     {
       id: "v8",
       title: "催化剂作用机理动画",
       duration: "09:15",
       cover: "chem-3",
+      desc: "以动画直观展示催化剂降低活化能的微观过程，理解其加快反应的原理。",
+      focus: ["催化剂", "活化能", "微观机理"],
     },
   ],
   3: [
@@ -1330,18 +1347,24 @@ const courseVideos = {
       title: "函数单调性图像直观理解",
       duration: "10:20",
       cover: "math-1",
+      desc: "从函数图像入手，直观感受曲线的上升与下降趋势，建立单调性的直观印象。",
+      focus: ["图像直观", "增减趋势", "概念入门"],
     },
     {
       id: "v12",
       title: "定义法证明函数单调性",
       duration: "16:00",
       cover: "math-2",
+      desc: "严格使用单调性定义，通过取值、作差、定号的完整步骤完成代数证明。",
+      focus: ["定义法", "作差比较", "代数证明"],
     },
     {
       id: "v13",
       title: "复合函数单调性判断技巧",
       duration: "12:35",
       cover: "math-3",
+      desc: "总结“同增异减”的判断口诀，快速确定复合函数的单调区间。",
+      focus: ["复合函数", "同增异减", "判断技巧"],
     },
   ],
   4: [
@@ -1350,18 +1373,24 @@ const courseVideos = {
       title: "细胞膜结构与功能",
       duration: "11:40",
       cover: "biology-1",
+      desc: "解析细胞膜流动镶嵌模型的组成，对应理解其物质运输、信息交流等功能。",
+      focus: ["流动镶嵌模型", "膜的功能", "物质运输"],
     },
     {
       id: "v16",
       title: "有丝分裂过程详解",
       duration: "10:50",
       cover: "biology-2",
+      desc: "按前期、中期、后期、末期逐步拆解有丝分裂各阶段的染色体变化。",
+      focus: ["分裂各时期", "染色体变化", "过程记忆"],
     },
     {
       id: "v18",
       title: "细胞器协调工作机制",
       duration: "13:15",
       cover: "biology-3",
+      desc: "以内质网、高尔基体等为例，串联分泌蛋白合成与运输的细胞器协作过程。",
+      focus: ["分泌蛋白", "细胞器协作", "合成运输"],
     },
   ],
   5: [
@@ -1370,18 +1399,24 @@ const courseVideos = {
       title: "林则徐虎门销烟",
       duration: "12:20",
       cover: "history-1",
+      desc: "回顾虎门销烟的背景与经过，认识其作为近代民族抗争标志的历史意义。",
+      focus: ["虎门销烟", "禁烟运动", "历史意义"],
     },
     {
       id: "v21",
       title: "辛亥革命与帝制终结",
       duration: "14:30",
       cover: "history-2",
+      desc: "梳理辛亥革命的爆发与成果，理解其推翻封建帝制的划时代意义。",
+      focus: ["辛亥革命", "推翻帝制", "划时代意义"],
     },
     {
       id: "v22",
       title: "五四运动与新民主主义开端",
       duration: "15:10",
       cover: "history-3",
+      desc: "分析五四运动的导火索与影响，理解其作为新民主主义革命开端的地位。",
+      focus: ["五四运动", "导火索", "革命开端"],
     },
   ],
   6: [
@@ -1390,18 +1425,24 @@ const courseVideos = {
       title: "大气环流基本概念",
       duration: "10:30",
       cover: "geography-1",
+      desc: "建立大气环流的整体概念，理解气压带与风带的形成基础。",
+      focus: ["大气环流", "气压带风带", "概念基础"],
     },
     {
       id: "v24",
       title: "三圈环流模型解析",
       duration: "14:15",
       cover: "geography-2",
+      desc: "用三圈环流模型解释全球气压带与风带的分布规律及其成因。",
+      focus: ["三圈环流", "气压带分布", "风带规律"],
     },
     {
       id: "v26",
       title: "世界气候类型分布与判读",
       duration: "16:40",
       cover: "geography-3",
+      desc: "结合气候资料图，掌握主要气候类型的分布规律与判读方法。",
+      focus: ["气候类型", "分布规律", "图表判读"],
     },
   ],
 };
@@ -1438,6 +1479,22 @@ function closeCourseDetail() {
   currentCourseId.value = null;
   playingVideo.value = null;
 }
+
+// 视频页「配套备课资源」：一键跳转核心功能页，并预填本节视频课题
+function goGenerateKit(type) {
+  const video = playingVideo.value || currentVideos.value[0];
+  if (!video) return;
+  router.push({ path: "/features", query: { type, topic: video.title } });
+}
+
+// 当前播放视频在课程中的集数（第几集 / 共几集）
+const playingIndex = computed(() => {
+  const list = currentVideos.value;
+  const vid = playingVideo.value;
+  if (!vid || !list.length) return 0;
+  const i = list.findIndex((v) => v.id === vid.id);
+  return i >= 0 ? i + 1 : 0;
+});
 
 function getVideoUrl(cover) {
   return `/video/courses/${cover}.mp4`;
@@ -2440,276 +2497,417 @@ watch(activeMenu, (newVal) => {
                   </div>
 
                   <div class="bili-page-layout">
-                    <!-- 左侧：视频播放器 -->
-                    <div class="bili-page-player">
-                      <!-- 视频区域 -->
-                      <div
-                        class="bili-player-video-wrap"
-                        @click="biliTogglePlay"
-                        @mousemove="biliShowControls"
-                        @mouseleave="biliStartHideTimer"
-                      >
-                        <!-- 模糊填充背景：竖屏/异形视频也能铺满统一 16:9 画面 -->
-                        <video
-                          ref="biliBgRef"
-                          :src="
-                            getVideoUrl(
-                              playingVideo?.cover || currentVideos[0]?.cover,
-                            )
-                          "
-                          class="bili-player-bg"
-                          muted
-                          loop
-                          playsinline
-                          aria-hidden="true"
-                          tabindex="-1"
-                          @loadedmetadata="biliSyncBg"
-                        ></video>
-                        <video
-                          ref="biliVideoRef"
-                          :src="
-                            getVideoUrl(
-                              playingVideo?.cover || currentVideos[0]?.cover,
-                            )
-                          "
-                          class="bili-player-video"
-                          @loadedmetadata="biliOnMetaLoaded"
-                          @timeupdate="biliOnTimeUpdate"
-                          @ended="biliOnEnded"
-                          @play="biliOnPlay"
-                          @pause="biliOnPause"
-                          playsinline
-                        ></video>
-
-                        <!-- 中央播放按钮 -->
+                    <!-- 左侧：播放器 + 视频信息/配套资源 -->
+                    <div class="bili-page-left">
+                      <div class="bili-page-player">
+                        <!-- 视频区域 -->
                         <div
-                          class="bili-center-play"
-                          :class="{ 'is-hidden': !biliShowCenterBtn }"
-                          @click.stop="biliTogglePlay"
-                        >
-                          <svg
-                            width="48"
-                            height="48"
-                            viewBox="0 0 24 24"
-                            fill="white"
-                          >
-                            <polygon points="8,5 19,12 8,19" />
-                          </svg>
-                        </div>
-                        <!-- 底部控制栏（覆盖在视频底部） -->
-                        <div
-                          class="bili-controls"
-                          :class="{ 'is-hidden': biliControlsHidden }"
-                          @click.stop
-                          @mouseenter="biliCancelHideTimer"
+                          class="bili-player-video-wrap"
+                          @click="biliTogglePlay"
+                          @mousemove="biliShowControls"
                           @mouseleave="biliStartHideTimer"
                         >
-                          <!-- 进度条 -->
+                          <!-- 模糊填充背景：竖屏/异形视频也能铺满统一 16:9 画面 -->
+                          <video
+                            ref="biliBgRef"
+                            :src="
+                              getVideoUrl(
+                                playingVideo?.cover || currentVideos[0]?.cover,
+                              )
+                            "
+                            class="bili-player-bg"
+                            muted
+                            loop
+                            playsinline
+                            aria-hidden="true"
+                            tabindex="-1"
+                            @loadedmetadata="biliSyncBg"
+                          ></video>
+                          <video
+                            ref="biliVideoRef"
+                            :src="
+                              getVideoUrl(
+                                playingVideo?.cover || currentVideos[0]?.cover,
+                              )
+                            "
+                            class="bili-player-video"
+                            @loadedmetadata="biliOnMetaLoaded"
+                            @timeupdate="biliOnTimeUpdate"
+                            @ended="biliOnEnded"
+                            @play="biliOnPlay"
+                            @pause="biliOnPause"
+                            playsinline
+                          ></video>
+
+                          <!-- 中央播放按钮 -->
                           <div
-                            class="bili-progress-bar"
-                            @click="biliSeek"
-                            ref="biliProgressRef"
+                            class="bili-center-play"
+                            :class="{ 'is-hidden': !biliShowCenterBtn }"
+                            @click.stop="biliTogglePlay"
                           >
-                            <div
-                              class="bili-progress-buffer"
-                              :style="{ width: biliBufferPercent + '%' }"
-                            ></div>
-                            <div
-                              class="bili-progress-played"
-                              :style="{ width: biliPlayedPercent + '%' }"
+                            <svg
+                              width="48"
+                              height="48"
+                              viewBox="0 0 24 24"
+                              fill="white"
                             >
-                              <div class="bili-progress-thumb"></div>
-                            </div>
+                              <polygon points="8,5 19,12 8,19" />
+                            </svg>
                           </div>
-
-                          <!-- 控制按钮行 -->
-                          <div class="bili-controls-row">
-                            <div class="bili-controls-left">
-                              <button
-                                class="bili-btn"
-                                @click="biliTogglePlay"
-                                title="播放/暂停"
+                          <!-- 底部控制栏（覆盖在视频底部） -->
+                          <div
+                            class="bili-controls"
+                            :class="{ 'is-hidden': biliControlsHidden }"
+                            @click.stop
+                            @mouseenter="biliCancelHideTimer"
+                            @mouseleave="biliStartHideTimer"
+                          >
+                            <!-- 进度条 -->
+                            <div
+                              class="bili-progress-bar"
+                              @click="biliSeek"
+                              ref="biliProgressRef"
+                            >
+                              <div
+                                class="bili-progress-buffer"
+                                :style="{ width: biliBufferPercent + '%' }"
+                              ></div>
+                              <div
+                                class="bili-progress-played"
+                                :style="{ width: biliPlayedPercent + '%' }"
                               >
-                                <svg
-                                  v-if="!biliIsPlaying"
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <polygon points="8,5 19,12 8,19" />
-                                </svg>
-                                <svg
-                                  v-else
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <rect
-                                    x="6"
-                                    y="4"
-                                    width="4"
-                                    height="16"
-                                    rx="1"
-                                  />
-                                  <rect
-                                    x="14"
-                                    y="4"
-                                    width="4"
-                                    height="16"
-                                    rx="1"
-                                  />
-                                </svg>
-                              </button>
-                              <span class="bili-time"
-                                >{{ biliCurrentTime }} /
-                                {{ biliDuration }}</span
-                              >
+                                <div class="bili-progress-thumb"></div>
+                              </div>
                             </div>
 
-                            <div class="bili-controls-right">
-                              <!-- 音量 -->
-                              <div
-                                class="bili-volume-wrap"
-                                @mouseenter="biliShowVolume = true"
-                                @mouseleave="biliShowVolume = false"
-                              >
-                                <button class="bili-btn" title="音量">
-                                  <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                  >
-                                    <polygon
-                                      points="11,5 6,9 2,9 2,15 6,15 11,19"
-                                    />
-                                    <path
-                                      v-if="biliVolume > 0"
-                                      d="M15.54 8.46a5 5 0 010 7.07"
-                                      stroke="currentColor"
-                                      fill="none"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                    />
-                                    <path
-                                      v-if="biliVolume > 0.5"
-                                      d="M19.07 4.93a10 10 0 010 14.14"
-                                      stroke="currentColor"
-                                      fill="none"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                    />
-                                  </svg>
-                                </button>
-                                <div
-                                  v-show="biliShowVolume"
-                                  class="bili-volume-slider"
-                                >
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.05"
-                                    :value="biliVolume"
-                                    @input="biliSetVolume"
-                                  />
-                                </div>
-                              </div>
-
-                              <!-- 三个点菜单 -->
-                              <div class="bili-more-wrap" ref="biliMoreRef">
+                            <!-- 控制按钮行 -->
+                            <div class="bili-controls-row">
+                              <div class="bili-controls-left">
                                 <button
                                   class="bili-btn"
-                                  @click="biliShowMore = !biliShowMore"
-                                  title="更多"
+                                  @click="biliTogglePlay"
+                                  title="播放/暂停"
                                 >
                                   <svg
+                                    v-if="!biliIsPlaying"
                                     width="20"
                                     height="20"
                                     viewBox="0 0 24 24"
                                     fill="currentColor"
                                   >
-                                    <circle cx="12" cy="5" r="1.5" />
-                                    <circle cx="12" cy="12" r="1.5" />
-                                    <circle cx="12" cy="19" r="1.5" />
+                                    <polygon points="8,5 19,12 8,19" />
+                                  </svg>
+                                  <svg
+                                    v-else
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                  >
+                                    <rect
+                                      x="6"
+                                      y="4"
+                                      width="4"
+                                      height="16"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="14"
+                                      y="4"
+                                      width="4"
+                                      height="16"
+                                      rx="1"
+                                    />
                                   </svg>
                                 </button>
-                                <Transition name="more-menu">
+                                <span class="bili-time"
+                                  >{{ biliCurrentTime }} /
+                                  {{ biliDuration }}</span
+                                >
+                              </div>
+
+                              <div class="bili-controls-right">
+                                <!-- 音量 -->
+                                <div
+                                  class="bili-volume-wrap"
+                                  @mouseenter="biliShowVolume = true"
+                                  @mouseleave="biliShowVolume = false"
+                                >
+                                  <button class="bili-btn" title="音量">
+                                    <svg
+                                      width="20"
+                                      height="20"
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
+                                    >
+                                      <polygon
+                                        points="11,5 6,9 2,9 2,15 6,15 11,19"
+                                      />
+                                      <path
+                                        v-if="biliVolume > 0"
+                                        d="M15.54 8.46a5 5 0 010 7.07"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                      />
+                                      <path
+                                        v-if="biliVolume > 0.5"
+                                        d="M19.07 4.93a10 10 0 010 14.14"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                      />
+                                    </svg>
+                                  </button>
                                   <div
-                                    v-if="biliShowMore"
-                                    class="bili-more-menu"
-                                    @click.stop
+                                    v-show="biliShowVolume"
+                                    class="bili-volume-slider"
                                   >
-                                    <div class="bili-menu-section">
-                                      <div class="bili-menu-label">
-                                        播放速度
-                                      </div>
-                                      <div class="bili-speed-list">
-                                        <button
-                                          v-for="rate in biliSpeedOptions"
-                                          :key="rate"
-                                          class="bili-speed-btn"
-                                          :class="{
-                                            active: biliPlaybackRate === rate,
-                                          }"
-                                          @click="biliSetSpeed(rate)"
-                                        >
-                                          {{ rate }}x
-                                        </button>
-                                      </div>
-                                    </div>
-                                    <div class="bili-menu-divider"></div>
-                                    <button
-                                      class="bili-menu-item"
-                                      @click="biliToggleFullscreen"
-                                    >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                      >
-                                        <path
-                                          d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"
-                                        />
-                                      </svg>
-                                      <span>{{
-                                        biliIsFullscreen ? "退出全屏" : "全屏"
-                                      }}</span>
-                                    </button>
-                                    <button
-                                      class="bili-menu-item"
-                                      @click="biliDownload"
-                                    >
-                                      <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                      >
-                                        <path
-                                          d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
-                                        />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" y1="15" x2="12" y2="3" />
-                                      </svg>
-                                      <span>下载视频</span>
-                                    </button>
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="1"
+                                      step="0.05"
+                                      :value="biliVolume"
+                                      @input="biliSetVolume"
+                                    />
                                   </div>
-                                </Transition>
+                                </div>
+
+                                <!-- 三个点菜单 -->
+                                <div class="bili-more-wrap" ref="biliMoreRef">
+                                  <button
+                                    class="bili-btn"
+                                    @click="biliShowMore = !biliShowMore"
+                                    title="更多"
+                                  >
+                                    <svg
+                                      width="20"
+                                      height="20"
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
+                                    >
+                                      <circle cx="12" cy="5" r="1.5" />
+                                      <circle cx="12" cy="12" r="1.5" />
+                                      <circle cx="12" cy="19" r="1.5" />
+                                    </svg>
+                                  </button>
+                                  <Transition name="more-menu">
+                                    <div
+                                      v-if="biliShowMore"
+                                      class="bili-more-menu"
+                                      @click.stop
+                                    >
+                                      <div class="bili-menu-section">
+                                        <div class="bili-menu-label">
+                                          播放速度
+                                        </div>
+                                        <div class="bili-speed-list">
+                                          <button
+                                            v-for="rate in biliSpeedOptions"
+                                            :key="rate"
+                                            class="bili-speed-btn"
+                                            :class="{
+                                              active: biliPlaybackRate === rate,
+                                            }"
+                                            @click="biliSetSpeed(rate)"
+                                          >
+                                            {{ rate }}x
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="bili-menu-divider"></div>
+                                      <button
+                                        class="bili-menu-item"
+                                        @click="biliToggleFullscreen"
+                                      >
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          stroke-width="2"
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                        >
+                                          <path
+                                            d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"
+                                          />
+                                        </svg>
+                                        <span>{{
+                                          biliIsFullscreen ? "退出全屏" : "全屏"
+                                        }}</span>
+                                      </button>
+                                      <button
+                                        class="bili-menu-item"
+                                        @click="biliDownload"
+                                      >
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          stroke-width="2"
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                        >
+                                          <path
+                                            d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                          />
+                                          <polyline points="7 10 12 15 17 10" />
+                                          <line
+                                            x1="12"
+                                            y1="15"
+                                            x2="12"
+                                            y2="3"
+                                          />
+                                        </svg>
+                                        <span>下载视频</span>
+                                      </button>
+                                    </div>
+                                  </Transition>
+                                </div>
                               </div>
                             </div>
                           </div>
+                        </div>
+                      </div>
+
+                      <!-- 视频信息 + 配套备课资源 -->
+                      <div class="video-info-card">
+                        <h3 class="video-info-title">
+                          {{ playingVideo?.title || currentVideos[0]?.title }}
+                        </h3>
+                        <div class="video-info-meta">
+                          <span class="video-info-tag">{{
+                            currentCourse?.subject
+                          }}</span>
+                          <span class="video-info-meta-item">{{
+                            currentCourse?.grade
+                          }}</span>
+                          <span class="video-info-meta-item">{{
+                            displayDuration(playingVideo || currentVideos[0])
+                          }}</span>
+                          <span class="video-info-meta-item" v-if="playingIndex"
+                            >第 {{ playingIndex }} 集 / 共
+                            {{ currentVideos.length }} 集</span
+                          >
+                        </div>
+                        <p class="video-info-desc">
+                          {{
+                            (playingVideo || currentVideos[0])?.desc ||
+                            currentCourse?.description
+                          }}
+                        </p>
+                        <div
+                          class="video-focus"
+                          v-if="
+                            (playingVideo || currentVideos[0])?.focus?.length
+                          "
+                        >
+                          <span class="video-focus-label">
+                            <svg
+                              width="13"
+                              height="13"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M12 2l1.9 5.7 5.7 1.9-5.7 1.9L12 17l-1.9-5.5-5.7-1.9 5.7-1.9L12 2z"
+                              />
+                            </svg>
+                            本节要点
+                          </span>
+                          <span
+                            class="video-focus-tag"
+                            v-for="tag in (playingVideo || currentVideos[0])
+                              ?.focus"
+                            :key="tag"
+                            >{{ tag }}</span
+                          >
+                        </div>
+                        <div class="video-info-divider"></div>
+                        <div class="video-kit-head">
+                          <span class="video-kit-title">
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M12 2l1.9 5.7 5.7 1.9-5.7 1.9L12 17l-1.9-5.5-5.7-1.9 5.7-1.9L12 2z"
+                              />
+                            </svg>
+                            配套备课资源
+                          </span>
+                          <span class="video-kit-hint"
+                            >由知课 AI 生成 · 稍作修改即可使用</span
+                          >
+                        </div>
+                        <div class="video-kit-btns">
+                          <button
+                            class="video-kit-btn"
+                            @click="goGenerateKit('ppt')"
+                          >
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <rect x="3" y="4" width="18" height="13" rx="2" />
+                              <path d="M12 17v4M8 21h8" />
+                            </svg>
+                            <span>生成本节课件</span>
+                          </button>
+                          <button
+                            class="video-kit-btn"
+                            @click="goGenerateKit('doc')"
+                          >
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path
+                                d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"
+                              />
+                              <path d="M4 19.5A2.5 2.5 0 006.5 22H20v-5" />
+                            </svg>
+                            <span>生成本节教案</span>
+                          </button>
+                          <button
+                            class="video-kit-btn"
+                            @click="goGenerateKit('quiz')"
+                          >
+                            <svg
+                              width="15"
+                              height="15"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <path d="M17 3l4 4L8 20l-5 1 1-5L17 3z" />
+                            </svg>
+                            <span>生成本节练习</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -5253,6 +5451,127 @@ watch(activeMenu, (newVal) => {
 }
 
 /* 响应式 - 播放器布局 */
+/* 左侧播放器 + 信息/配套资源列 */
+.bili-page-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* 视频信息 + 配套备课资源卡片 */
+.video-info-card {
+  background: #fff;
+  border: 1px solid rgba(76, 125, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px 20px 20px;
+}
+.video-info-title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.45;
+}
+.video-info-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.video-info-tag {
+  font-size: 0.72rem;
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.08);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.video-info-meta-item {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+.video-info-desc {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.75;
+  color: #475569;
+}
+.video-focus {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.video-focus-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #4c7dff;
+  margin-right: 2px;
+}
+.video-focus-tag {
+  font-size: 0.74rem;
+  color: #334155;
+  background: rgba(76, 125, 255, 0.07);
+  border: 1px solid rgba(76, 125, 255, 0.14);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.video-info-divider {
+  height: 1px;
+  background: rgba(76, 125, 255, 0.07);
+  margin: 16px 0;
+}
+.video-kit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.video-kit-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.video-kit-title svg {
+  color: #4c7dff;
+}
+.video-kit-hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.video-kit-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+.video-kit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 6px;
+  font-size: 0.8rem;
+  color: #4c7dff;
+  background: rgba(76, 125, 255, 0.07);
+  border: 1px solid rgba(76, 125, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.video-kit-btn:hover {
+  background: #4c7dff;
+  color: #fff;
+  border-color: #4c7dff;
+}
+
 @media (max-width: 1100px) {
   .bili-page-layout {
     grid-template-columns: 1fr 240px;
@@ -5283,6 +5602,9 @@ watch(activeMenu, (newVal) => {
 
 @media (max-width: 500px) {
   .video-grid {
+    grid-template-columns: 1fr;
+  }
+  .video-kit-btns {
     grid-template-columns: 1fr;
   }
   .video-list-header {

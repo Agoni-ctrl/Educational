@@ -106,6 +106,11 @@ const state = reactive({
   activeId: loadActiveId(),
 });
 
+// 临时会话（定向功能使用，不持久化，切页即丢失）
+const ephemeral = reactive({
+  session: null,
+});
+
 function persistSessions() {
   saveSessions(state.sessions);
 }
@@ -120,6 +125,8 @@ export function useAssistant() {
   }
 
   function getActiveSession() {
+    // 优先返回临时会话（定向功能）
+    if (ephemeral.session) return ephemeral.session;
     return state.sessions.find((s) => s.id === state.activeId) || null;
   }
 
@@ -189,7 +196,24 @@ export function useAssistant() {
     const text = content.trim();
     if (!text) return null;
 
-    const session = ensureSession();
+    // 临时会话（定向功能）：不持久化，切页即丢失
+    const isEphemeral = options.ephemeral === true;
+    let session;
+    if (isEphemeral) {
+      if (!ephemeral.session) {
+        ephemeral.session = reactive({
+          id: uid("tmp"),
+          title: titleFromMessage(text),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          messages: [],
+        });
+      }
+      session = ephemeral.session;
+    } else {
+      session = ensureSession();
+    }
+
     const userMsg = {
       id: uid("m"),
       role: "user",
@@ -201,7 +225,7 @@ export function useAssistant() {
     if (session.messages.filter((m) => m.role === "user").length === 1) {
       session.title = titleFromMessage(text);
     }
-    updateSession(session);
+    if (!isEphemeral) updateSession(session);
 
     // 先插入空的 AI 占位消息，流式过程中不断填充
     const aiMsg = reactive({
@@ -211,23 +235,27 @@ export function useAssistant() {
       createdAt: Date.now(),
     });
     session.messages.push(aiMsg);
-    updateSession(session);
+    if (!isEphemeral) updateSession(session);
 
     try {
       const reply = await sendToTongyi(session.messages, options, (full) => {
         aiMsg.content = full;
-        updateSession(session);
+        if (!isEphemeral) updateSession(session);
         if (typeof options.onDelta === "function") options.onDelta(full);
       });
       aiMsg.content = reply;
-      updateSession(session);
+      if (!isEphemeral) updateSession(session);
     } catch (err) {
       aiMsg.content = "";
       aiMsg.error = err.message || "AI 服务调用失败";
-      updateSession(session);
+      if (!isEphemeral) updateSession(session);
     }
 
     return { session, userMsg, aiMsg };
+  }
+
+  function clearEphemeral() {
+    ephemeral.session = null;
   }
 
   function groupSessionsByDate(sessionList) {
@@ -257,6 +285,7 @@ export function useAssistant() {
     deleteSession,
     updateSessionTitle,
     pinSession,
+    clearEphemeral,
     sendMessage,
     groupSessionsByDate,
   };

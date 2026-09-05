@@ -209,6 +209,8 @@ function selectFeature(feature) {
     return;
   }
   activeFeature.value = feature;
+  // 切换功能时清除之前的临时会话，保证每次进入定向功能是全新对话
+  assistant.clearEphemeral();
 }
 
 // 填写子需求后生成：把表单信息组装成结构化 prompt 交给 AI
@@ -351,13 +353,18 @@ async function handleSend(text = inputText.value) {
   inputText.value = "";
   isLoading.value = true;
 
-  if (!activeId.value) {
+  const isEphemeral = activeFeature.value !== "";
+
+  if (!isEphemeral && !activeId.value) {
     const session = assistant.createSession();
     activeId.value = session.id;
+  } else if (isEphemeral) {
+    assistant.clearEphemeral();
   }
 
   await assistant.sendMessage(content, {
     feature: activeFeature.value,
+    ephemeral: isEphemeral,
     onDelta: () => {
       scrollToBottom();
     },
