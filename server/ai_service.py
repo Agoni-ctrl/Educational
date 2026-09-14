@@ -409,7 +409,8 @@ async def chat_with_qwen_stream(
     if feature_prompt:
         system_prompt += "\n\n" + feature_prompt
 
-    async with httpx.AsyncClient(timeout=None) as client:
+    # 流式接口必须设置超时，否则 Qwen 挂起时前端会无限等待（表现为"点击没反应"）
+    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
         async with client.stream(
             "POST",
             f"{QWEN_BASE_URL}/chat/completions",

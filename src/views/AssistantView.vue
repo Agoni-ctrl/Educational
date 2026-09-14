@@ -177,6 +177,15 @@ const canRunFeature = computed(() => {
   const form = featureForms[activeFeature.value];
   return !!form && !!form.topic.trim();
 });
+// 生成中的按钮/提示文案，按功能区分，让用户明确知道正在处理
+const generatingLabel = computed(() => {
+  const labels = {
+    plan: "正在构思…",
+    lesson: "正在编写…",
+    quiz: "正在出题…",
+  };
+  return labels[activeFeature.value] || "正在生成…";
+});
 // 对话历史仅在「通用问答」下展示
 const isGeneral = computed(() => activeFeature.value === "");
 
@@ -215,6 +224,7 @@ function selectFeature(feature) {
 
 // 填写子需求后生成：把表单信息组装成结构化 prompt 交给 AI
 async function runFeature() {
+  if (isLoading.value) return;
   const feat = activeFeature.value;
   const form = featureForms[feat];
   if (!form || !form.topic.trim()) return;
@@ -352,6 +362,8 @@ async function handleSend(text = inputText.value) {
 
   inputText.value = "";
   isLoading.value = true;
+  // 立即滚动到消息区，让用户第一时间看到 AI 的打字点反馈
+  scrollToBottom();
 
   try {
     const isEphemeral = activeFeature.value !== "";
@@ -863,10 +875,17 @@ watch(activeId, scrollToBottom);
 
           <button
             class="feature-panel__submit"
-            :disabled="!canRunFeature"
+            :class="{ 'feature-panel__submit--loading': isLoading }"
+            :disabled="!canRunFeature || isLoading"
             @click="runFeature()"
           >
+            <span
+              v-if="isLoading"
+              class="feature-panel__spinner"
+              aria-hidden="true"
+            ></span>
             <svg
+              v-else
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -877,8 +896,15 @@ watch(activeId, scrollToBottom);
               <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" />
               <path d="M9 12l2 2 4-4" />
             </svg>
-            开始生成
+            {{ isLoading ? generatingLabel : "开始生成" }}
           </button>
+
+          <div v-if="isLoading" class="feature-panel__status" role="status">
+            <span class="feature-panel__status-dots" aria-hidden="true"
+              ><span /><span /><span
+            /></span>
+            AI 正在生成，通常需要 10~30 秒，请稍候…
+          </div>
         </div>
 
         <div v-if="!hasMessages && !isLoading && isGeneral" class="welcome">
@@ -1917,6 +1943,64 @@ watch(activeId, scrollToBottom);
 .feature-panel__submit:disabled {
   background: #c3d3ee;
   cursor: not-allowed;
+}
+
+.feature-panel__submit--loading {
+  background: #3b82f6;
+  cursor: progress;
+}
+.feature-panel__submit--loading:disabled {
+  background: #3b82f6;
+  cursor: progress;
+}
+
+.feature-panel__spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: fp-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes fp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feature-panel__status {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.feature-panel__status-dots {
+  display: inline-flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.feature-panel__status-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+  animation: typing 1.3s ease-in-out infinite;
+}
+.feature-panel__status-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.feature-panel__status-dots span:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 /* ═══════════════════════════════════════════════

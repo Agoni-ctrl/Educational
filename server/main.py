@@ -27,7 +27,7 @@ from pydantic import BaseModel
 from config import OUTPUT_DIR, DATA_DIR, TASKS_FILE, HOST, PORT
 from ai_service import (
     generate_ppt_content, generate_doc_content, generate_quiz_content, generate_exam_content,
-    chat_with_qwen,
+    chat_with_qwen, chat_with_qwen_stream,
 )
 from file_generator import (
     generate_pptx, generate_pptx_from_template,

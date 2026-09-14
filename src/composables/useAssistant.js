@@ -44,6 +44,11 @@ function titleFromMessage(text) {
  * @returns {Promise<string>} 累积的完整回复文本
  */
 export async function sendToTongyi(messages, options = {}, onDelta) {
+  // 整体超时保护：防止后端/AI 挂起导致 isLoading 永久卡死
+  const controller = new AbortController();
+  const TIMEOUT_MS = 60000;
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   let res;
   try {
     res = await fetch(CHAT_API, {
@@ -54,11 +59,17 @@ export async function sendToTongyi(messages, options = {}, onDelta) {
         feature: options.feature || "",
         profile: options.profile || {},
       }),
+      signal: controller.signal,
     });
-  } catch {
+  } catch (e) {
+    clearTimeout(timer);
+    if (e.name === "AbortError") {
+      throw new Error("AI 服务响应超时，请稍后重试");
+    }
     throw new Error("无法连接 AI 服务，请确认后端已启动");
   }
   if (!res.ok || !res.body) {
+    clearTimeout(timer);
     throw new Error(`AI 服务返回错误（HTTP ${res.status}）`);
   }
 
@@ -68,9 +79,18 @@ export async function sendToTongyi(messages, options = {}, onDelta) {
   let buffer = "";
 
   while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+    let chunk;
+    try {
+      chunk = await reader.read();
+    } catch (e) {
+      clearTimeout(timer);
+      if (e.name === "AbortError") {
+        throw new Error("AI 服务响应超时，请稍后重试");
+      }
+      throw e;
+    }
+    if (chunk.done) break;
+    buffer += decoder.decode(chunk.value, { stream: true });
 
     let idx;
     while ((idx = buffer.indexOf("\n\n")) >= 0) {
@@ -95,6 +115,7 @@ export async function sendToTongyi(messages, options = {}, onDelta) {
       }
     }
   }
+  clearTimeout(timer);
   if (!full) throw new Error("AI 服务未返回内容，请稍后重试");
   return full;
 }

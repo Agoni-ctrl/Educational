@@ -1,14 +1,15 @@
 import os
 
-# AI 配置 —— 使用 DeepSeek API（最便宜的中文大模型）
-# 注册获取 API Key: https://platform.deepseek.com/
+# AI 配置 —— 内容生成模型（课件 / 教案 / 出题 / 试卷）
+# 统一走阿里云百炼 DashScope 的 deepseek-v4.1-flash（OpenAI 兼容接口）
+# 注册获取 Key: https://bailian.console.aliyun.com/
 # ==================================================================
 # 优先级：环境变量 > 下方硬编码（方便本地开发）
 # ==================================================================
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY") or "sk-5626e12ffd214f87ac62f15e3adf35a7"
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY") or "sk-ws-H.PHIXRLM.Deyh.MEUCIQChtnF3RkQKwBpfK7tQUDShC9-lAnXdSTQmY-VX9to3ZgIgWctnL6q5cmxjHzXzx1jckMFEw9rDkR0EdXs2RUeXWr4"
 
-DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-DEEPSEEK_MODEL = "deepseek-chat"  # DeepSeek-V3
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL") or "https://dashscope.aliyuncs.com/compatible-mode/v1"
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL") or "deepseek-v4.1-flash"
 
 # Qwen 对话配置 —— 阿里云百炼 DashScope（OpenAI 兼容接口）
 # 用于「知课 AI 备课助手」对话；课件/教案/出题/试卷仍走 DeepSeek
