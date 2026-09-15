@@ -903,7 +903,7 @@ watch(activeId, scrollToBottom);
             <span class="feature-panel__status-dots" aria-hidden="true"
               ><span /><span /><span
             /></span>
-            AI 正在生成，通常需要 10~30 秒，请稍候…
+            AI 正在生成，教案/出题内容较长时可能需要 1~2 分钟，请稍候…
           </div>
         </div>
 

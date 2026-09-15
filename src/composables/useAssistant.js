@@ -46,7 +46,8 @@ function titleFromMessage(text) {
 export async function sendToTongyi(messages, options = {}, onDelta) {
   // 整体超时保护：防止后端/AI 挂起导致 isLoading 永久卡死
   const controller = new AbortController();
-  const TIMEOUT_MS = 60000;
+  // 生成完整教案/出题草稿可能接近 90 秒，超时设 180s 兜底（仅防真正卡死）
+  const TIMEOUT_MS = 180000;
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   let res;
