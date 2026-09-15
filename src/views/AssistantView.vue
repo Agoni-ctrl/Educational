@@ -24,9 +24,7 @@ const activeId = computed({
   get: () => assistant.state.activeId,
   set: (v) => assistant.setActive(v),
 });
-const activeSession = computed(
-  () => sessions.value.find((s) => s.id === activeId.value) || null,
-);
+const activeSession = computed(() => assistant.getActiveSession());
 const hasMessages = computed(
   () => (activeSession.value?.messages.length ?? 0) > 0,
 );
