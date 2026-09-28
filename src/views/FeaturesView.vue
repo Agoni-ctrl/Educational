@@ -76,10 +76,14 @@ async function fetchPptTemplates() {
   }
 }
 
-// 拼完整预览图地址：后端返回 /api/... 相对路径
+// 拼完整预览图地址：后端返回 /api/... 相对路径。
+// 若 preview 不是真实图片路径（早期模板误把风格描述放进预览字段），
+// 返回空，模板卡不渲染破损的 <img>。
 function previewUrl(path) {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
+  const looksLikeImage = /\.(png|jpe?g|svg|gif|webp)([\?#].*)?$/i.test(path);
+  if (!looksLikeImage) return "";
   return `http://localhost:8000${path}`;
 }
 
