@@ -16,8 +16,10 @@ from pptx.enum.shapes import MSO_SHAPE
 from docx import Document
 from docx.shared import Pt as DocxPt, RGBColor as DocxRGB, Inches as DocxInches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 
 from config import OUTPUT_DIR
 
@@ -620,138 +622,219 @@ def generate_pptx(content: dict) -> tuple:
 # DOCX 生成 - 结构化教案
 # ════════════════════════════════════════════════════════════════
 
+# 教案标准配色（专业沉稳）
+_DOC_PRIMARY   = "1A365D"   # 深蓝 —— 一级标题、主题色
+_DOC_SECONDARY = "2B6CB0"   # 中蓝 —— 二级标题 / 目标维度强调
+_DOC_ACCENT    = "0E7490"   # 重点强调色
+_DOC_LIGHT_BG  = "EAF2FB"   # 一级标题浅色色块
+_DOC_TABLE_BG  = "F1F5F9"   # 基本信息表标签底色
+_DOC_BODY      = "334155"   # 正文深灰
+_DOC_MUTED     = "64748B"   # 次要说明文字
+
+# 匹配「知识与技能 / 过程与方法 / 情感态度（与价值观）」等目标维度前缀
+_MATCH_GOAL_DIMENSION = re.compile(
+    r'^\s*(?:\d+[\.、]\s*)?(知识与技能|过程与方法|情感态度与价值观|情感态度价值观|情感态度)'
+)
+
+def _set_cn_font(run, size=11, bold=False, italic=False, color=_DOC_BODY, name="Microsoft YaHei"):
+    """统一设置 run 的字体（含中文字体 eastAsia），保证中文渲染一致。"""
+    run.font.size = DocxPt(size)
+    run.font.bold = bold
+    run.font.italic = italic
+    run.font.color.rgb = DocxRGB.from_string(color)
+    run.font.name = name
+    run._element.get_or_add_rPr().rFonts.set(qn('w:eastAsia'), name)
+
+
+def _shade_paragraph(p, fill=_DOC_LIGHT_BG):
+    """为段落添加背景色块（色块标注效果）。"""
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:val'), 'clear')
+    shd.set(qn('w:color'), 'auto')
+    shd.set(qn('w:fill'), fill)
+    p._p.get_or_add_pPr().append(shd)
+
+
+def _left_bar(p, color=_DOC_PRIMARY, sz=30):
+    """为段落添加左侧粗竖条（重点强调效果）。"""
+    pPr = p._p.get_or_add_pPr()
+    pbdr = OxmlElement('w:pBdr')
+    left = OxmlElement('w:left')
+    left.set(qn('w:val'), 'single')
+    left.set(qn('w:sz'), str(sz))
+    left.set(qn('w:space'), '4')
+    left.set(qn('w:color'), color)
+    pbdr.append(left)
+    pPr.append(pbdr)
+
+
+def _add_heading(doc, text, level=1):
+    """添加统一层级样式标题：一级=深蓝色块+左竖条，二级=◆中蓝加粗，三级=重点加大。"""
+    p = doc.add_paragraph()
+    pf = p.paragraph_format
+    if level <= 1:
+        pf.space_before = DocxPt(16)
+        pf.space_after = DocxPt(8)
+        pf.left_indent = Cm(0.1)
+        _shade_paragraph(p, _DOC_LIGHT_BG)
+        _left_bar(p, _DOC_PRIMARY, 30)
+        _set_cn_font(p.add_run("    " + text), size=16, bold=True, color=_DOC_PRIMARY, name="黑体")
+    elif level == 2:
+        pf.space_before = DocxPt(10)
+        pf.space_after = DocxPt(6)
+        pf.left_indent = Cm(0.5)
+        _set_cn_font(p.add_run("◆ " + text), size=14, bold=True, color=_DOC_SECONDARY, name="微软雅黑")
+    else:
+        pf.space_before = DocxPt(6)
+        pf.space_after = DocxPt(4)
+        pf.left_indent = Cm(0.8)
+        _set_cn_font(p.add_run(text), size=12, bold=True, color=_DOC_ACCENT)
+    return p
+
+
+def _fill_info_cell(cell, text, is_label):
+    """填充基本信息表单元格：标签单元格浅灰底 + 深蓝加粗，值单元格居中。"""
+    p = cell.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT if is_label else WD_ALIGN_PARAGRAPH.CENTER
+    pf = p.paragraph_format
+    pf.space_before = DocxPt(2)
+    pf.space_after = DocxPt(2)
+    if is_label:
+        _shade_paragraph(p, _DOC_TABLE_BG)
+        _set_cn_font(p.add_run(text), size=11, bold=True, color=_DOC_PRIMARY)
+    else:
+        _set_cn_font(p.add_run(text or "—"), size=11, color=_DOC_BODY)
+    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+
+def _add_info_table(doc, items):
+    """生成「课程基本信息」区域：2×N 的规范边框表格，标签/值交错排列。"""
+    table = doc.add_table(rows=0, cols=4)
+    table.style = 'Table Grid'
+    table.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for start in range(0, len(items), 2):
+        row = table.add_row()
+        for gi, (label, value) in enumerate(items[start:start + 2]):
+            li = gi * 2
+            _fill_info_cell(row.cells[li], label, True)
+            _fill_info_cell(row.cells[li + 1], value, False)
+    # 设定列宽
+    widths = [Cm(2.4), Cm(4.6), Cm(2.4), Cm(4.6)]
+    for r in table.rows:
+        for ci, w in enumerate(widths):
+            r.cells[ci].width = w
+    return table
+
+
 def generate_docx(content: dict) -> tuple:
-    """生成美观的结构化教案 DOCX 文件"""
+    """生成美观、结构规范的教案 DOCX 文件（三层次标题 + 专业排版样式）"""
     doc = Document()
 
     # 页面设置
     section = doc.sections[0]
-    section.top_margin = Cm(2.5)
-    section.bottom_margin = Cm(2.5)
-    section.left_margin = Cm(2.8)
-    section.right_margin = Cm(2.8)
+    section.top_margin = Cm(2.4)
+    section.bottom_margin = Cm(2.4)
+    section.left_margin = Cm(2.6)
+    section.right_margin = Cm(2.6)
 
-    # 设置默认字体
-    style = doc.styles['Normal']
-    style.font.name = 'Microsoft YaHei'
-    style.font.size = DocxPt(11)
-    style.paragraph_format.line_spacing = 1.6
-    # 设置中文字体
-    style.element.rPr.rFonts.set(qn('w:eastAsia'), 'Microsoft YaHei')
+    # 默认正文样式
+    normal = doc.styles['Normal']
+    normal.font.name = 'Microsoft YaHei'
+    normal.font.size = DocxPt(11)
+    normal.paragraph_format.line_spacing = 1.5
+    normal.paragraph_format.space_after = DocxPt(4)
+    normal.element.rPr.rFonts.set(qn('w:eastAsia'), 'Microsoft YaHei')
 
-    # ── 标题页 ──
+    # ── ① 标题区 ──
     title_text = content.get("title", "教案")
     title_para = doc.add_paragraph()
     title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title_run = title_para.add_run(title_text)
-    title_run.font.size = DocxPt(26)
-    title_run.font.bold = True
-    title_run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
+    title_para.paragraph_format.space_before = DocxPt(12)
+    title_para.paragraph_format.space_after = DocxPt(6)
+    _set_cn_font(title_para.add_run(title_text), size=26, bold=True, color=_DOC_PRIMARY, name="黑体")
 
-    # 副标题
-    subtitle_text = content.get("subject", "") + " · " + content.get("grade", "")
-    sub_para = doc.add_paragraph()
-    sub_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    sub_run = sub_para.add_run(subtitle_text)
-    sub_run.font.size = DocxPt(13)
-    sub_run.font.color.rgb = DocxRGB(0x64, 0x74, 0x8B)
+    # 子题（学科 · 年级）
+    subtitle = " · ".join(x for x in [content.get("subject", ""), content.get("grade", "")] if x)
+    if subtitle:
+        sub_para = doc.add_paragraph()
+        sub_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        sub_para.paragraph_format.space_after = DocxPt(6)
+        _set_cn_font(sub_para.add_run(subtitle), size=13, color=_DOC_MUTED)
 
-    # 分隔线
+    # 装饰分割线
     div_para = doc.add_paragraph()
     div_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    div_run = div_para.add_run("─" * 40)
-    div_run.font.color.rgb = DocxRGB(0xCB, 0xD5, 0xE1)
-    div_run.font.size = DocxPt(10)
+    div_para.paragraph_format.space_after = DocxPt(12)
+    _set_cn_font(div_para.add_run("─" * 46), size=10, color="CBD5E1")
 
-    # ── 基本信息表 ──
-    doc.add_paragraph()
+    # ── ② 课程基本信息表 ──
     info_items = [
         ("学科", content.get("subject", "")),
         ("年级", content.get("grade", "")),
         ("课时", content.get("duration", "1课时")),
-        ("教学风格", content.get("style", "")),
+        ("教学风格", content.get("style", "—")),
     ]
-    for label, value in info_items:
-        if value:
-            p = doc.add_paragraph()
-            label_run = p.add_run(f"【{label}】")
-            label_run.font.bold = True
-            label_run.font.size = DocxPt(11)
-            label_run.font.color.rgb = DocxRGB(0x2B, 0x6C, 0xB0)
-            val_run = p.add_run(f"  {value}")
-            val_run.font.size = DocxPt(11)
+    _add_info_table(doc, info_items)
+    doc.add_paragraph(style='Normal')
 
-    doc.add_paragraph()
-
-    # ── 教学目标区域 ──
+    # ── ③ 教学目标 ──
     teaching_goals = content.get("teachingGoals", "")
     if teaching_goals:
-        h = doc.add_heading("教学目标", level=1)
-        for run in h.runs:
-            run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
-            run.font.size = DocxPt(16)
-        goals_list = [g.strip() for g in teaching_goals.replace("；", ";").split(";") if g.strip()]
-        for goal in goals_list:
-            p = doc.add_paragraph(f"✦  {goal.strip()}")
-            p.paragraph_format.left_indent = Cm(0.8)
-            p.paragraph_format.space_after = DocxPt(4)
-
-    # 重难点
-    key_points = content.get("keyPoints", "")
-    if key_points:
-        h = doc.add_heading("重点与难点", level=1)
-        for run in h.runs:
-            run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
-            run.font.size = DocxPt(16)
-        points_list = [p.strip() for p in key_points.replace("；", ";").split(";") if p.strip()]
-        for pt in points_list:
-            p = doc.add_paragraph(f"●  {pt.strip()}")
-            p.paragraph_format.left_indent = Cm(0.8)
-            p.paragraph_format.space_after = DocxPt(4)
-
-    # ── 教学内容章节 ──
-    doc.add_paragraph()
-    h = doc.add_heading("教学过程", level=1)
-    for run in h.runs:
-        run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
-        run.font.size = DocxPt(16)
-
-    for i, section_item in enumerate(content.get("sections", []), 1):
-        heading = section_item.get("heading", f"第{i}部分")
-        h2 = doc.add_heading(f"{i}. {heading}", level=2)
-        for run in h2.runs:
-            run.font.color.rgb = DocxRGB(0x2B, 0x6C, 0xB0)
-            run.font.size = DocxPt(14)
-
-        for item in section_item.get("content", []):
+        _add_heading(doc, "教学目标", level=1)
+        goal_list = [g.strip() for g in teaching_goals.replace("；", ";").split(";") if g.strip()]
+        for g in goal_list:
+            # 识别并加粗「知识与技能/过程与方法/情感态度」等目标维度前缀
+            dim = _MATCH_GOAL_DIMENSION.match(g)
             p = doc.add_paragraph()
             p.paragraph_format.left_indent = Cm(0.8)
-            p.paragraph_format.space_after = DocxPt(3)
-            bullet_run = p.add_run("▸ ")
-            bullet_run.font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
-            bullet_run.font.size = DocxPt(11)
-            content_run = p.add_run(item)
-            content_run.font.size = DocxPt(11)
+            p.paragraph_format.space_after = DocxPt(4)
+            _set_cn_font(p.add_run("✦ "), size=11, bold=True, color=_DOC_ACCENT)
+            if dim:
+                _set_cn_font(p.add_run(dim.group(1)), size=11, bold=True, color=_DOC_SECONDARY)
+                _set_cn_font(p.add_run(g[dim.end():]), size=11, color=_DOC_BODY)
+            else:
+                _set_cn_font(p.add_run(g), size=11, color=_DOC_BODY)
 
-    # ── 教学反思区 ──
-    doc.add_paragraph()
-    h = doc.add_heading("教学反思", level=1)
-    for run in h.runs:
-        run.font.color.rgb = DocxRGB(0x1A, 0x36, 0x5D)
-        run.font.size = DocxPt(16)
-    reflect_para = doc.add_paragraph("（此部分建议课后填写）")
-    reflect_para.paragraph_format.left_indent = Cm(0.8)
-    reflect_run = reflect_para.runs[0]
-    reflect_run.font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
-    reflect_run.font.italic = True
-    reflect_run.font.size = DocxPt(10)
-    # 反思模板提示
-    for tip in ["本节课的教学目标达成情况：", "学生参与度与互动效果：", "需要改进的环节："]:
-        p = doc.add_paragraph(f"  · {tip}")
-        p.paragraph_format.left_indent = Cm(0.8)
+    # ── ④ 教学重难点分析 ──
+    key_points = content.get("keyPoints", "")
+    if key_points:
+        _add_heading(doc, "教学重难点分析", level=1)
+        pts = [t.strip() for t in key_points.replace("；", ";").split(";") if t.strip()]
+        for i, pt in enumerate(pts, 1):
+            p = doc.add_paragraph()
+            p.paragraph_format.left_indent = Cm(0.8)
+            p.paragraph_format.space_after = DocxPt(4)
+            _set_cn_font(p.add_run(f"{i}. "), size=11, bold=True, color=_DOC_ACCENT)
+            _set_cn_font(p.add_run(pt), size=11, color=_DOC_BODY)
+
+    # ── ⑤ 教学过程设计 ──
+    sections = content.get("sections", [])
+    if sections:
+        _add_heading(doc, "教学过程设计", level=1)
+        for i, section_item in enumerate(sections, 1):
+            heading = section_item.get("heading", f"环节 {i}")
+            _add_heading(doc, heading, level=2)
+            for item in section_item.get("content", []):
+                p = doc.add_paragraph()
+                p.paragraph_format.left_indent = Cm(1.2)
+                p.paragraph_format.space_after = DocxPt(3)
+                _set_cn_font(p.add_run("▸ "), size=11, color="94A3B8")
+                _set_cn_font(p.add_run(item), size=11, color=_DOC_BODY)
+
+    # ── ⑥ 教学反思 ──
+    _add_heading(doc, "教学反思", level=1)
+    note_p = doc.add_paragraph()
+    note_p.paragraph_format.left_indent = Cm(0.8)
+    note_p.paragraph_format.space_after = DocxPt(6)
+    _set_cn_font(
+        note_p.add_run("（此部分建议课后填写，围绕目标达成、互动效果与改进方向进行反思）"),
+        size=10, italic=True, color="94A3B8",
+    )
+    for tip in ["本节课教学目标的达成情况：", "学生参与度与互动效果：", "需要改进或调整的环节："]:
+        p = doc.add_paragraph()
+        p.paragraph_format.left_indent = Cm(1.0)
         p.paragraph_format.space_after = DocxPt(2)
-        p.runs[0].font.color.rgb = DocxRGB(0x94, 0xA3, 0xB8)
-        p.runs[0].font.size = DocxPt(10)
+        _set_cn_font(p.add_run(tip), size=11, color=_DOC_MUTED)
 
     # 保存
     os.makedirs(OUTPUT_DIR, exist_ok=True)
