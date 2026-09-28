@@ -402,8 +402,86 @@ function onKeydown(e) {
   }
 }
 
+/**
+ * 清洗 AI 输出中偶发的 LaTeX 标记，转成教师可读的 Unicode 形式。
+ * 约定：AI 应已禁用 LaTeX，此为兜底，避免原始命令暴露造成乱码。
+ */
+function cleanLatex(text) {
+  if (!text) return text;
+  // 行内公式定界符：\( ... \) 与 $ ... $（含双 $$）→ 去掉定界符保留内容
+  text = text.replace(
+    /\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|\$([^$\n]*?)\$/g,
+    (m, a, b, c) => (a ?? b ?? c ?? "").trim(),
+  );
+  // 一次替换尽量覆盖常用 LaTeX 命令（先长后短，避免误伤）
+  const map = [
+    [/\\(?:times|c\?dot)/g, "×"],
+    [/\\(?:cdots|ldots)/g, "…"],
+    [/\\(?:cdot)/g, "·"],
+    [/\\(?:frac)\{([^{}]*)\}\{([^{}]*)\}/g, (m, a, b) => `${a}/${b}`],
+    [/\\(?:ne)/g, "≠"],
+    [/\\(?:leq|le)/g, "≤"],
+    [/\\(?:geq|ge)/g, "≥"],
+    [/\\(?:approx|approxeq)/g, "≈"],
+    [/\\(?:pm)/g, "±"],
+    [/\\(?:infty)/g, "∞"],
+    [/\\(?:times)/g, "×"],
+    [/\\(?:sum)/g, "Σ"],
+    [/\\(?:prod)/g, "∏"],
+    [/\\(?:triangle)/g, "△"],
+    [/\\(?:rightarrow|to)/g, "→"],
+    [/\\(?:Rightarrow)/g, "⇒"],
+    [/\\(?:leftrightarrow)/g, "↔"],
+    [/\\(?:subseteq)/g, "⊆"],
+    [/\\(?:cup)/g, "∪"],
+    [/\\(?:cap)/g, "∩"],
+    [/\\(?:forall)/g, "∀"],
+    [/\\(?:exists)/g, "∃"],
+    [/\\(?:partial)/g, "∂"],
+    [/\\(?:alpha)/g, "α"],
+    [/\\(?:beta)/g, "β"],
+    [/\\(?:theta)/g, "θ"],
+    [/\\(?:lambda)/g, "λ"],
+    [/\\(?:sqrt)\{([^{}]*)\}/g, "√($1)"],
+    [/\\(?:text)\{([^{}]*)\}/g, "$1"],
+    [/\\(?:mathrm|mathbf|mathit|mbox)\{([^{}]*)\}/g, "$1"],
+    [/\\(?:left|right)/g, ""],
+    [/\\(?:big|Big|bigg|Bigg)(?:[lrg])?/g, ""],
+    [/\\(?:qquad|quad)\{?[^{}]*\}?/g, "　"],
+    [/\\(?:;|:|,|!)/g, " "],
+    [/\\(?:cmidrule|hline|rule)/g, ""],
+  ];
+  for (const [re, rep] of map) {
+    text = text.replace(re, rep);
+  }
+  // 下角标 m_1 → m₁；上角标 x^2 → x²（仅处理单字符下标，避免误伤普通 _）
+  text = text.replace(/_([a-zA-Z0-9])\b/g, (m, c) => c);
+  text = text.replace(/\^(\d)\b/g, (m, d) => mapSuperscript(d));
+  // 清理残余的孤立反斜杠命令（去掉反斜杠本身，保留英文），防乱码
+  text = text.replace(/\\[a-zA-Z]+/g, (m) => m.slice(1));
+  return text;
+}
+
+function mapSuperscript(d) {
+  return (
+    {
+      0: "⁰",
+      1: "¹",
+      2: "²",
+      3: "³",
+      4: "⁴",
+      5: "⁵",
+      6: "⁶",
+      7: "⁷",
+      8: "⁸",
+      9: "⁹",
+    }[d] || d
+  );
+}
+
 function renderMarkdown(text) {
-  let html = marked(text, { breaks: true, gfm: true });
+  const cleaned = cleanLatex(text);
+  let html = marked(cleaned, { breaks: true, gfm: true });
   html = html.replace(
     /→\[([^\]]+)\]\((\/[^)]+)\)/g,
     '<a href="javascript:;" class="internal-link" data-path="$2">$1 →</a>',
@@ -2339,6 +2417,129 @@ watch(activeId, scrollToBottom);
   font-size: 0.82rem;
   color: #dc2626;
   line-height: 1.6;
+}
+
+/* ──── AI 回复 Markdown 结构化样式（DeepSeek 风格） ────
+   v-html 注入的内容无 scoped 属性，须用 :deep() 穿透。 */
+.message--assistant .message__bubble :deep(.markdown-body) {
+  font-size: 0.925rem;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  word-break: break-word;
+}
+
+/* H2 章节标题：左色条 + 主题色，突出"每个部分在讲什么" */
+.message--assistant .message__bubble :deep(.markdown-body h2) {
+  margin: 18px 0 10px;
+  padding: 7px 12px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--accent-blue-dark);
+  background: rgba(37, 99, 235, 0.08);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 6px;
+  line-height: 1.4;
+}
+/* H2 前面不再需要 hr 分割的多余留白 */
+.message--assistant .message__bubble :deep(.markdown-body h2:first-child) {
+  margin-top: 0;
+}
+
+/* H3 小标题：主题色字，强化层级 */
+.message--assistant .message__bubble :deep(.markdown-body h3) {
+  margin: 14px 0 8px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--accent-blue-dark);
+}
+
+/* 核心加粗关键词：主题高亮 */
+.message--assistant .message__bubble :deep(.markdown-body strong) {
+  color: var(--accent-blue-dark);
+  font-weight: 700;
+  background: linear-gradient(transparent 62%, rgba(37, 99, 235, 0.18) 0);
+  padding: 0 1px;
+}
+
+/* 列表：对齐紧凑、留呼吸 */
+.message--assistant .message__bubble :deep(.markdown-body ul),
+.message--assistant .message__bubble :deep(.markdown-body ol) {
+  margin: 6px 0 10px;
+  padding-left: 22px;
+}
+.message--assistant .message__bubble :deep(.markdown-body li) {
+  margin: 4px 0;
+}
+
+/* 分隔线：弱化原粗分割，交给标题色条表达结构 */
+.message--assistant .message__bubble :deep(.markdown-body hr) {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px dashed rgba(37, 99, 235, 0.25);
+}
+
+/* 代码/公式：等宽、浅底、圆角 */
+.message--assistant .message__bubble :deep(.markdown-body code),
+.message--assistant .message__bubble :deep(.markdown-body pre) {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  background: rgba(37, 99, 235, 0.07);
+  border-radius: 5px;
+}
+.message--assistant .message__bubble :deep(.markdown-body code) {
+  padding: 1px 5px;
+  font-size: 0.88em;
+  color: #1d4ed8;
+}
+.message--assistant .message__bubble :deep(.markdown-body pre) {
+  padding: 10px 12px;
+  overflow-x: auto;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+.message--assistant .message__bubble :deep(.markdown-body pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+/* 段落间距收紧，信息密度更高 */
+.message--assistant .message__bubble :deep(.markdown-body p) {
+  margin: 6px 0;
+}
+
+/* 表格：完整边框、表头区分、单元格对齐无错位 */
+.message--assistant .message__bubble :deep(.markdown-body table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0 14px;
+  font-size: 0.89rem;
+  line-height: 1.55;
+}
+.message--assistant .message__bubble :deep(.markdown-body th),
+.message--assistant .message__bubble :deep(.markdown-body td) {
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  padding: 7px 11px;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+  white-space: normal;
+}
+.message--assistant .message__bubble :deep(.markdown-body th) {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent-blue-dark);
+  font-weight: 700;
+  border-bottom: 2px solid rgba(37, 99, 235, 0.4);
+  white-space: nowrap;
+}
+.message--assistant
+  .message__bubble
+  :deep(.markdown-body tbody tr:nth-child(even)) {
+  background: rgba(37, 99, 235, 0.04);
+}
+.message--assistant .message__bubble :deep(.markdown-body table:focus-visible) {
+  outline: none;
+}
+/* 单元格内的换行统一，避免内容叠行错位 */
+.message--assistant .message__bubble :deep(.markdown-body td br) {
+  margin: 0;
 }
 
 @keyframes msg-in {
